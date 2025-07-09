@@ -92,7 +92,7 @@ export default function Home() {
     if (!requestToDelete) return;
     const updatedRequests = requests.filter((r) => r.id !== requestToDelete);
     handleSaveRequests(updatedRequests);
-    toast({ title: "Success", description: "Request deleted successfully." });
+    toast({ title: "Sucesso", description: "Solicitação excluída com sucesso." });
     setIsAlertOpen(false);
     setRequestToDelete(null);
   };
@@ -101,11 +101,11 @@ export default function Home() {
     const newRequest: TravelRequest = {
       ...JSON.parse(JSON.stringify(request)), // Deep copy
       id: crypto.randomUUID(),
-      title: `${request.title} (Copy)`,
+      title: `${request.title} (Cópia)`,
       createdAt: new Date(),
     };
     handleSaveRequests([...requests, newRequest]);
-    toast({ title: "Success", description: "Request duplicated successfully." });
+    toast({ title: "Sucesso", description: "Solicitação duplicada com sucesso." });
   };
   
   const handleFormSubmit = (data: TravelRequest) => {
@@ -113,7 +113,7 @@ export default function Home() {
       ? requests.map((r) => (r.id === selectedRequest.id ? data : r))
       : [...requests, data];
     handleSaveRequests(updatedRequests);
-    toast({ title: "Success", description: `Request ${selectedRequest ? 'updated' : 'created'} successfully.` });
+    toast({ title: "Sucesso", description: `Solicitação ${selectedRequest ? 'atualizada' : 'criada'} com sucesso.` });
     setIsFormOpen(false);
     setSelectedRequest(null);
   };
@@ -125,25 +125,25 @@ export default function Home() {
           <Logo />
           <Button onClick={openFormForNew}>
             <PlusCircle className="mr-2 h-4 w-4" />
-            New Request
+            Nova Solicitação
           </Button>
         </div>
       </header>
 
       <main className="container mx-auto p-4 md:p-8">
         <h1 className="font-headline text-3xl font-bold tracking-tight mb-6">
-          Travel Requests
+          Solicitações de Viagem
         </h1>
         <div className="rounded-lg border shadow-sm">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead className="hidden md:table-cell">Passengers</TableHead>
-                <TableHead className="hidden md:table-cell">Itinerary</TableHead>
-                <TableHead className="hidden lg:table-cell">Created At</TableHead>
+                <TableHead>Título</TableHead>
+                <TableHead className="hidden md:table-cell">Passageiros</TableHead>
+                <TableHead className="hidden md:table-cell">Itinerário</TableHead>
+                <TableHead className="hidden lg:table-cell">Criado em</TableHead>
                 <TableHead>
-                  <span className="sr-only">Actions</span>
+                  <span className="sr-only">Ações</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -174,29 +174,29 @@ export default function Home() {
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
+                            <span className="sr-only">Abrir menu</span>
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => openPreview(request)}>
                             <FileText className="mr-2 h-4 w-4" />
-                            <span>View & Export</span>
+                            <span>Ver e Exportar</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => openFormForEdit(request)}>
                             <Edit className="mr-2 h-4 w-4" />
-                            <span>Edit</span>
+                            <span>Editar</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleDuplicate(request)}>
                             <Copy className="mr-2 h-4 w-4" />
-                            <span>Duplicate</span>
+                            <span>Duplicar</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="text-destructive focus:text-destructive"
                             onClick={() => confirmDelete(request.id)}
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
-                            <span>Delete</span>
+                            <span>Excluir</span>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -206,7 +206,7 @@ export default function Home() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={5} className="h-24 text-center">
-                    No travel requests found.
+                    Nenhuma solicitação de viagem encontrada.
                   </TableCell>
                 </TableRow>
               )}
@@ -219,7 +219,7 @@ export default function Home() {
         <DialogContent className="sm:max-w-[800px] h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="font-headline text-2xl">
-              {selectedRequest ? "Edit Travel Request" : "Create New Travel Request"}
+              {selectedRequest ? "Editar Solicitação de Viagem" : "Criar Nova Solicitação de Viagem"}
             </DialogTitle>
           </DialogHeader>
           <div className="flex-grow overflow-y-auto pr-6 -mr-6">
@@ -235,7 +235,7 @@ export default function Home() {
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle className="font-headline text-2xl">Request Preview</DialogTitle>
+            <DialogTitle className="font-headline text-2xl">Visualizar Solicitação</DialogTitle>
           </DialogHeader>
           <div className="flex-grow overflow-y-auto p-1">
             <DocumentPreview ref={previewRef} request={selectedRequest} />
@@ -257,15 +257,15 @@ export default function Home() {
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>Você tem certeza absoluta?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the travel request.
+              Esta ação não pode ser desfeita. Isso excluirá permanentemente a solicitação de viagem.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
+              Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

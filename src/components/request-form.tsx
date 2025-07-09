@@ -93,22 +93,22 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Request Title</FormLabel>
-              <FormControl><Input placeholder="e.g. Team Onsite Q3" {...field} /></FormControl>
+              <FormLabel>Título da Solicitação</FormLabel>
+              <FormControl><Input placeholder="ex: Reunião de Equipe T3" {...field} /></FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         
         <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2"><Building /> Billing</h3>
+            <h3 className="text-lg font-semibold flex items-center gap-2"><Building /> Faturamento</h3>
              <FormField
                 control={form.control}
                 name="billing.costCenter"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Cost Center</FormLabel>
-                    <FormControl><Input placeholder="e.g. ENG-PROJECT-X" {...field} /></FormControl>
+                    <FormLabel>Centro de Custo</FormLabel>
+                    <FormControl><Input placeholder="ex: ENG-PROJETO-X" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -116,12 +116,12 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
         </div>
 
         <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2"><Users /> Passengers</h3>
+            <h3 className="text-lg font-semibold flex items-center gap-2"><Users /> Passageiros</h3>
              <Accordion type="multiple" defaultValue={['passenger-0']} className="w-full">
                 {passengerFields.map((field, index) => (
                   <AccordionItem value={`passenger-${index}`} key={field.id} className="border rounded-md px-4">
                      <AccordionTrigger className="hover:no-underline">
-                        Passenger {index + 1}: {form.watch(`passengers.${index}.name`) || "New Passenger"}
+                        Passageiro {index + 1}: {form.watch(`passengers.${index}.name`) || "Novo Passageiro"}
                      </AccordionTrigger>
                      <AccordionContent className="space-y-4 pt-2">
                         <FormField
@@ -129,8 +129,8 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
                             name={`passengers.${index}.name`}
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Full Name</FormLabel>
-                                    <FormControl><Input placeholder="John Doe" {...field} /></FormControl>
+                                    <FormLabel>Nome Completo</FormLabel>
+                                    <FormControl><Input placeholder="João da Silva" {...field} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -151,7 +151,7 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
                             name={`passengers.${index}.documents`}
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Documents</FormLabel>
+                                    <FormLabel>Documentos</FormLabel>
                                     <FormControl>
                                         <FileManager files={field.value || []} onFilesChange={field.onChange} />
                                     </FormControl>
@@ -159,35 +159,35 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
                                 </FormItem>
                             )}
                         />
-                        {passengerFields.length > 1 && <Button type="button" variant="destructive" size="sm" onClick={() => removePassenger(index)}><Trash2 className="mr-2 h-4 w-4" />Remove Passenger</Button>}
+                        {passengerFields.length > 1 && <Button type="button" variant="destructive" size="sm" onClick={() => removePassenger(index)}><Trash2 className="mr-2 h-4 w-4" />Remover Passageiro</Button>}
                      </AccordionContent>
                   </AccordionItem>
                 ))}
              </Accordion>
-             <Button type="button" variant="outline" onClick={() => appendPassenger({ id: uuidv4(), name: "", cpf: "", documents: [] })}><PlusCircle className="mr-2 h-4 w-4" />Add Passenger</Button>
+             <Button type="button" variant="outline" onClick={() => appendPassenger({ id: uuidv4(), name: "", cpf: "", documents: [] })}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Passageiro</Button>
         </div>
         
         <div className="space-y-4">
-             <h3 className="text-lg font-semibold flex items-center gap-2"><Plane /> Itinerary</h3>
+             <h3 className="text-lg font-semibold flex items-center gap-2"><Plane /> Itinerário</h3>
              <div className="space-y-4">
                 {itineraryFields.map((field, index) => (
                     <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
-                         <h4 className="font-medium">Leg {index + 1}</h4>
+                         <h4 className="font-medium">Trecho {index + 1}</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField control={form.control} name={`itinerary.${index}.origin`} render={({ field }) => (
-                                <FormItem><FormLabel>Origin</FormLabel><FormControl><Input placeholder="City or Airport" {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem><FormLabel>Origem</FormLabel><FormControl><Input placeholder="Cidade ou Aeroporto" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                              <FormField control={form.control} name={`itinerary.${index}.destination`} render={({ field }) => (
-                                <FormItem><FormLabel>Destination</FormLabel><FormControl><Input placeholder="City or Airport" {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem><FormLabel>Destino</FormLabel><FormControl><Input placeholder="Cidade ou Aeroporto" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                              <FormField control={form.control} name={`itinerary.${index}.departureDate`} render={({ field }) => (
-                                <FormItem className="flex flex-col"><FormLabel>Departure Date</FormLabel>
+                                <FormItem className="flex flex-col"><FormLabel>Data de Partida</FormLabel>
                                     <Popover><PopoverTrigger asChild>
                                         <FormControl>
                                             <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                                                {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                                {field.value ? format(field.value, "PPP") : <span>Escolha uma data</span>}
                                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                             </Button>
                                         </FormControl>
@@ -199,11 +199,11 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
                             )} />
                             {form.watch(`itinerary.${index}.isRoundTrip`) && (
                                 <FormField control={form.control} name={`itinerary.${index}.returnDate`} render={({ field }) => (
-                                    <FormItem className="flex flex-col"><FormLabel>Return Date</FormLabel>
+                                    <FormItem className="flex flex-col"><FormLabel>Data de Retorno</FormLabel>
                                         <Popover><PopoverTrigger asChild>
                                             <FormControl>
                                                 <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                                                    {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                                    {field.value ? format(field.value, "PPP") : <span>Escolha uma data</span>}
                                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                                 </Button>
                                             </FormControl>
@@ -217,7 +217,7 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
                         </div>
                          <div className="flex items-center space-x-2">
                              <Checkbox id={`round-trip-${index}`} checked={form.watch(`itinerary.${index}.isRoundTrip`)} onCheckedChange={() => handleRoundTrip(index)}/>
-                             <label htmlFor={`round-trip-${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">This is a round trip</label>
+                             <label htmlFor={`round-trip-${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Viagem de ida e volta</label>
                          </div>
                         {itineraryFields.length > 1 && (
                             <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => removeItinerary(index)}>
@@ -229,16 +229,16 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
             </div>
              <div className="flex gap-2">
                 <Button type="button" variant="outline" onClick={() => appendItinerary({ id: uuidv4(), origin: "", destination: "", departureDate: new Date(), isRoundTrip: false })}>
-                  <PlusCircle className="mr-2 h-4 w-4" />Add Leg
+                  <PlusCircle className="mr-2 h-4 w-4" />Adicionar Trecho
                 </Button>
                 <Button type="button" variant="outline" onClick={() => createReturnLeg(itineraryFields.length - 1)}>
-                  <ArrowRightLeft className="mr-2 h-4 w-4" />Auto Return Leg
+                  <ArrowRightLeft className="mr-2 h-4 w-4" />Trecho de Volta Automático
                 </Button>
              </div>
         </div>
 
         <Button type="submit" className="w-full">
-          {initialData ? "Save Changes" : "Create Request"}
+          {initialData ? "Salvar Alterações" : "Criar Solicitação"}
         </Button>
       </form>
     </Form>

@@ -45,12 +45,12 @@ export function FileManager({ files, onFilesChange }: FileManagerProps) {
               htmlFor="file-upload"
               className="relative cursor-pointer rounded-md font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 hover:text-primary/80"
             >
-              <span>Upload files</span>
+              <span>Carregar arquivos</span>
               <input {...getInputProps()} className="sr-only" />
             </label>
-            <p className="pl-1">or drag and drop</p>
+            <p className="pl-1">ou arraste e solte</p>
           </div>
-          <p className="text-xs leading-5 text-muted-foreground">Images, PDF, etc. up to 10MB</p>
+          <p className="text-xs leading-5 text-muted-foreground">Imagens, PDF, etc. até 10MB</p>
         </div>
       </div>
       {files.length > 0 && (
