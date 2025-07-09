@@ -1,0 +1,246 @@
+"use client";
+
+import React from "react";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { travelRequestSchema, type TravelRequestFormValues } from "@/lib/schemas";
+import { type TravelRequest, type Passenger, type DocumentFile } from "@/types";
+import { v4 as uuidv4 } from "uuid";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { FileManager } from "@/components/file-manager";
+import { cn } from "@/lib/utils";
+import { format, parse } from "date-fns";
+import { Calendar as CalendarIcon, PlusCircle, Trash2, Users, Plane, Building, ArrowRightLeft } from "lucide-react";
+import { Checkbox } from "./ui/checkbox";
+
+interface RequestFormProps {
+  onSubmit: (data: TravelRequest) => void;
+  initialData?: TravelRequest | null;
+}
+
+const formatCpf = (value: string) => {
+  return value
+    .replace(/\D/g, '')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+    .substring(0, 14);
+};
+
+export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
+  const form = useForm<TravelRequestFormValues>({
+    resolver: zodResolver(travelRequestSchema),
+    defaultValues: initialData ? {
+      title: initialData.title,
+      billing: initialData.billing,
+      passengers: initialData.passengers,
+      itinerary: initialData.itinerary.map(i => ({...i, departureDate: new Date(i.departureDate), returnDate: i.returnDate ? new Date(i.returnDate) : undefined}))
+    } : {
+      title: "",
+      billing: { costCenter: "" },
+      passengers: [{ id: uuidv4(), name: "", cpf: "", documents: [] }],
+      itinerary: [{ id: uuidv4(), origin: "", destination: "", departureDate: new Date(), isRoundTrip: false }],
+    },
+  });
+  
+  const { fields: passengerFields, append: appendPassenger, remove: removePassenger } = useFieldArray({
+    control: form.control,
+    name: "passengers",
+  });
+
+  const { fields: itineraryFields, append: appendItinerary, remove: removeItinerary, update: updateItinerary } = useFieldArray({
+    control: form.control,
+    name: "itinerary",
+  });
+
+  const handleFormSubmit = (data: TravelRequestFormValues) => {
+    const fullData: TravelRequest = {
+      id: initialData?.id || uuidv4(),
+      createdAt: initialData?.createdAt || new Date(),
+      status: initialData?.status || "Draft",
+      ...data,
+    };
+    onSubmit(fullData);
+  };
+  
+  const handleRoundTrip = (index: number) => {
+    const currentItinerary = form.getValues(`itinerary.${index}`);
+    const isRoundTrip = !currentItinerary.isRoundTrip;
+    updateItinerary(index, { ...currentItinerary, isRoundTrip });
+  };
+  
+  const createReturnLeg = (index: number) => {
+      const originLeg = form.getValues(`itinerary.${index}`);
+      appendItinerary({
+          id: uuidv4(),
+          origin: originLeg.destination,
+          destination: originLeg.origin,
+          departureDate: originLeg.returnDate || new Date(),
+          isRoundTrip: false,
+      })
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-8 p-1">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Request Title</FormLabel>
+              <FormControl><Input placeholder="e.g. Team Onsite Q3" {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <div className="space-y-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2"><Building /> Billing</h3>
+             <FormField
+                control={form.control}
+                name="billing.costCenter"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cost Center</FormLabel>
+                    <FormControl><Input placeholder="e.g. ENG-PROJECT-X" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+        </div>
+
+        <div className="space-y-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2"><Users /> Passengers</h3>
+             <Accordion type="multiple" defaultValue={['passenger-0']} className="w-full">
+                {passengerFields.map((field, index) => (
+                  <AccordionItem value={`passenger-${index}`} key={field.id} className="border rounded-md px-4">
+                     <AccordionTrigger className="hover:no-underline">
+                        Passenger {index + 1}: {form.watch(`passengers.${index}.name`) || "New Passenger"}
+                     </AccordionTrigger>
+                     <AccordionContent className="space-y-4 pt-2">
+                        <FormField
+                            control={form.control}
+                            name={`passengers.${index}.name`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Full Name</FormLabel>
+                                    <FormControl><Input placeholder="John Doe" {...field} /></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name={`passengers.${index}.cpf`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>CPF</FormLabel>
+                                    <FormControl><Input placeholder="000.000.000-00" {...field} onChange={(e) => field.onChange(formatCpf(e.target.value))} /></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                         <Controller
+                            control={form.control}
+                            name={`passengers.${index}.documents`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Documents</FormLabel>
+                                    <FormControl>
+                                        <FileManager files={field.value || []} onFilesChange={field.onChange} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        {passengerFields.length > 1 && <Button type="button" variant="destructive" size="sm" onClick={() => removePassenger(index)}><Trash2 className="mr-2 h-4 w-4" />Remove Passenger</Button>}
+                     </AccordionContent>
+                  </AccordionItem>
+                ))}
+             </Accordion>
+             <Button type="button" variant="outline" onClick={() => appendPassenger({ id: uuidv4(), name: "", cpf: "", documents: [] })}><PlusCircle className="mr-2 h-4 w-4" />Add Passenger</Button>
+        </div>
+        
+        <div className="space-y-4">
+             <h3 className="text-lg font-semibold flex items-center gap-2"><Plane /> Itinerary</h3>
+             <div className="space-y-4">
+                {itineraryFields.map((field, index) => (
+                    <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
+                         <h4 className="font-medium">Leg {index + 1}</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField control={form.control} name={`itinerary.${index}.origin`} render={({ field }) => (
+                                <FormItem><FormLabel>Origin</FormLabel><FormControl><Input placeholder="City or Airport" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                             <FormField control={form.control} name={`itinerary.${index}.destination`} render={({ field }) => (
+                                <FormItem><FormLabel>Destination</FormLabel><FormControl><Input placeholder="City or Airport" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <FormField control={form.control} name={`itinerary.${index}.departureDate`} render={({ field }) => (
+                                <FormItem className="flex flex-col"><FormLabel>Departure Date</FormLabel>
+                                    <Popover><PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
+                                                {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}/>
+                                    </PopoverContent></Popover>
+                                <FormMessage /></FormItem>
+                            )} />
+                            {form.watch(`itinerary.${index}.isRoundTrip`) && (
+                                <FormField control={form.control} name={`itinerary.${index}.returnDate`} render={({ field }) => (
+                                    <FormItem className="flex flex-col"><FormLabel>Return Date</FormLabel>
+                                        <Popover><PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
+                                                    {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < form.getValues(`itinerary.${index}.departureDate`)} />
+                                        </PopoverContent></Popover>
+                                    <FormMessage /></FormItem>
+                                )} />
+                            )}
+                        </div>
+                         <div className="flex items-center space-x-2">
+                             <Checkbox id={`round-trip-${index}`} checked={form.watch(`itinerary.${index}.isRoundTrip`)} onCheckedChange={() => handleRoundTrip(index)}/>
+                             <label htmlFor={`round-trip-${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">This is a round trip</label>
+                         </div>
+                        {itineraryFields.length > 1 && (
+                            <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => removeItinerary(index)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                        )}
+                    </div>
+                ))}
+            </div>
+             <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={() => appendItinerary({ id: uuidv4(), origin: "", destination: "", departureDate: new Date(), isRoundTrip: false })}>
+                  <PlusCircle className="mr-2 h-4 w-4" />Add Leg
+                </Button>
+                <Button type="button" variant="outline" onClick={() => createReturnLeg(itineraryFields.length - 1)}>
+                  <ArrowRightLeft className="mr-2 h-4 w-4" />Auto Return Leg
+                </Button>
+             </div>
+        </div>
+
+        <Button type="submit" className="w-full">
+          {initialData ? "Save Changes" : "Create Request"}
+        </Button>
+      </form>
+    </Form>
+  );
+}
