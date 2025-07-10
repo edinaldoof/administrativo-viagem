@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { extractInfoFromPdf, type ExtractInfoOutput } from '@/ai/flows/extract-info-flow';
 import { type TravelRequest } from '@/types';
-import { saveRequests } from '@/lib/actions';
+import { saveRequests, getRequests } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { RequestForm } from '@/components/request-form';
@@ -221,16 +221,14 @@ export default function CriarRequisicaoPage() {
   };
 
   return (
-    <div className="p-4 md:p-8 pt-6">
-      <div className="max-w-6xl mx-auto space-y-4">
-        <div className="space-y-2">
-          <h2 className="text-3xl font-headline font-bold tracking-tight">Criar Requisição</h2>
-          <p className="text-muted-foreground">
-            Escolha como você quer iniciar uma nova solicitação de viagem.
-          </p>
-        </div>
-        {renderContent()}
+    <div className="p-4 md:p-8 pt-6 space-y-4">
+      <div className="space-y-2">
+        <h2 className="text-3xl font-headline font-bold tracking-tight">Criar Requisição</h2>
+        <p className="text-muted-foreground">
+          Escolha como você quer iniciar uma nova solicitação de viagem.
+        </p>
       </div>
+      {renderContent()}
     </div>
   );
 }

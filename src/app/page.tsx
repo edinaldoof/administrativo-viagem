@@ -34,97 +34,95 @@ export default function Home() {
 
 
   return (
-    <div className="p-4 pt-6 md:p-8">
-      <div className="max-w-6xl mx-auto space-y-4">
-        <div className="flex items-center justify-between space-y-2">
-          <h2 className="text-3xl font-headline font-bold tracking-tight">
-            Painel de Controle
-          </h2>
-        </div>
-        <p className="text-muted-foreground">
-          Um resumo das suas solicitações de viagem.
-        </p>
-        
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium font-body">
-                Total de Solicitações
-              </CardTitle>
-              <ListChecks className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{requests.length}</div>
-              <p className="text-xs text-muted-foreground">
-                Total de solicitações criadas no sistema.
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium font-body">
-                Total de Passageiros
-              </CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalPassengers}</div>
-              <p className="text-xs text-muted-foreground">
-                Soma de todos os passageiros nas solicitações.
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium font-body">Rascunhos</CardTitle>
-              <FileSignature className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{draftRequests}</div>
-              <p className="text-xs text-muted-foreground">
-                Solicitações que ainda não foram finalizadas.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+    <div className="p-4 md:p-8 pt-6 space-y-4">
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-headline font-bold tracking-tight">
+          Painel de Controle
+        </h2>
+      </div>
+      <p className="text-muted-foreground">
+        Um resumo das suas solicitações de viagem.
+      </p>
+      
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium font-body">
+              Total de Solicitações
+            </CardTitle>
+            <ListChecks className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{requests.length}</div>
+            <p className="text-xs text-muted-foreground">
+              Total de solicitações criadas no sistema.
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium font-body">
+              Total de Passageiros
+            </CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalPassengers}</div>
+            <p className="text-xs text-muted-foreground">
+              Soma de todos os passageiros nas solicitações.
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium font-body">Rascunhos</CardTitle>
+            <FileSignature className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{draftRequests}</div>
+            <p className="text-xs text-muted-foreground">
+              Solicitações que ainda não foram finalizadas.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
-        <div className="grid gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Atividade Recente</CardTitle>
-              <CardDescription className="text-left">
-                As últimas 5 solicitações criadas ou atualizadas.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {recentRequests.length > 0 ? (
-                  <div className="space-y-4">
-                  {recentRequests.map((request) => (
-                      <div key={request.id} className="flex items-center justify-between">
-                          <div className="space-y-1">
-                              <p className="text-sm font-medium leading-none">{request.title}</p>
-                              <p className="text-sm text-muted-foreground">{getMainItinerarySummary(request)}</p>
-                          </div>
-                          <Link href="/solicitacoes">
-                              <Button variant="ghost" size="sm">
-                                  Ver
-                                  <ArrowRight className="h-4 w-4 ml-2" />
-                              </Button>
-                          </Link>
-                      </div>
-                  ))}
-                  </div>
-              ) : (
-                  <div className="flex flex-col items-center justify-center h-40 text-center">
-                      <p className="text-sm text-muted-foreground">Nenhuma atividade recente.</p>
-                      <Link href="/solicitacoes">
-                          <Button variant="link" className="mt-2">Criar uma nova solicitação</Button>
-                      </Link>
-                  </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+      <div className="grid gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Atividade Recente</CardTitle>
+            <CardDescription className="text-left">
+              As últimas 5 solicitações criadas ou atualizadas.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {recentRequests.length > 0 ? (
+                <div className="space-y-4">
+                {recentRequests.map((request) => (
+                    <div key={request.id} className="flex items-center justify-between">
+                        <div className="space-y-1">
+                            <p className="text-sm font-medium leading-none">{request.title}</p>
+                            <p className="text-sm text-muted-foreground">{getMainItinerarySummary(request)}</p>
+                        </div>
+                        <Link href="/solicitacoes">
+                            <Button variant="ghost" size="sm">
+                                Ver
+                                <ArrowRight className="h-4 w-4 ml-2" />
+                            </Button>
+                        </Link>
+                    </div>
+                ))}
+                </div>
+            ) : (
+                <div className="flex flex-col items-center justify-center h-40 text-center">
+                    <p className="text-sm text-muted-foreground">Nenhuma atividade recente.</p>
+                    <Link href="/solicitacoes">
+                        <Button variant="link" className="mt-2">Criar uma nova solicitação</Button>
+                    </Link>
+                </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
