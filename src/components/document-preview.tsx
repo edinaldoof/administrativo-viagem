@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -51,7 +52,7 @@ export const DocumentPreview = React.forwardRef<HTMLDivElement, DocumentPreviewP
                   <div className="mb-4">
                       <h4 className="font-semibold mb-2 flex items-center gap-2 text-md"><Plane size={16} /> Itinerário</h4>
                       <div className="space-y-3 pl-2">
-                        {passenger.itinerary.map((segment, segIndex) => (
+                        {passenger.itinerary?.map((segment, segIndex) => (
                            <Card key={segment.id} className="bg-white">
                                <CardHeader className="p-3">
                                    <CardTitle className="text-base">Trecho {segIndex + 1}: {segment.origin} para {segment.destination}</CardTitle>
