@@ -3,9 +3,9 @@
 
 import React from "react";
 import { type TravelRequest } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { User, Plane, Building, FileText } from "lucide-react";
+import { User, Plane, Building, FileText, Map } from "lucide-react";
 import RouteMap from "./route-map";
 
 type DocumentPreviewProps = {
@@ -23,7 +23,7 @@ export const DocumentPreview = React.forwardRef<HTMLDivElement, DocumentPreviewP
     }
 
     return (
-      <div ref={ref} className="bg-background text-foreground p-8 rounded-lg" id="document-preview">
+      <div ref={ref} className="bg-background text-foreground p-8 rounded-lg light" id="document-preview">
         <header className="flex justify-between items-start mb-8">
           <div>
             <h1 className="text-3xl font-bold font-headline text-primary">{request.title}</h1>
@@ -45,42 +45,45 @@ export const DocumentPreview = React.forwardRef<HTMLDivElement, DocumentPreviewP
             {request.passengers.map((passenger, index) => (
               <Card key={passenger.id} className="overflow-hidden">
                 <CardHeader>
-                  <CardTitle className="text-lg text-card-foreground">Passageiro {index + 1}: {passenger.name}</CardTitle>
-                   <div className="text-sm text-muted-foreground grid grid-cols-2 gap-x-4">
-                      <p><span className="font-semibold">CPF:</span> {passenger.cpf}</p>
-                      <p><span className="font-semibold">Nascimento:</span> {new Date(passenger.birthDate).toLocaleDateString()}</p>
-                   </div>
+                  <CardTitle className="text-lg">Passageiro {index + 1}: {passenger.name}</CardTitle>
+                   <CardDescription className="grid grid-cols-2 gap-x-4">
+                      <span><span className="font-semibold">CPF:</span> {passenger.cpf}</span>
+                      <span><span className="font-semibold">Nascimento:</span> {new Date(passenger.birthDate).toLocaleDateString()}</span>
+                   </CardDescription>
                 </CardHeader>
-                <CardContent className="pt-4">
+                <CardContent className="pt-4 space-y-6">
                   
-                  <div className="mb-4">
-                      <h4 className="font-semibold mb-2 flex items-center gap-2 text-md text-card-foreground"><Plane size={16} /> Itinerário</h4>
-                      <div className="space-y-3 pl-2">
+                  <div>
+                      <h4 className="font-semibold mb-3 flex items-center gap-2 text-md"><Plane size={16} /> Itinerário</h4>
+                      <div className="space-y-4">
                         {passenger.itinerary?.map((segment) => (
-                           <Card key={segment.id} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                               <div className="p-4">
-                                   <CardTitle className="text-base mb-2 text-card-foreground">{segment.origin} para {segment.destination}</CardTitle>
-                                   <div className="text-sm space-y-1 text-muted-foreground">
-                                       <p><span className="font-semibold text-card-foreground">Partida:</span> {new Date(segment.departureDate).toLocaleDateString()}</p>
+                           <React.Fragment key={segment.id}>
+                               <Card className="p-4">
+                                   <CardTitle className="text-base mb-2">{segment.origin} para {segment.destination}</CardTitle>
+                                   <div className="text-sm space-y-1 text-muted-foreground grid grid-cols-2 gap-x-4 gap-y-1">
+                                       <p><span className="font-semibold text-foreground">Partida:</span> {new Date(segment.departureDate).toLocaleDateString()}</p>
                                        {segment.isRoundTrip && segment.returnDate && (
-                                           <p><span className="font-semibold text-card-foreground">Retorno:</span> {new Date(segment.returnDate).toLocaleDateString()}</p>
+                                           <p><span className="font-semibold text-foreground">Retorno:</span> {new Date(segment.returnDate).toLocaleDateString()}</p>
                                        )}
-                                       {segment.ciaAerea && <p><span className="font-semibold text-card-foreground">Cia Aérea:</span> {segment.ciaAerea}</p>}
-                                       {segment.voo && <p><span className="font-semibold text-card-foreground">Voo:</span> {segment.voo}</p>}
-                                       {segment.horarios && <p><span className="font-semibold text-card-foreground">Horários:</span> {segment.horarios}</p>}
+                                       {segment.ciaAerea && <p><span className="font-semibold text-foreground">Cia Aérea:</span> {segment.ciaAerea}</p>}
+                                       {segment.voo && <p><span className="font-semibold text-foreground">Voo:</span> {segment.voo}</p>}
+                                       {segment.horarios && <p><span className="font-semibold text-foreground">Horários:</span> {segment.horarios}</p>}
                                    </div>
+                               </Card>
+                               <div>
+                                  <h5 className="font-semibold mb-2 flex items-center gap-2 text-sm"><Map size={14}/> Visualização da Rota</h5>
+                                  <div className="min-h-[250px] w-full rounded-md overflow-hidden border">
+                                    <RouteMap origin={segment.origin} destination={segment.destination} />
+                                  </div>
                                </div>
-                               <div className="min-h-[200px] bg-muted/50">
-                                  <RouteMap origin={segment.origin} destination={segment.destination} />
-                               </div>
-                           </Card>
+                           </React.Fragment>
                         ))}
                       </div>
                   </div>
 
                   {passenger.documents && passenger.documents.length > 0 && (
                      <div>
-                        <h4 className="font-semibold mb-2 flex items-center gap-2 text-md text-card-foreground"><FileText size={16}/> Documentos Anexados:</h4>
+                        <h4 className="font-semibold mb-2 flex items-center gap-2 text-md"><FileText size={16}/> Documentos Anexados:</h4>
                         <ul className="list-disc pl-7 text-sm space-y-1 text-muted-foreground">
                            {passenger.documents.map((doc, i) => <li key={i}>{doc.name}</li>)}
                         </ul>
@@ -97,7 +100,7 @@ export const DocumentPreview = React.forwardRef<HTMLDivElement, DocumentPreviewP
         <section>
           <h2 className="text-xl font-headline font-bold mb-4 flex items-center gap-2"><Building />Informações de Faturamento</h2>
           <Card>
-            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-muted-foreground">
+            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <p><span className="font-semibold text-card-foreground">Centro de Custo:</span> {request.billing.costCenter}</p>
                 {request.billing.account && <p><span className="font-semibold text-card-foreground">Conta do Projeto:</span> {request.billing.account}</p>}
                 {request.billing.webId && <p><span className="font-semibold text-card-foreground">WEB ID:</span> {request.billing.webId}</p>}
