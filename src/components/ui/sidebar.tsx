@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -322,7 +323,7 @@ const SidebarInset = React.forwardRef<
     <main
       ref={ref}
       className={cn(
-        "relative flex min-h-svh flex-1 flex-col bg-background",
+        "flex-1 flex flex-col",
         className
       )}
       {...props}
