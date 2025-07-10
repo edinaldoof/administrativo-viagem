@@ -5,7 +5,8 @@ import React from "react";
 import { type TravelRequest } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { User, Plane, Building, FileText, Cake } from "lucide-react";
+import { User, Plane, Building, FileText } from "lucide-react";
+import RouteMap from "./route-map";
 
 type DocumentPreviewProps = {
   request: TravelRequest | null;
@@ -55,20 +56,23 @@ export const DocumentPreview = React.forwardRef<HTMLDivElement, DocumentPreviewP
                   <div className="mb-4">
                       <h4 className="font-semibold mb-2 flex items-center gap-2 text-md"><Plane size={16} /> Itinerário</h4>
                       <div className="space-y-3 pl-2">
-                        {passenger.itinerary?.map((segment, segIndex) => (
-                           <Card key={segment.id} className="bg-white">
-                               <CardHeader className="p-3">
-                                   <CardTitle className="text-base">Trecho {segIndex + 1}: {segment.origin} para {segment.destination}</CardTitle>
-                               </CardHeader>
-                               <CardContent className="p-3 pt-0 text-sm space-y-1">
-                                   <p><span className="font-semibold">Partida:</span> {new Date(segment.departureDate).toLocaleDateString()}</p>
-                                   {segment.isRoundTrip && segment.returnDate && (
-                                       <p><span className="font-semibold">Retorno:</span> {new Date(segment.returnDate).toLocaleDateString()}</p>
-                                   )}
-                                   {segment.ciaAerea && <p><span className="font-semibold">Cia Aérea:</span> {segment.ciaAerea}</p>}
-                                   {segment.voo && <p><span className="font-semibold">Voo:</span> {segment.voo}</p>}
-                                   {segment.horarios && <p><span className="font-semibold">Horários:</span> {segment.horarios}</p>}
-                               </CardContent>
+                        {passenger.itinerary?.map((segment) => (
+                           <Card key={segment.id} className="bg-white grid grid-cols-1 md:grid-cols-2 gap-4">
+                               <div className="p-4">
+                                   <CardTitle className="text-base mb-2">{segment.origin} para {segment.destination}</CardTitle>
+                                   <div className="text-sm space-y-1">
+                                       <p><span className="font-semibold">Partida:</span> {new Date(segment.departureDate).toLocaleDateString()}</p>
+                                       {segment.isRoundTrip && segment.returnDate && (
+                                           <p><span className="font-semibold">Retorno:</span> {new Date(segment.returnDate).toLocaleDateString()}</p>
+                                       )}
+                                       {segment.ciaAerea && <p><span className="font-semibold">Cia Aérea:</span> {segment.ciaAerea}</p>}
+                                       {segment.voo && <p><span className="font-semibold">Voo:</span> {segment.voo}</p>}
+                                       {segment.horarios && <p><span className="font-semibold">Horários:</span> {segment.horarios}</p>}
+                                   </div>
+                               </div>
+                               <div className="min-h-[200px] bg-gray-200">
+                                  <RouteMap origin={segment.origin} destination={segment.destination} />
+                               </div>
                            </Card>
                         ))}
                       </div>
