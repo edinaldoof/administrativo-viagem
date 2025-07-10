@@ -159,7 +159,7 @@ export default function Home() {
             <TableHeader>
               <TableRow>
                 <TableHead>Título</TableHead>
-                <TableHead className="hidden md:table-cell">Passageiro Principal</TableHead>
+                <TableHead className="hidden md:table-cell">Passageiro</TableHead>
                 <TableHead className="hidden md:table-cell">Itinerário Principal</TableHead>
                 <TableHead className="hidden lg:table-cell">Criado em</TableHead>
                 <TableHead>
