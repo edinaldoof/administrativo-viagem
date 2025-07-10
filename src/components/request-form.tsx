@@ -43,7 +43,7 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
             ...initialData,
             passengers: initialData.passengers.map(p => ({
                 ...p,
-                itinerary: p.itinerary.map(i => ({
+                itinerary: (p.itinerary || []).map(i => ({
                     ...i,
                     departureDate: new Date(i.departureDate),
                     returnDate: i.returnDate ? new Date(i.returnDate) : undefined,
