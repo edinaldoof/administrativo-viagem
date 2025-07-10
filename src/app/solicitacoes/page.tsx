@@ -226,13 +226,13 @@ export default function SolicitacoesPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Título</TableHead>
-              <TableHead className="hidden lg:table-cell">Passageiro</TableHead>
-              <TableHead className="hidden xl:table-cell">Itinerário</TableHead>
-              <TableHead className="hidden md:table-cell">Status</TableHead>
-              <TableHead className="hidden md:table-cell">Conta</TableHead>
-              <TableHead className="hidden lg:table-cell">Criado em</TableHead>
-              <TableHead>
+              <TableHead style={{ width: '25%' }}>Título</TableHead>
+              <TableHead className="hidden md:table-cell" style={{ width: '20%' }}>Passageiro</TableHead>
+              <TableHead className="hidden lg:table-cell" style={{ width: '20%' }}>Itinerário</TableHead>
+              <TableHead style={{ width: '10%' }}>Status</TableHead>
+              <TableHead className="hidden lg:table-cell" style={{ width: '10%' }}>Conta</TableHead>
+              <TableHead className="hidden md:table-cell" style={{ width: '10%' }}>Criado em</TableHead>
+              <TableHead style={{ width: '5%' }}>
                 <span className="sr-only">Ações</span>
               </TableHead>
             </TableRow>
@@ -242,23 +242,23 @@ export default function SolicitacoesPage() {
               filteredRequests.map((request) => (
                 <TableRow key={request.id}>
                   <TableCell className="font-medium">{request.title}</TableCell>
-                  <TableCell className="hidden lg:table-cell">
+                  <TableCell className="hidden md:table-cell">
                       <div className="flex items-center gap-2">
                           <User className="h-4 w-4 text-muted-foreground"/>
                           <span className="truncate max-w-[150px]" title={getPassengerInfo(request)}>{getPassengerInfo(request)}</span>
                       </div>
                   </TableCell>
-                  <TableCell className="hidden xl:table-cell">
+                  <TableCell className="hidden lg:table-cell">
                         <div className="flex items-center gap-2">
                             <Plane className="h-4 w-4 text-muted-foreground"/>
                           <span className="truncate max-w-[150px]" title={getMainItinerary(request)}>{getMainItinerary(request)}</span>
                         </div>
                   </TableCell>
-                  <TableCell className="hidden md:table-cell">
+                  <TableCell>
                     <StatusBadge status={request.status} onStatusChange={(newStatus) => handleStatusChange(request.id, newStatus)} />
                   </TableCell>
-                  <TableCell className="hidden md:table-cell">{request.billing.account}</TableCell>
-                  <TableCell className="hidden lg:table-cell">
+                  <TableCell className="hidden lg:table-cell">{request.billing.account}</TableCell>
+                  <TableCell className="hidden md:table-cell">
                       <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4 text-muted-foreground"/>
                           <span>{new Date(request.createdAt).toLocaleDateString()}</span>
