@@ -7,6 +7,7 @@ import { Skeleton } from './ui/skeleton';
 import { useTheme } from 'next-themes';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { MapIcon } from 'lucide-react';
+import { standardizeLocationName } from '@/ai/flows/standardize-location-flow';
 
 const containerStyle = {
   width: '100%',
@@ -109,6 +110,8 @@ const RouteMap: React.FC<RouteMapProps> = ({ origin, destination }) => {
   const { theme } = useTheme();
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [processedOrigin, setProcessedOrigin] = useState('');
+  const [processedDestination, setProcessedDestination] = useState('');
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
   const { isLoaded, loadError } = useJsApiLoader({
@@ -116,11 +119,33 @@ const RouteMap: React.FC<RouteMapProps> = ({ origin, destination }) => {
     googleMapsApiKey: apiKey,
   });
 
-  const directionsServiceOptions = useMemo<google.maps.DirectionsRequest>(() => ({
-    origin,
-    destination,
-    travelMode: google.maps.TravelMode.DRIVING,
-  }), [origin, destination]);
+  useEffect(() => {
+    const processLocations = async () => {
+      try {
+        const [standardOrigin, standardDestination] = await Promise.all([
+          standardizeLocationName(origin),
+          standardizeLocationName(destination)
+        ]);
+        setProcessedOrigin(standardOrigin);
+        setProcessedDestination(standardDestination);
+      } catch (aiError) {
+        console.error("AI standardization failed, falling back to original names:", aiError);
+        setProcessedOrigin(origin);
+        setProcessedDestination(destination);
+      }
+    };
+    processLocations();
+  }, [origin, destination]);
+
+
+  const directionsServiceOptions = useMemo<google.maps.DirectionsRequest | null>(() => {
+    if (!processedOrigin || !processedDestination) return null;
+    return {
+      origin: processedOrigin,
+      destination: processedDestination,
+      travelMode: google.maps.TravelMode.DRIVING,
+    }
+  }, [processedOrigin, processedDestination]);
 
   const directionsCallback = (
     result: google.maps.DirectionsResult | null,
@@ -153,7 +178,7 @@ const RouteMap: React.FC<RouteMapProps> = ({ origin, destination }) => {
     return <div className="p-4 text-destructive">Erro ao carregar o mapa. Verifique a chave da API.</div>;
   }
 
-  if (!isLoaded) {
+  if (!isLoaded || !processedOrigin || !processedDestination) {
     return <Skeleton className="w-full h-full" />;
   }
 
@@ -165,7 +190,7 @@ const RouteMap: React.FC<RouteMapProps> = ({ origin, destination }) => {
         center={{ lat: 0, lng: 0 }} // O zoom e centro serão ajustados pelo DirectionsRenderer
         options={{...mapOptions, styles: theme === 'dark' ? darkMapStyle : []}}
       >
-        {!directions && (
+        {directionsServiceOptions && !directions && (
           <DirectionsService
             options={directionsServiceOptions}
             callback={directionsCallback}
