@@ -52,6 +52,10 @@ import { getRequests, saveRequests } from "@/lib/actions";
 import { Logo } from "@/components/logo";
 import { exportToPNG, exportToPDF, exportToExcel } from "@/lib/export";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+
+type FilterType = 'all' | 'title' | 'passenger' | 'account' | 'webId';
 
 export default function Home() {
   const [requests, setRequests] = useState<TravelRequest[]>([]);
@@ -61,6 +65,7 @@ export default function Home() {
   const [selectedRequest, setSelectedRequest] = useState<TravelRequest | null>(null);
   const [requestToDelete, setRequestToDelete] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<FilterType>("all");
   const { toast } = useToast();
   const previewRef = React.useRef<HTMLDivElement>(null);
 
@@ -149,14 +154,26 @@ export default function Home() {
     .filter((request) => {
       if (!searchTerm) return true;
       const lowercasedTerm = searchTerm.toLowerCase();
-      const searchFields = [
-        request.title,
-        request.billing.account || "",
-        request.billing.webId || "",
-        ...request.passengers.map((p) => p.name),
-      ].join(" ").toLowerCase();
 
-      return searchFields.includes(lowercasedTerm);
+      switch (filterType) {
+        case 'title':
+          return request.title.toLowerCase().includes(lowercasedTerm);
+        case 'passenger':
+          return request.passengers.some(p => p.name.toLowerCase().includes(lowercasedTerm));
+        case 'account':
+          return (request.billing.account || '').toLowerCase().includes(lowercasedTerm);
+        case 'webId':
+          return (request.billing.webId || '').toLowerCase().includes(lowercasedTerm);
+        case 'all':
+        default:
+          const searchFields = [
+            request.title,
+            request.billing.account || "",
+            request.billing.webId || "",
+            ...request.passengers.map((p) => p.name),
+          ].join(" ").toLowerCase();
+          return searchFields.includes(lowercasedTerm);
+      }
     })
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -177,14 +194,28 @@ export default function Home() {
           <h1 className="font-headline text-3xl font-bold tracking-tight">
             Solicitações de Viagem
           </h1>
-          <div className="relative w-full md:w-auto md:min-w-[300px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Filtrar solicitações..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+          <div className="flex w-full md:w-auto md:min-w-[400px] gap-2">
+            <div className="relative flex-grow">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                placeholder="Filtrar solicitações..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+                />
+            </div>
+            <Select value={filterType} onValueChange={(value) => setFilterType(value as FilterType)}>
+                <SelectTrigger className="w-[150px]">
+                    <SelectValue placeholder="Filtrar por" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="title">Título</SelectItem>
+                    <SelectItem value="passenger">Passageiro</SelectItem>
+                    <SelectItem value="account">Conta</SelectItem>
+                    <SelectItem value="webId">WEB ID</SelectItem>
+                </SelectContent>
+            </Select>
           </div>
         </div>
         <div className="rounded-lg border shadow-sm">
