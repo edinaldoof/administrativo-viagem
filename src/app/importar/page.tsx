@@ -60,7 +60,7 @@ export default function ImportarPage() {
       });
 
       const newRequest: TravelRequest = {
-          id: uuidv4(),
+          id: extractedData.billing.webId || uuidv4(),
           createdAt: new Date(),
           status: "Draft",
           ...extractedData,
@@ -156,3 +156,5 @@ export default function ImportarPage() {
     </div>
   );
 }
+
+    

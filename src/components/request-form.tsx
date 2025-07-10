@@ -91,7 +91,7 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
 
   const handleFormSubmit = (data: TravelRequestFormValues) => {
     const fullData: TravelRequest = {
-      id: initialData?.id || uuidv4(),
+      id: initialData?.id || data.billing.webId || uuidv4(),
       createdAt: initialData?.createdAt || new Date(),
       status: initialData?.status || "Draft",
       ...data,
@@ -359,3 +359,5 @@ function ItinerarySubForm({ passengerIndex, form }: { passengerIndex: number, fo
         </div>
     );
 }
+
+    
