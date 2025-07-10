@@ -309,7 +309,7 @@ export default function SolicitacoesPage() {
       </div>
 
     <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-      <DialogContent className="sm:max-w-4xl h-[90vh] flex flex-col">
+      <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="font-headline text-2xl">
             {selectedRequest ? "Editar Solicitação de Viagem" : "Criar Nova Solicitação de Viagem"}
