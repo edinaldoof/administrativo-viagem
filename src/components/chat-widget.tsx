@@ -9,7 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { chat, Message } from '@/ai/flows/chat-flow';
 import { cn } from '@/lib/utils';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
