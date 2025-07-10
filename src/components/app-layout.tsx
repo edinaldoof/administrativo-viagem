@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { getRequests, saveRequests } from '@/lib/actions';
 import { v4 as uuidv4 } from "uuid";
 import Link from 'next/link';
+import ChatWidget from './chat-widget';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -85,17 +86,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
-                         <SidebarMenuItem>
-                            <SidebarMenuButton
-                                isActive={pathname.startsWith('/assistente')}
-                                asChild
-                            >
-                                <Link href="/assistente">
-                                  <Bot />
-                                  <span>Assistente</span>
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarContent>
             </Sidebar>
@@ -119,6 +109,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
                 </DialogContent>
             </Dialog>
+            <ChatWidget />
         </div>
     );
 }

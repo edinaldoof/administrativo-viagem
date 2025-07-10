@@ -46,20 +46,6 @@ export default function Home() {
             </p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Assistente Virtual</CardTitle>
-            <Bot className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-                <Link href="/assistente" className="hover:underline">Conversar com IA</Link>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Tire dúvidas e consulte informações com nosso assistente.
-            </p>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
