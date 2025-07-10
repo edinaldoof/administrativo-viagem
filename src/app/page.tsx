@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -14,6 +15,7 @@ import {
   Download,
   FileUp,
   User,
+  Search,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -49,6 +51,7 @@ import { type TravelRequest } from "@/types";
 import { getRequests, saveRequests } from "@/lib/actions";
 import { Logo } from "@/components/logo";
 import { exportToPNG, exportToPDF, exportToExcel } from "@/lib/export";
+import { Input } from "@/components/ui/input";
 
 export default function Home() {
   const [requests, setRequests] = useState<TravelRequest[]>([]);
@@ -57,6 +60,7 @@ export default function Home() {
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<TravelRequest | null>(null);
   const [requestToDelete, setRequestToDelete] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const previewRef = React.useRef<HTMLDivElement>(null);
 
@@ -120,11 +124,14 @@ export default function Home() {
   };
   
   const getMainItinerary = (request: TravelRequest) => {
-    const firstPassenger = request.passengers[0];
+     const firstPassenger = request.passengers[0];
     if (!firstPassenger || !firstPassenger.itinerary || firstPassenger.itinerary.length === 0) {
       return 'N/A';
     }
-    return firstPassenger.itinerary.map(i => i.origin).join(', ');
+    // Pega o primeiro e o último destino para resumir a viagem
+    const firstLeg = firstPassenger.itinerary[0];
+    const lastLeg = firstPassenger.itinerary[firstPassenger.itinerary.length - 1];
+    return `${firstLeg.origin} → ${lastLeg.destination}`;
   }
 
   const getPassengerInfo = (request: TravelRequest) => {
@@ -137,6 +144,21 @@ export default function Home() {
     }
     return firstPassengerName;
   }
+
+  const filteredRequests = requests
+    .filter((request) => {
+      if (!searchTerm) return true;
+      const lowercasedTerm = searchTerm.toLowerCase();
+      const searchFields = [
+        request.title,
+        request.billing.account || "",
+        request.billing.webId || "",
+        ...request.passengers.map((p) => p.name),
+      ].join(" ").toLowerCase();
+
+      return searchFields.includes(lowercasedTerm);
+    })
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -151,16 +173,29 @@ export default function Home() {
       </header>
 
       <main className="container mx-auto p-4 md:p-8">
-        <h1 className="font-headline text-3xl font-bold tracking-tight mb-6">
-          Solicitações de Viagem
-        </h1>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <h1 className="font-headline text-3xl font-bold tracking-tight">
+            Solicitações de Viagem
+          </h1>
+          <div className="relative w-full md:w-auto md:min-w-[300px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Filtrar solicitações..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
         <div className="rounded-lg border shadow-sm">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Título</TableHead>
-                <TableHead className="hidden md:table-cell">Passageiro</TableHead>
-                <TableHead className="hidden md:table-cell">Itinerário Principal</TableHead>
+                <TableHead className="hidden lg:table-cell">Passageiro</TableHead>
+                <TableHead className="hidden xl:table-cell">Itinerário</TableHead>
+                <TableHead className="hidden md:table-cell">Conta</TableHead>
+                <TableHead className="hidden md:table-cell">WEB ID</TableHead>
                 <TableHead className="hidden lg:table-cell">Criado em</TableHead>
                 <TableHead>
                   <span className="sr-only">Ações</span>
@@ -168,22 +203,24 @@ export default function Home() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {requests.length > 0 ? (
-                requests.map((request) => (
+              {filteredRequests.length > 0 ? (
+                filteredRequests.map((request) => (
                   <TableRow key={request.id}>
                     <TableCell className="font-medium">{request.title}</TableCell>
-                    <TableCell className="hidden md:table-cell">
-                        <div className="flex items-center gap-1">
+                    <TableCell className="hidden lg:table-cell">
+                        <div className="flex items-center gap-2">
                             <User className="h-4 w-4 text-muted-foreground"/>
-                            <span>{getPassengerInfo(request)}</span>
+                            <span className="truncate max-w-[150px]" title={getPassengerInfo(request)}>{getPassengerInfo(request)}</span>
                         </div>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                         <div className="flex items-center gap-1">
+                    <TableCell className="hidden xl:table-cell">
+                         <div className="flex items-center gap-2">
                              <Plane className="h-4 w-4 text-muted-foreground"/>
-                            <span>{getMainItinerary(request)}</span>
+                            <span className="truncate max-w-[150px]" title={getMainItinerary(request)}>{getMainItinerary(request)}</span>
                          </div>
                     </TableCell>
+                     <TableCell className="hidden md:table-cell">{request.billing.account}</TableCell>
+                    <TableCell className="hidden md:table-cell">{request.billing.webId}</TableCell>
                     <TableCell className="hidden lg:table-cell">
                         <div className="flex items-center gap-1">
                             <Calendar className="h-4 w-4 text-muted-foreground"/>
@@ -225,8 +262,8 @@ export default function Home() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
-                    Nenhuma solicitação de viagem encontrada.
+                  <TableCell colSpan={7} className="h-24 text-center">
+                    {searchTerm ? "Nenhuma solicitação encontrada para sua busca." : "Nenhuma solicitação de viagem encontrada."}
                   </TableCell>
                 </TableRow>
               )}
