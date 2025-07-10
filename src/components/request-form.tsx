@@ -272,7 +272,7 @@ function ItinerarySubForm({ passengerIndex, form }: { passengerIndex: number, fo
             <h3 className="text-lg font-semibold flex items-center gap-2"><Plane /> Itinerário do Passageiro</h3>
             <div className="space-y-4">
                 {fields.map((field, index) => (
-                    <div key={field.id} className="p-4 border rounded-md space-y-4 relative bg-slate-50">
+                    <div key={field.id} className="p-4 border rounded-md space-y-4 relative bg-muted">
                         <h4 className="font-medium">Trecho {index + 1}</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField control={form.control} name={`passengers.${passengerIndex}.itinerary.${index}.origin`} render={({ field }) => (
