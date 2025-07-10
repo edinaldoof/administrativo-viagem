@@ -23,7 +23,7 @@ export const DocumentPreview = React.forwardRef<HTMLDivElement, DocumentPreviewP
     }
 
     return (
-      <div ref={ref} className="bg-white text-black p-8 rounded-lg shadow-lg" id="document-preview">
+      <div ref={ref} className="light bg-white text-black p-8 rounded-lg shadow-lg" id="document-preview">
         <header className="flex justify-between items-start mb-8">
           <div>
             <h1 className="text-3xl font-bold font-headline text-primary">{request.title}</h1>
@@ -43,8 +43,8 @@ export const DocumentPreview = React.forwardRef<HTMLDivElement, DocumentPreviewP
           <h2 className="text-xl font-headline font-bold mb-4 flex items-center gap-2"><User />Passageiros</h2>
           <div className="space-y-6">
             {request.passengers.map((passenger, index) => (
-              <Card key={passenger.id} className="bg-gray-50 overflow-hidden">
-                <CardHeader className="bg-gray-100">
+              <Card key={passenger.id} className="overflow-hidden">
+                <CardHeader>
                   <CardTitle className="text-lg">Passageiro {index + 1}: {passenger.name}</CardTitle>
                    <div className="text-sm text-muted-foreground grid grid-cols-2 gap-x-4">
                       <p><span className="font-semibold">CPF:</span> {passenger.cpf}</p>
@@ -57,7 +57,7 @@ export const DocumentPreview = React.forwardRef<HTMLDivElement, DocumentPreviewP
                       <h4 className="font-semibold mb-2 flex items-center gap-2 text-md"><Plane size={16} /> Itinerário</h4>
                       <div className="space-y-3 pl-2">
                         {passenger.itinerary?.map((segment) => (
-                           <Card key={segment.id} className="bg-white grid grid-cols-1 md:grid-cols-2 gap-4">
+                           <Card key={segment.id} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                <div className="p-4">
                                    <CardTitle className="text-base mb-2">{segment.origin} para {segment.destination}</CardTitle>
                                    <div className="text-sm space-y-1">
@@ -96,7 +96,7 @@ export const DocumentPreview = React.forwardRef<HTMLDivElement, DocumentPreviewP
 
         <section>
           <h2 className="text-xl font-headline font-bold mb-4 flex items-center gap-2"><Building />Informações de Faturamento</h2>
-          <Card className="bg-gray-50">
+          <Card>
             <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <p><span className="font-semibold">Centro de Custo:</span> {request.billing.costCenter}</p>
                 {request.billing.account && <p><span className="font-semibold">Conta do Projeto:</span> {request.billing.account}</p>}
