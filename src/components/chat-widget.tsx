@@ -15,7 +15,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', content: 'Olá! Como posso te ajudar hoje com suas viagens?' }
+    { role: 'model', content: 'Olá! Sou seu assistente de IA. Posso te ajudar a consultar solicitações de viagem, tirar dúvidas sobre o sistema e muito mais. Como posso ajudar?' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -47,13 +47,13 @@ export default function ChatWidget() {
   };
   
   useEffect(() => {
-    if (scrollAreaRef.current) {
+    if (isOpen && scrollAreaRef.current) {
       const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
       if (viewport) {
         viewport.scrollTop = viewport.scrollHeight;
       }
     }
-  }, [messages]);
+  }, [messages, isOpen]);
 
 
   return (
