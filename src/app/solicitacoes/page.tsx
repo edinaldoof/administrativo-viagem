@@ -176,7 +176,8 @@ export default function SolicitacoesPage() {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="p-4 md:p-8 pt-6">
+      <div className="max-w-6xl mx-auto space-y-4">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="font-headline text-3xl font-bold tracking-tight">
@@ -355,6 +356,7 @@ export default function SolicitacoesPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
     </div>
   );
 }

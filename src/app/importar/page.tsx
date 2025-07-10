@@ -137,56 +137,58 @@ export default function ImportarPage() {
   };
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Importar Solicitação com IA</h2>
-        <p className="text-muted-foreground">
-          Envie um arquivo PDF com os detalhes da viagem e a nossa IA irá preencher a solicitação para você.
-        </p>
-      </div>
-      
-      <div className="pt-6">
-        <div
-          {...getRootProps()}
-          className={`flex justify-center w-full rounded-lg border-2 border-dashed border-input p-12 text-center transition-colors ${
-            isDragActive ? 'border-primary bg-primary/10' : 'hover:border-primary/50'
-          } ${isExtracting ? 'cursor-wait' : file ? 'cursor-default hover:border-input' : 'cursor-pointer'}`}
-        >
-          {file ? (
-            <div className="space-y-4">
-              <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
-              <p className="text-lg font-medium">Arquivo selecionado: {file.name}</p>
-              <p className="text-sm text-muted-foreground">Clique no botão abaixo para iniciar a extração.</p>
-               <Button onClick={(e) => { e.stopPropagation(); handleExtract(); }} disabled={isExtracting} className="mt-4">
-                {isExtracting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Extraindo...
-                  </>
-                ) : (
-                  <>
-                    <Wand2 className="mr-2 h-4 w-4" />
-                    Extrair Informações
-                  </>
-                )}
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <FileUp className="mx-auto h-12 w-12 text-muted-foreground" />
-              <div className="flex text-sm leading-6 text-muted-foreground">
-                <label
-                  htmlFor="file-upload"
-                  className="relative cursor-pointer rounded-md font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 hover:text-primary/80"
-                >
-                  <span>Carregue um arquivo</span>
-                  <input {...getInputProps()} className="sr-only" />
-                </label>
-                <p className="pl-1">ou arraste e solte</p>
+    <div className="p-4 md:p-8 pt-6">
+      <div className="max-w-6xl mx-auto space-y-4">
+        <div className="space-y-2">
+          <h2 className="text-3xl font-bold tracking-tight">Importar Solicitação com IA</h2>
+          <p className="text-muted-foreground">
+            Envie um arquivo PDF com os detalhes da viagem e a nossa IA irá preencher a solicitação para você.
+          </p>
+        </div>
+        
+        <div className="pt-6">
+          <div
+            {...getRootProps()}
+            className={`flex justify-center w-full rounded-lg border-2 border-dashed border-input p-12 text-center transition-colors ${
+              isDragActive ? 'border-primary bg-primary/10' : 'hover:border-primary/50'
+            } ${isExtracting ? 'cursor-wait' : file ? 'cursor-default hover:border-input' : 'cursor-pointer'}`}
+          >
+            {file ? (
+              <div className="space-y-4">
+                <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
+                <p className="text-lg font-medium">Arquivo selecionado: {file.name}</p>
+                <p className="text-sm text-muted-foreground">Clique no botão abaixo para iniciar a extração.</p>
+                 <Button onClick={(e) => { e.stopPropagation(); handleExtract(); }} disabled={isExtracting} className="mt-4">
+                  {isExtracting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Extraindo...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="mr-2 h-4 w-4" />
+                      Extrair Informações
+                    </>
+                  )}
+                </Button>
               </div>
-              <p className="text-xs leading-5 text-muted-foreground">Apenas arquivos PDF.</p>
-            </div>
-          )}
+            ) : (
+              <div className="space-y-2">
+                <FileUp className="mx-auto h-12 w-12 text-muted-foreground" />
+                <div className="flex text-sm leading-6 text-muted-foreground">
+                  <label
+                    htmlFor="file-upload"
+                    className="relative cursor-pointer rounded-md font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 hover:text-primary/80"
+                  >
+                    <span>Carregue um arquivo</span>
+                    <input {...getInputProps()} className="sr-only" />
+                  </label>
+                  <p className="pl-1">ou arraste e solte</p>
+                </div>
+                <p className="text-xs leading-5 text-muted-foreground">Apenas arquivos PDF.</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
