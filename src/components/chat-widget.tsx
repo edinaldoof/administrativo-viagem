@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Loader2, Send, User, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,74 +21,6 @@ export default function ChatWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   
-  const [position, setPosition] = useState<{x: number, y: number} | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [didDrag, setDidDrag] = useState(false);
-  const dragStartPos = useRef({ x: 0, y: 0 });
-  const widgetRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Set initial position only on the client side
-    setPosition({ x: window.innerWidth - 80, y: window.innerHeight - 80 });
-  }, []);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (isOpen || !position) return;
-    setIsDragging(true);
-    setDidDrag(false); 
-    dragStartPos.current = {
-      x: e.clientX - position.x,
-      y: e.clientY - position.y,
-    };
-    e.preventDefault();
-  };
-
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isDragging || !widgetRef.current || !position) return;
-
-    // Se o movimento for maior que um pequeno threshold, considera-se arrasto.
-    if (Math.abs(e.clientX - (position.x + dragStartPos.current.x)) > 3 || Math.abs(e.clientY - (position.y + dragStartPos.current.y)) > 3) {
-      setDidDrag(true); 
-    }
-
-    let newX = e.clientX - dragStartPos.current.x;
-    let newY = e.clientY - dragStartPos.current.y;
-
-    const widgetRect = widgetRef.current.getBoundingClientRect();
-    newX = Math.max(0, Math.min(newX, window.innerWidth - widgetRect.width));
-    newY = Math.max(0, Math.min(newY, window.innerHeight - widgetRect.height));
-
-    setPosition({ x: newX, y: newY });
-  }, [isDragging, position]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-  }, []);
-  
-  const handleClick = () => {
-    // Só abre se não tiver ocorrido um arrasto
-    if (!didDrag) {
-      setIsOpen(true);
-    }
-    // Reseta o estado de arrasto para o próximo clique
-    setDidDrag(false);
-  };
-
-  useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-    } else {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    }
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, handleMouseMove, handleMouseUp]);
-
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
@@ -123,51 +55,28 @@ export default function ChatWidget() {
     }
   }, [messages]);
 
-  if (!position) {
-    return null; // Render nothing until the position is set on the client
-  }
 
   return (
-    <div
-      ref={widgetRef}
-      className="fixed z-50"
-      style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        touchAction: 'none',
-      }}
-    >
-      {!isOpen && (
-        <Button
-          onMouseDown={handleMouseDown}
-          onClick={handleClick}
-          className={cn(
-            "rounded-full w-16 h-16 bg-primary shadow-lg transition-transform will-change-transform",
-            isDragging ? "cursor-grabbing scale-110" : "cursor-grab hover:scale-110"
-          )}
-        >
-          <Bot className="w-8 h-8" />
-        </Button>
-      )}
-
+    <div className="fixed bottom-6 right-6 z-50">
       {isOpen && (
-         <Card className={cn(
-            "w-[380px] h-[600px] flex flex-col shadow-2xl absolute bottom-0 right-0",
-            "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=right]:slide-in-from-left-2"
+         <Card 
+          className={cn(
+            "w-[380px] h-[600px] flex flex-col shadow-2xl origin-bottom-right",
+            "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-bottom-2 data-[state=closed]:slide-out-to-right-2 data-[state=open]:slide-in-from-bottom-2 data-[state=open]:slide-in-from-right-2"
           )}
           data-state={isOpen ? "open" : "closed"}
          >
-          <CardHeader className="flex flex-row items-center justify-between border-b">
-            <div className='flex items-center gap-2'>
-              <Avatar className="h-8 w-8 bg-primary/20 text-primary">
-                  <AvatarFallback><Bot size={20}/></AvatarFallback>
+          <CardHeader className="flex flex-row items-center justify-between border-b bg-muted/50">
+            <div className='flex items-center gap-3'>
+              <Avatar className="h-9 w-9 bg-primary/20 text-primary border border-primary/30">
+                  <AvatarFallback><Bot size={22}/></AvatarFallback>
               </Avatar>
               <div>
                 <CardTitle className="font-headline text-lg">Assistente Fadex</CardTitle>
                 <CardDescription className="text-xs">Potencializado por IA</CardDescription>
               </div>
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsOpen(false)}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => setIsOpen(false)}>
               <X className="h-5 w-5" />
               <span className="sr-only">Fechar</span>
             </Button>
@@ -183,21 +92,21 @@ export default function ChatWidget() {
                     }`}
                   >
                     {message.role === 'model' && (
-                      <Avatar className="flex-shrink-0 bg-primary/20 text-primary">
+                      <Avatar className="flex-shrink-0 bg-primary/20 text-primary border border-primary/20">
                         <AvatarFallback><Bot /></AvatarFallback>
                       </Avatar>
                     )}
                     <div
-                      className={`max-w-xs rounded-lg px-4 py-2 ${
+                      className={`max-w-xs rounded-lg px-4 py-2 shadow-sm ${
                         message.role === 'user'
                           ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted'
+                          : 'bg-card border'
                       }`}
                     >
                       <p className="text-sm break-words whitespace-pre-wrap">{message.content}</p>
                     </div>
                     {message.role === 'user' && (
-                       <Avatar className="flex-shrink-0">
+                       <Avatar className="flex-shrink-0 border">
                         <AvatarFallback><User /></AvatarFallback>
                       </Avatar>
                     )}
@@ -216,7 +125,7 @@ export default function ChatWidget() {
               </div>
             </ScrollArea>
           </CardContent>
-          <CardFooter className="p-4 border-t">
+          <CardFooter className="p-4 border-t bg-muted/50">
             <form onSubmit={handleSendMessage} className="flex items-center gap-2 w-full">
               <Input
                 value={input}
@@ -233,6 +142,14 @@ export default function ChatWidget() {
           </CardFooter>
         </Card>
       )}
+
+      <Button
+          onClick={() => setIsOpen(prev => !prev)}
+          className="rounded-full w-16 h-16 bg-primary shadow-lg hover:shadow-2xl hover:scale-110 transform transition-all duration-300 ease-in-out mt-4"
+          aria-label={isOpen ? "Fechar chat" : "Abrir chat"}
+        >
+          {isOpen ? <X className="w-7 h-7" /> : <Bot className="w-8 h-8" />}
+        </Button>
     </div>
   );
 }
