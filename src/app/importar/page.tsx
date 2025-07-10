@@ -3,7 +3,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { FileUp, Loader2, Wand2 } from 'lucide-react';
+import { FileUp, Loader2, Wand2, FileText, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { extractInfoFromPdf } from '@/ai/flows/extract-info-flow';
@@ -45,6 +45,7 @@ export default function ImportarPage() {
     onDrop,
     accept: { 'application/pdf': ['.pdf'] },
     multiple: false,
+    disabled: isExtracting,
   });
 
   const handleExtract = async () => {
@@ -113,42 +114,44 @@ export default function ImportarPage() {
           {...getRootProps()}
           className={`flex justify-center w-full rounded-lg border-2 border-dashed border-input p-12 text-center transition-colors ${
             isDragActive ? 'border-primary bg-primary/10' : 'hover:border-primary/50'
-          }`}
+          } ${file ? 'cursor-default hover:border-input' : 'cursor-pointer'}`}
         >
-          <div className="space-y-2">
-            <FileUp className="mx-auto h-12 w-12 text-muted-foreground" />
-            <div className="flex text-sm leading-6 text-muted-foreground">
-              <label
-                htmlFor="file-upload"
-                className="relative cursor-pointer rounded-md font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 hover:text-primary/80"
-              >
-                <span>Carregue um arquivo</span>
-                <input {...getInputProps()} className="sr-only" />
-              </label>
-              <p className="pl-1">ou arraste e solte</p>
+          {file ? (
+            <div className="space-y-4">
+              <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
+              <p className="text-lg font-medium">Arquivo selecionado: {file.name}</p>
+              <p className="text-sm text-muted-foreground">Clique no botão abaixo para iniciar a extração.</p>
+               <Button onClick={(e) => { e.stopPropagation(); handleExtract(); }} disabled={isExtracting} className="mt-4">
+                {isExtracting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Extraindo...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="mr-2 h-4 w-4" />
+                    Extrair Informações
+                  </>
+                )}
+              </Button>
             </div>
-            <p className="text-xs leading-5 text-muted-foreground">Apenas arquivos PDF.</p>
-          </div>
+          ) : (
+            <div className="space-y-2">
+              <FileUp className="mx-auto h-12 w-12 text-muted-foreground" />
+              <div className="flex text-sm leading-6 text-muted-foreground">
+                <label
+                  htmlFor="file-upload"
+                  className="relative cursor-pointer rounded-md font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 hover:text-primary/80"
+                >
+                  <span>Carregue um arquivo</span>
+                  <input {...getInputProps()} className="sr-only" />
+                </label>
+                <p className="pl-1">ou arraste e solte</p>
+              </div>
+              <p className="text-xs leading-5 text-muted-foreground">Apenas arquivos PDF.</p>
+            </div>
+          )}
         </div>
-
-        {file && (
-          <div className="mt-6 text-center">
-            <p className="text-lg font-medium">Arquivo selecionado: {file.name}</p>
-            <Button onClick={handleExtract} disabled={isExtracting} className="mt-4">
-              {isExtracting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Extraindo...
-                </>
-              ) : (
-                <>
-                  <Wand2 className="mr-2 h-4 w-4" />
-                  Extrair Informações
-                </>
-              )}
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   );
