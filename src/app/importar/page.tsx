@@ -12,6 +12,14 @@ import { saveRequests, getRequests } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 
+const fileToBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+
 export default function ImportarPage() {
   const [file, setFile] = useState<File | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
@@ -44,51 +52,47 @@ export default function ImportarPage() {
 
     setIsExtracting(true);
     try {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = async () => {
-        const base64File = reader.result as string;
-        
-        const extractedData = await extractInfoFromPdf({
-            pdfDataUri: base64File,
-        });
+      const base64File = await fileToBase64(file);
+      
+      const extractedData = await extractInfoFromPdf({
+          pdfDataUri: base64File,
+      });
 
-        const newRequest: TravelRequest = {
-            id: uuidv4(),
-            createdAt: new Date(),
-            status: "Draft",
-            ...extractedData,
-            passengers: extractedData.passengers.map(p => ({
-                ...p,
-                id: uuidv4(),
-                birthDate: p.birthDate ? new Date(p.birthDate) : new Date(),
-                itinerary: (p.itinerary || []).map(i => ({
-                    ...i,
-                    id: uuidv4(),
-                    departureDate: i.departureDate ? new Date(i.departureDate) : new Date(),
-                    returnDate: i.returnDate ? new Date(i.returnDate) : undefined,
-                })),
-                documents: [],
-            }))
-        };
-
-        const currentRequests = getRequests();
-        saveRequests([...currentRequests, newRequest]);
-        
-        toast({
-          title: 'Sucesso!',
-          description: 'Informações extraídas e nova solicitação criada.',
-        });
-        
-        router.push('/solicitacoes');
+      const newRequest: TravelRequest = {
+          id: uuidv4(),
+          createdAt: new Date(),
+          status: "Draft",
+          ...extractedData,
+          passengers: extractedData.passengers.map(p => ({
+              ...p,
+              id: uuidv4(),
+              birthDate: p.birthDate ? new Date(p.birthDate) : new Date(),
+              itinerary: (p.itinerary || []).map(i => ({
+                  ...i,
+                  id: uuidv4(),
+                  departureDate: i.departureDate ? new Date(i.departureDate) : new Date(),
+                  returnDate: i.returnDate ? new Date(i.returnDate) : undefined,
+              })),
+              documents: [],
+          }))
       };
-    } catch (error) {
+
+      const currentRequests = getRequests();
+      saveRequests([...currentRequests, newRequest]);
+      
+      toast({
+        title: 'Sucesso!',
+        description: 'Informações extraídas e nova solicitação criada.',
+      });
+      
+      router.push('/solicitacoes');
+
+    } catch (error: any) {
       console.error('Error extracting information:', error);
       toast({
         variant: 'destructive',
         title: 'Erro na extração',
-        description:
-          'Não foi possível extrair informações do PDF. Verifique o console para mais detalhes.',
+        description: error.message || 'Não foi possível extrair informações do PDF. Verifique o console para mais detalhes.',
       });
     } finally {
       setIsExtracting(false);
