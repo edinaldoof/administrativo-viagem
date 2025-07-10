@@ -139,7 +139,6 @@ export default function SolicitacoesPage() {
     if (!firstPassenger || !firstPassenger.itinerary || firstPassenger.itinerary.length === 0) {
       return 'N/A';
     }
-    // Pega o primeiro e o último destino para resumir a viagem
     const firstLeg = firstPassenger.itinerary[0];
     const lastLeg = firstPassenger.itinerary[firstPassenger.itinerary.length - 1];
     return `${firstLeg.origin} → ${lastLeg.destination}`;
@@ -194,40 +193,42 @@ export default function SolicitacoesPage() {
             Gerencie, visualize e exporte todas as suas solicitações de viagem.
           </p>
         </div>
-          <Button onClick={openFormForNew}>
+        <Button onClick={openFormForNew}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Nova Solicitação
         </Button>
       </div>
-        <div className="flex w-full md:max-w-md items-center gap-2">
-          <div className="relative flex-grow">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-              placeholder="Filtrar solicitações..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-              />
-          </div>
-          <Select value={filterType} onValueChange={(value) => setFilterType(value as FilterType)}>
-              <SelectTrigger className="w-[150px]">
-                  <SelectValue placeholder="Filtrar por" />
-              </SelectTrigger>
-              <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="title">Título</SelectItem>
-                  <SelectItem value="passenger">Passageiro</SelectItem>
-                  <SelectItem value="account">Conta</SelectItem>
-                  <SelectItem value="webId">WEB ID</SelectItem>
-              </SelectContent>
-          </Select>
+
+      <div className="flex items-center gap-2">
+        <div className="relative flex-grow">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Filtrar solicitações..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
         </div>
+        <Select value={filterType} onValueChange={(value) => setFilterType(value as FilterType)}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filtrar por" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os campos</SelectItem>
+            <SelectItem value="title">Título</SelectItem>
+            <SelectItem value="passenger">Passageiro</SelectItem>
+            <SelectItem value="account">Conta</SelectItem>
+            <SelectItem value="webId">WEB ID</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="rounded-lg border shadow-sm">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead style={{ width: '25%' }}>Título</TableHead>
-              <TableHead className="hidden md:table-cell" style={{ width: '20%' }}>Passageiro</TableHead>
+              <TableHead style={{ width: '20%' }}>Passageiro</TableHead>
               <TableHead className="hidden lg:table-cell" style={{ width: '20%' }}>Itinerário</TableHead>
               <TableHead style={{ width: '10%' }}>Status</TableHead>
               <TableHead className="hidden lg:table-cell" style={{ width: '10%' }}>Conta</TableHead>
@@ -242,7 +243,7 @@ export default function SolicitacoesPage() {
               filteredRequests.map((request) => (
                 <TableRow key={request.id}>
                   <TableCell className="font-medium">{request.title}</TableCell>
-                  <TableCell className="hidden md:table-cell">
+                  <TableCell>
                       <div className="flex items-center gap-2">
                           <User className="h-4 w-4 text-muted-foreground"/>
                           <span className="truncate max-w-[150px]" title={getPassengerInfo(request)}>{getPassengerInfo(request)}</span>
