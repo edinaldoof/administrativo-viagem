@@ -34,8 +34,8 @@ export default function Home() {
 
 
   return (
-    <div className="flex flex-col">
-      <div className="space-y-2 mb-8">
+    <div className="p-4 md:p-8">
+      <div className="mb-8">
         <h2 className="text-3xl font-headline font-bold tracking-tight">
           Painel de Controle
         </h2>

@@ -183,9 +183,9 @@ export default function SolicitacoesPage() {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   return (
-    <div className="flex flex-col">
+    <div className="p-4 md:p-8">
        <div className="flex justify-between items-center mb-4">
-        <div className="space-y-2">
+        <div>
           <h1 className="font-headline text-3xl font-bold tracking-tight">
             Solicitações de Viagem
           </h1>
