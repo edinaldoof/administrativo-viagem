@@ -23,31 +23,34 @@ export default function ChatWidget() {
   
   const [position, setPosition] = useState<{x: number, y: number} | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [didDrag, setDidDrag] = useState(false);
   const dragStartPos = useRef({ x: 0, y: 0 });
   const widgetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Set initial position only on the client side
     setPosition({ x: window.innerWidth - 80, y: window.innerHeight - 80 });
   }, []);
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (isOpen || !position) return; // Don't drag when chat is open
+    if (isOpen || !position) return;
     setIsDragging(true);
+    setDidDrag(false); 
     dragStartPos.current = {
       x: e.clientX - position.x,
       y: e.clientY - position.y,
     };
-    // Prevent text selection while dragging
     e.preventDefault();
   };
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isDragging || !widgetRef.current || !position) return;
 
+    setDidDrag(true); 
+
     let newX = e.clientX - dragStartPos.current.x;
     let newY = e.clientY - dragStartPos.current.y;
 
-    // Constrain movement within the viewport
     const widgetRect = widgetRef.current.getBoundingClientRect();
     newX = Math.max(0, Math.min(newX, window.innerWidth - widgetRect.width));
     newY = Math.max(0, Math.min(newY, window.innerHeight - widgetRect.height));
@@ -59,6 +62,12 @@ export default function ChatWidget() {
     setIsDragging(false);
   }, []);
 
+  const handleClick = () => {
+    if (!didDrag) {
+      setIsOpen(true);
+    }
+  };
+  
   useEffect(() => {
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
@@ -125,7 +134,7 @@ export default function ChatWidget() {
       {!isOpen && (
         <Button
           onMouseDown={handleMouseDown}
-          onClick={() => !isDragging && setIsOpen(true)}
+          onClick={handleClick}
           className={cn(
             "rounded-full w-16 h-16 bg-primary shadow-lg transition-transform",
             isDragging ? "cursor-grabbing scale-110" : "cursor-grab hover:scale-110"
