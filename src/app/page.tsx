@@ -4,23 +4,10 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { ListChecks, Users, FileSignature, ArrowRight, PieChart } from "lucide-react";
+import { ListChecks, Users, FileSignature, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { getRequests } from '@/lib/actions';
-import { type TravelRequest, type TravelRequestStatus } from '@/types';
-import { Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip, Cell } from "recharts";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-
-const STATUS_CONFIG: ChartConfig = {
-  Draft: { label: "Rascunho", color: "hsl(var(--chart-1))" },
-  Submitted: { label: "Enviado", color: "hsl(var(--chart-2))" },
-  Approved: { label: "Aprovado", color: "hsl(var(--chart-3))" },
-  Rejected: { label: "Rejeitado", color: "hsl(var(--chart-4))" },
-};
+import { type TravelRequest } from '@/types';
 
 export default function Home() {
   const [requests, setRequests] = useState<TravelRequest[]>([]);
@@ -35,19 +22,6 @@ export default function Home() {
   const recentRequests = [...requests]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
-
-  const statusData = React.useMemo(() => {
-    const counts = requests.reduce((acc, req) => {
-      acc[req.status] = (acc[req.status] || 0) + 1;
-      return acc;
-    }, {} as Record<TravelRequestStatus, number>);
-
-    return Object.entries(counts).map(([status, count]) => ({
-      status,
-      count,
-      fill: STATUS_CONFIG[status as TravelRequestStatus]?.color || '#ccc',
-    }));
-  }, [requests]);
   
   const getMainItinerarySummary = (request: TravelRequest) => {
     const firstPassenger = request.passengers[0];
@@ -113,11 +87,11 @@ export default function Home() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-1 lg:col-span-4">
+      <div className="grid gap-4">
+        <Card>
           <CardHeader>
             <CardTitle>Atividade Recente</CardTitle>
-            <CardDescription>
+            <CardDescription className="text-left">
               As últimas 5 solicitações criadas ou atualizadas.
             </CardDescription>
           </CardHeader>
@@ -149,42 +123,6 @@ export default function Home() {
             )}
           </CardContent>
         </Card>
-         <Card className="col-span-1 lg:col-span-3">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <PieChart className="h-5 w-5" />
-                  Status das Solicitações
-                </CardTitle>
-                <CardDescription>Distribuição de status das solicitações.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {statusData.length > 0 ? (
-                 <ChartContainer config={STATUS_CONFIG} className="h-[200px] w-full">
-                    <RechartsPieChart>
-                      <Tooltip
-                        cursor={false}
-                        content={<ChartTooltipContent nameKey="count" hideLabel />}
-                      />
-                      <Pie
-                        data={statusData}
-                        dataKey="count"
-                        nameKey="status"
-                        innerRadius={50}
-                        strokeWidth={5}
-                      >
-                         {statusData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.fill} />
-                          ))}
-                      </Pie>
-                    </RechartsPieChart>
-                  </ChartContainer>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-[200px] text-center">
-                  <p className="text-sm text-muted-foreground">Nenhuma solicitação para exibir.</p>
-                </div>
-              )}
-            </CardContent>
-         </Card>
       </div>
 
     </div>

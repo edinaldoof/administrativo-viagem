@@ -14,10 +14,10 @@ import {
   Download,
   Search,
   Calendar,
-  CheckCircle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -46,12 +46,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useToast } from "@/hooks/use-toast";
 import { RequestForm } from "@/components/request-form";
 import { DocumentPreview } from "@/components/document-preview";
-import { type TravelRequest, type TravelRequestStatus } from "@/types";
+import { type TravelRequest } from "@/types";
 import { getRequests, saveRequests } from "@/lib/actions";
 import { exportToPNG, exportToPDF, exportToExcel } from "@/lib/export";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { StatusBadge } from "@/components/status-badge";
 
 
 type FilterType = 'all' | 'title' | 'passenger' | 'account' | 'webId';
@@ -126,21 +125,6 @@ export default function SolicitacoesPage() {
     setIsFormOpen(false);
     setSelectedRequest(null);
   };
-
-  const handleStatusChange = (id: string, newStatus: TravelRequestStatus) => {
-    const updatedRequests = requests.map((req) => 
-      req.id === id ? { ...req, status: newStatus } : req
-    );
-    handleSaveRequests(updatedRequests);
-    toast({
-      description: (
-        <div className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 text-green-500" /> 
-            <span>Status da solicitação atualizado para <strong>{newStatus}</strong>.</span>
-        </div>
-      )
-    });
-  };
   
   const getMainItinerary = (request: TravelRequest) => {
      const firstPassenger = request.passengers[0];
@@ -193,8 +177,8 @@ export default function SolicitacoesPage() {
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0 md:space-x-4">
-          <div className="space-y-2">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center md:space-x-4">
+          <div className="space-y-2 mb-4 md:mb-0">
             <h1 className="font-headline text-3xl font-bold tracking-tight">
               Solicitações de Viagem
             </h1>
@@ -263,10 +247,7 @@ export default function SolicitacoesPage() {
                          </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      <StatusBadge
-                        status={request.status}
-                        onStatusChange={(newStatus) => handleStatusChange(request.id, newStatus)}
-                      />
+                      <Badge variant="outline">{request.status}</Badge>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">{request.billing.account}</TableCell>
                     <TableCell className="hidden lg:table-cell">
