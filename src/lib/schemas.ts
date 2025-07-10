@@ -47,6 +47,8 @@ export const passengerSchema = z.object({
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres."),
   cpf: z.string().refine(validateCpf, { message: "CPF inválido." }),
   birthDate: z.date({ required_error: "A data de nascimento é obrigatória." }),
+  email: z.string().email({ message: "E-mail inválido." }).optional().or(z.literal('')),
+  phone: z.string().optional(),
   documents: z.array(fileSchema).optional().default([]),
   itinerary: z.array(itinerarySchema).min(1, "É necessário pelo menos um trecho no itinerário."),
 });
@@ -68,6 +70,8 @@ export const passengerProfileSchema = z.object({
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres."),
   cpf: z.string().refine(validateCpf, { message: "CPF inválido." }),
   birthDate: z.date({ required_error: "A data de nascimento é obrigatória." }),
+  email: z.string().email({ message: "E-mail inválido." }).optional().or(z.literal('')),
+  phone: z.string().optional(),
 });
 
 export type TravelRequestFormValues = z.infer<typeof travelRequestSchema>;

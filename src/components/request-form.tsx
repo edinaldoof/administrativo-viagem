@@ -67,6 +67,8 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
                 name: "", 
                 cpf: "", 
                 birthDate: new Date(),
+                email: "",
+                phone: "",
                 documents: [], 
                 itinerary: [{ id: uuidv4(), origin: "", destination: "", departureDate: new Date(), isRoundTrip: false, ciaAerea: "", voo: "", horarios: "" }] 
             }],
@@ -87,6 +89,8 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
       if (foundPassenger) {
         form.setValue(`passengers.${index}.name`, foundPassenger.name);
         form.setValue(`passengers.${index}.birthDate`, new Date(foundPassenger.birthDate));
+        form.setValue(`passengers.${index}.email`, foundPassenger.email || '');
+        form.setValue(`passengers.${index}.phone`, foundPassenger.phone || '');
       }
     }
   }, [form, passengerDb]);
@@ -99,23 +103,22 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
 
     for (const passenger of data.passengers) {
         const existingPassengerIndex = updatedPassengerDb.findIndex(p => p.cpf === passenger.cpf);
+        const profileData = {
+          id: existingPassengerIndex > -1 ? updatedPassengerDb[existingPassengerIndex].id : uuidv4(),
+          name: passenger.name,
+          cpf: passenger.cpf,
+          birthDate: passenger.birthDate,
+          email: passenger.email,
+          phone: passenger.phone,
+        };
+
         if (existingPassengerIndex > -1) {
-            // Atualiza se houver mudança (opcional, mas bom ter)
-            updatedPassengerDb[existingPassengerIndex] = {
-                ...updatedPassengerDb[existingPassengerIndex],
-                name: passenger.name,
-                birthDate: passenger.birthDate
-            };
+            // Atualiza se houver mudança
+            updatedPassengerDb[existingPassengerIndex] = profileData;
         } else {
             // Adiciona novo passageiro à lista para salvar
-            const newProfile: PassengerProfile = {
-                id: uuidv4(),
-                name: passenger.name,
-                cpf: passenger.cpf,
-                birthDate: passenger.birthDate
-            };
-            newPassengersToSave.push(newProfile);
-            updatedPassengerDb.push(newProfile);
+            newPassengersToSave.push(profileData);
+            updatedPassengerDb.push(profileData);
         }
     }
     
@@ -126,7 +129,6 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
             description: `${newPassengersToSave.length} novo(s) passageiro(s) foram adicionados à sua lista.`
         });
     }
-
 
     // 2. Criar o objeto da solicitação e chamar o onSubmit
     const fullData: TravelRequest = {
@@ -212,7 +214,7 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
                         Passageiro {index + 1}: {form.watch(`passengers.${index}.name`) || "Novo Passageiro"}
                      </AccordionTrigger>
                      <AccordionContent className="space-y-4 pt-2">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <FormField
                               control={form.control}
                               name={`passengers.${index}.cpf`}
@@ -235,7 +237,9 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
                                   </FormItem>
                               )}
                           />
-                          <FormField control={form.control} name={`passengers.${index}.birthDate`} render={({ field }) => (
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                           <FormField control={form.control} name={`passengers.${index}.birthDate`} render={({ field }) => (
                               <FormItem className="flex flex-col"><FormLabel>Data de Nascimento</FormLabel>
                                   <Popover><PopoverTrigger asChild>
                                       <FormControl>
@@ -250,7 +254,29 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
                                   </PopoverContent></Popover>
                               <FormMessage /></FormItem>
                           )} />
+                           <FormField
+                              control={form.control}
+                              name={`passengers.${index}.email`}
+                              render={({ field }) => (
+                                  <FormItem>
+                                      <FormLabel>E-mail (Opcional)</FormLabel>
+                                      <FormControl><Input type="email" placeholder="joao.silva@exemplo.com" {...field} /></FormControl>
+                                      <FormMessage />
+                                  </FormItem>
+                              )}
+                          />
                         </div>
+                         <FormField
+                            control={form.control}
+                            name={`passengers.${index}.phone`}
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Telefone (Opcional)</FormLabel>
+                                    <FormControl><Input placeholder="(99) 99999-9999" {...field} /></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                          <Controller
                             control={form.control}
                             name={`passengers.${index}.documents`}
@@ -272,7 +298,7 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
                   </AccordionItem>
                 ))}
              </Accordion>
-             <Button type="button" variant="outline" onClick={() => appendPassenger({ id: uuidv4(), name: "", cpf: "", birthDate: new Date(), documents: [], itinerary: [{id: uuidv4(), origin: "", destination: "", departureDate: new Date(), isRoundTrip: false, ciaAerea: "", voo: "", horarios: ""}] })}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Passageiro</Button>
+             <Button type="button" variant="outline" onClick={() => appendPassenger({ id: uuidv4(), name: "", cpf: "", birthDate: new Date(), email: "", phone: "", documents: [], itinerary: [{id: uuidv4(), origin: "", destination: "", departureDate: new Date(), isRoundTrip: false, ciaAerea: "", voo: "", horarios: ""}] })}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Passageiro</Button>
         </div>
 
         <Button type="submit" className="w-full">
@@ -398,5 +424,3 @@ function ItinerarySubForm({ passengerIndex, form }: { passengerIndex: number, fo
         </div>
     );
 }
-
-    

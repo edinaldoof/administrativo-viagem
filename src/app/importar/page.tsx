@@ -85,19 +85,29 @@ export default function ImportarPage() {
       // Verifica e salva novos passageiros
       const passengerDb = getPassengers();
       const newPassengersToSave: PassengerProfile[] = [];
+      const updatedPassengerDb = [...passengerDb];
+
       for (const passenger of newRequest.passengers) {
-          const exists = passengerDb.some(p => p.cpf === passenger.cpf);
-          if (!exists) {
-              newPassengersToSave.push({
-                  id: uuidv4(),
-                  name: passenger.name,
-                  cpf: passenger.cpf,
-                  birthDate: passenger.birthDate
-              });
+          const existingPassengerIndex = updatedPassengerDb.findIndex(p => p.cpf === passenger.cpf);
+          const profileData: PassengerProfile = {
+              id: existingPassengerIndex > -1 ? updatedPassengerDb[existingPassengerIndex].id : uuidv4(),
+              name: passenger.name,
+              cpf: passenger.cpf,
+              birthDate: passenger.birthDate,
+              email: passenger.email,
+              phone: passenger.phone,
+          };
+
+          if (existingPassengerIndex > -1) {
+              updatedPassengerDb[existingPassengerIndex] = profileData;
+          } else {
+              newPassengersToSave.push(profileData);
+              updatedPassengerDb.push(profileData);
           }
       }
+      
       if (newPassengersToSave.length > 0) {
-          savePassengers([...passengerDb, ...newPassengersToSave]);
+          savePassengers(updatedPassengerDb);
           toast({
               title: 'Passageiros Adicionados!',
               description: `${newPassengersToSave.length} novo(s) passageiro(s) foram adicionados à sua lista.`,
@@ -137,7 +147,7 @@ export default function ImportarPage() {
           {...getRootProps()}
           className={`flex justify-center w-full rounded-lg border-2 border-dashed border-input p-12 text-center transition-colors ${
             isDragActive ? 'border-primary bg-primary/10' : 'hover:border-primary/50'
-          } ${file ? 'cursor-default hover:border-input' : 'cursor-pointer'}`}
+          } ${isExtracting ? 'cursor-wait' : file ? 'cursor-default hover:border-input' : 'cursor-pointer'}`}
         >
           {file ? (
             <div className="space-y-4">

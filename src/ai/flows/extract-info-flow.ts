@@ -77,7 +77,7 @@ function extrairFaturamento(texto: string) {
  * @returns {object|null} Um objeto com os dados do passageiro ou null.
  */
 function extrairPassageiro(texto: string) {
-    const passageiro: { name?: string; cpf?: string | null; birthDate?: string | null } = {};
+    const passageiro: { name?: string; cpf?: string | null; birthDate?: string | null; email?: string | null; phone?: string | null; } = {};
     const nomeCompletoMatch = texto.match(/CPF E NOME:\s*[0-9.-]+\s*-\s*([A-Za-z\s]+)/i);
     if (nomeCompletoMatch) {
         passageiro.name = nomeCompletoMatch[1].trim();
@@ -85,6 +85,8 @@ function extrairPassageiro(texto: string) {
 
     passageiro.cpf = extrairCampo(texto, /CPF E NOME:\s*([0-9.-]+)/i);
     passageiro.birthDate = extrairCampo(texto, /DATA DE NASCIMENTO:\s*(\d{2}\/\d{2}\/\d{4})/i);
+    passageiro.email = extrairCampo(texto, /E-MAIL:\s*(\S+@\S+\.\S+)/i);
+    passageiro.phone = extrairCampo(texto, /(?:TELEFONE|CELULAR):\s*([\d\s().-]+)/i);
 
     return passageiro.name ? passageiro : null;
 }
@@ -199,6 +201,8 @@ const extractInfoFlow = ai.defineFlow(
                 name: passengerData.name || "",
                 cpf: passengerData.cpf || "",
                 birthDate: parseDate(passengerData.birthDate) || new Date(),
+                email: passengerData.email || "",
+                phone: passengerData.phone || "",
                 itinerary: extrairItinerarios(textoNormalizado),
                 documents: [],
             }

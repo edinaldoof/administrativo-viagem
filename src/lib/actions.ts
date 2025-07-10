@@ -40,7 +40,11 @@ export const getPassengers = (): PassengerProfile[] => {
   }
   try {
     const stored = window.localStorage.getItem(PASSENGERS_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    if (stored) {
+      // Garantir que as datas sejam objetos Date
+      return JSON.parse(stored).map((p: any) => ({...p, birthDate: new Date(p.birthDate)}));
+    }
+    return [];
   } catch (error) {
     console.error("Failed to parse passengers from localStorage", error);
     return [];

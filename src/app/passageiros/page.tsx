@@ -83,7 +83,7 @@ export default function PassageirosPage() {
   };
 
   const openFormForNew = () => {
-    form.reset({ id: uuidv4(), name: '', cpf: '', birthDate: new Date() });
+    form.reset({ id: uuidv4(), name: '', cpf: '', birthDate: new Date(), email: '', phone: '' });
     setSelectedPassenger(null);
     setIsFormOpen(true);
   };
@@ -193,7 +193,7 @@ export default function PassageirosPage() {
       </div>
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{selectedPassenger ? 'Editar Passageiro' : 'Novo Passageiro'}</DialogTitle>
           </DialogHeader>
@@ -244,6 +244,32 @@ export default function PassageirosPage() {
                             <Calendar locale={ptBR} mode="single" selected={field.value} onSelect={field.onChange} captionLayout="dropdown-buttons" fromYear={1920} toYear={new Date().getFullYear()} />
                         </PopoverContent>
                     </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>E-mail (Opcional)</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="joao.silva@exemplo.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Telefone (Opcional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="(99) 99999-9999" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

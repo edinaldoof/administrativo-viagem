@@ -5,7 +5,7 @@ import React from "react";
 import { type TravelRequest } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { User, Plane, Building, FileText, Map } from "lucide-react";
+import { User, Plane, Building, FileText, Map, Mail, Phone } from "lucide-react";
 import RouteMap from "./route-map";
 
 type DocumentPreviewProps = {
@@ -46,9 +46,11 @@ export const DocumentPreview = React.forwardRef<HTMLDivElement, DocumentPreviewP
               <Card key={passenger.id} className="overflow-hidden">
                 <CardHeader>
                   <CardTitle className="text-lg">Passageiro {index + 1}: {passenger.name}</CardTitle>
-                   <CardDescription className="grid grid-cols-2 gap-x-4">
+                   <CardDescription className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1">
                       <span><span className="font-semibold">CPF:</span> {passenger.cpf}</span>
                       <span><span className="font-semibold">Nascimento:</span> {new Date(passenger.birthDate).toLocaleDateString()}</span>
+                       {passenger.email && <span className="flex items-center gap-1.5"><Mail size={14}/> {passenger.email}</span>}
+                       {passenger.phone && <span className="flex items-center gap-1.5"><Phone size={14}/> {passenger.phone}</span>}
                    </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-4 space-y-6">

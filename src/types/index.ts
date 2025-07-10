@@ -25,6 +25,8 @@ export type Passenger = {
   name: string;
   cpf: string;
   birthDate: Date;
+  email?: string;
+  phone?: string;
   documents: DocumentFile[];
   itinerary: ItinerarySegment[];
 };
@@ -53,6 +55,8 @@ export type PassengerProfile = {
   name: string;
   cpf: string;
   birthDate: Date;
+  email?: string;
+  phone?: string;
 };
 
 // --- Tipos para o Chat ---
