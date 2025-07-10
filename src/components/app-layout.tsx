@@ -78,22 +78,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
-                         <SidebarMenuItem>
-                            <SidebarMenuButton
-                                onClick={() => setIsFormOpen(true)}
-                            >
-                                <PlusCircle />
-                                <span>Nova Solicitação</span>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
                         <SidebarMenuItem>
                             <SidebarMenuButton
                                 isActive={pathname.startsWith('/importar')}
                                 asChild
                             >
                                 <Link href="/importar">
-                                  <FileUp />
-                                  <span>Importar Requisição</span>
+                                  <PlusCircle />
+                                  <span>Criar Requisição</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -129,3 +121,5 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
     );
 }
+
+    
