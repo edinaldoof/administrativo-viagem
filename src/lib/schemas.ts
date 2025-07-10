@@ -62,4 +62,12 @@ export const travelRequestSchema = z.object({
   })
 });
 
+// Esquema para o formulário de cadastro de passageiro
+export const passengerProfileSchema = z.object({
+  id: z.string(),
+  name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres."),
+  cpf: z.string().refine(validateCpf, { message: "CPF inválido." }),
+  birthDate: z.date({ required_error: "A data de nascimento é obrigatória." }),
+});
+
 export type TravelRequestFormValues = z.infer<typeof travelRequestSchema>;

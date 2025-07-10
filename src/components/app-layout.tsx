@@ -4,7 +4,7 @@
 import React from 'react';
 import { Sidebar, SidebarContent, SidebarInset, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarTrigger } from '@/components/ui/sidebar';
 import { Logo } from './logo';
-import { Home, ListChecks, FileUp, PlusCircle } from 'lucide-react';
+import { Home, ListChecks, FileUp, PlusCircle, Users } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
@@ -64,6 +64,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                                 <Link href="/solicitacoes">
                                   <ListChecks />
                                   <span>Solicitações</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                isActive={pathname.startsWith('/passageiros')}
+                                asChild
+                            >
+                                <Link href="/passageiros">
+                                  <Users />
+                                  <span>Passageiros</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

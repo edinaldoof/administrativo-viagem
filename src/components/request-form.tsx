@@ -1,11 +1,11 @@
 
 "use client";
 
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { travelRequestSchema, type TravelRequestFormValues } from "@/lib/schemas";
-import { type TravelRequest } from "@/types";
+import { type TravelRequest, type PassengerProfile } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar as CalendarIcon, PlusCircle, Trash2, Users, Plane, Building, ArrowRightLeft } from "lucide-react";
 import { Checkbox } from "./ui/checkbox";
+import { getPassengers } from "@/lib/actions";
 
 interface RequestFormProps {
   onSubmit: (data: TravelRequest) => void;
@@ -34,8 +35,13 @@ const formatCpf = (value: string) => {
     .substring(0, 14);
 };
 
-
 export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
+    const [passengerDb, setPassengerDb] = useState<PassengerProfile[]>([]);
+
+    useEffect(() => {
+        setPassengerDb(getPassengers());
+    }, []);
+
     const form = useForm<TravelRequestFormValues>({
         resolver: zodResolver(travelRequestSchema),
         defaultValues: initialData 
@@ -69,6 +75,19 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
     control: form.control,
     name: "passengers",
   });
+  
+  const handleCpfChange = useCallback((cpf: string, index: number) => {
+    const formattedCpf = formatCpf(cpf);
+    form.setValue(`passengers.${index}.cpf`, formattedCpf);
+
+    if (formattedCpf.length === 14) { // CPF completo
+      const foundPassenger = passengerDb.find(p => p.cpf === formattedCpf);
+      if (foundPassenger) {
+        form.setValue(`passengers.${index}.name`, foundPassenger.name);
+        form.setValue(`passengers.${index}.birthDate`, new Date(foundPassenger.birthDate));
+      }
+    }
+  }, [form, passengerDb]);
 
   const handleFormSubmit = (data: TravelRequestFormValues) => {
     const fullData: TravelRequest = {
@@ -157,22 +176,22 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <FormField
                               control={form.control}
-                              name={`passengers.${index}.name`}
+                              name={`passengers.${index}.cpf`}
                               render={({ field }) => (
                                   <FormItem>
-                                      <FormLabel>Nome Completo</FormLabel>
-                                      <FormControl><Input placeholder="João da Silva" {...field} /></FormControl>
+                                      <FormLabel>CPF</FormLabel>
+                                      <FormControl><Input placeholder="Digite o CPF para buscar" {...field} onChange={(e) => handleCpfChange(e.target.value, index)} /></FormControl>
                                       <FormMessage />
                                   </FormItem>
                               )}
                           />
                           <FormField
                               control={form.control}
-                              name={`passengers.${index}.cpf`}
+                              name={`passengers.${index}.name`}
                               render={({ field }) => (
                                   <FormItem>
-                                      <FormLabel>CPF</FormLabel>
-                                      <FormControl><Input placeholder="000.000.000-00" {...field} onChange={(e) => field.onChange(formatCpf(e.target.value))} /></FormControl>
+                                      <FormLabel>Nome Completo</FormLabel>
+                                      <FormControl><Input placeholder="João da Silva" {...field} /></FormControl>
                                       <FormMessage />
                                   </FormItem>
                               )}

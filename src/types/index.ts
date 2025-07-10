@@ -42,3 +42,11 @@ export type TravelRequest = {
   passengers: Passenger[];
   billing: Billing;
 };
+
+// Novo tipo para a base de dados de passageiros
+export type PassengerProfile = {
+  id: string;
+  name: string;
+  cpf: string;
+  birthDate: Date;
+};
