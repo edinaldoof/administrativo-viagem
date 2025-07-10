@@ -153,7 +153,7 @@ export default function PassageirosPage() {
       <div className="max-w-6xl mx-auto space-y-4">
         <div className="flex justify-between items-center space-y-2 md:space-y-0">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Gerenciar Passageiros</h2>
+            <h2 className="text-3xl font-headline font-bold tracking-tight">Gerenciar Passageiros</h2>
             <p className="text-muted-foreground">
               Adicione, edite e gerencie os passageiros que podem ser incluídos nas solicitações de viagem.
             </p>
@@ -222,7 +222,10 @@ export default function PassageirosPage() {
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
-              <DialogTitle>{selectedPassenger ? 'Editar Passageiro' : 'Novo Passageiro'}</DialogTitle>
+              <DialogTitle className="font-headline">{selectedPassenger ? 'Editar Passageiro' : 'Novo Passageiro'}</DialogTitle>
+               <DialogDescription>
+                {selectedPassenger ? "Atualize os dados do passageiro." : "Adicione um novo passageiro à sua lista."}
+              </DialogDescription>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4 py-4">
@@ -302,6 +305,7 @@ export default function PassageirosPage() {
                   )}
                 />
                 <DialogFooter>
+                   <Button type="button" variant="ghost" onClick={() => setIsFormOpen(false)}>Cancelar</Button>
                   <Button type="submit">Salvar</Button>
                 </DialogFooter>
               </form>
@@ -314,7 +318,7 @@ export default function PassageirosPage() {
                 {passengerForDetails && (
                     <>
                         <DialogHeader>
-                            <DialogTitle className="text-2xl">Histórico de Viagens</DialogTitle>
+                            <DialogTitle className="font-headline text-2xl">Histórico de Viagens</DialogTitle>
                             <DialogDescription>
                                 Exibindo todas as solicitações para {passengerForDetails.name}.
                             </DialogDescription>

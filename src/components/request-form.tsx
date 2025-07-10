@@ -21,6 +21,7 @@ import { Calendar as CalendarIcon, PlusCircle, Trash2, Users, Plane, Building, A
 import { Checkbox } from "./ui/checkbox";
 import { getPassengers, savePassengers } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
+import { Textarea } from "./ui/textarea";
 
 interface RequestFormProps {
   onSubmit: (data: TravelRequest) => void;
@@ -156,8 +157,8 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
           )}
         />
         
-        <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2"><Building /> Faturamento</h3>
+        <div className="space-y-4 p-4 border rounded-md">
+            <h3 className="text-lg font-headline font-semibold flex items-center gap-2 -ml-4 -mt-4 mb-4 p-4 bg-muted rounded-t-md border-b w-[calc(100%+2rem)]"><Building /> Faturamento</h3>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <FormField
                   control={form.control}
@@ -197,8 +198,8 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
                   name="billing.description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Descrição</FormLabel>
-                      <FormControl><Input placeholder="Descrição do projeto" {...field} /></FormControl>
+                      <FormLabel>Descrição/Justificativa</FormLabel>
+                      <FormControl><Textarea placeholder="Justificativa da viagem..." {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -207,7 +208,7 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
         </div>
 
         <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2"><Users /> Passageiros</h3>
+            <h3 className="text-lg font-headline font-semibold flex items-center gap-2"><Users /> Passageiros</h3>
              <Accordion type="multiple" defaultValue={passengerFields.map((_, index) => `passenger-${index}`)} className="w-full">
                 {passengerFields.map((field, index) => (
                   <AccordionItem value={`passenger-${index}`} key={field.id} className="border rounded-md px-4">
@@ -302,7 +303,7 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
              <Button type="button" variant="outline" onClick={() => appendPassenger({ id: uuidv4(), name: "", cpf: "", birthDate: new Date(), email: "", phone: "", documents: [], itinerary: [{id: uuidv4(), origin: "", destination: "", departureDate: new Date(), isRoundTrip: false, ciaAerea: "", voo: "", horarios: ""}] })}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Passageiro</Button>
         </div>
 
-        <Button type="submit" className="w-full">
+        <Button type="submit" size="lg" className="w-full">
           {initialData ? "Salvar Alterações" : "Criar Solicitação"}
         </Button>
       </form>
@@ -384,13 +385,13 @@ function ItinerarySubForm({ passengerIndex, form }: { passengerIndex: number, fo
                         </div>
                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <FormField control={form.control} name={`passengers.${passengerIndex}.itinerary.${index}.ciaAerea`} render={({ field }) => (
-                                <FormItem><FormLabel>Cia Aérea</FormLabel><FormControl><Input placeholder="Ex: LATAM" {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem><FormLabel>Cia Aérea (Opcional)</FormLabel><FormControl><Input placeholder="Ex: LATAM" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                              <FormField control={form.control} name={`passengers.${passengerIndex}.itinerary.${index}.voo`} render={({ field }) => (
-                                <FormItem><FormLabel>Voo</FormLabel><FormControl><Input placeholder="Ex: LA3456" {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem><FormLabel>Voo (Opcional)</FormLabel><FormControl><Input placeholder="Ex: LA3456" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                              <FormField control={form.control} name={`passengers.${passengerIndex}.itinerary.${index}.horarios`} render={({ field }) => (
-                                <FormItem><FormLabel>Horários</FormLabel><FormControl><Input placeholder="Ex: 08:00 - 10:00" {...field} /></FormControl><FormMessage /></FormItem>
+                                <FormItem><FormLabel>Horários (Opcional)</FormLabel><FormControl><Input placeholder="Ex: 08:00 - 10:00" {...field} /></FormControl><FormMessage /></FormItem>
                             )} />
                         </div>
                         <div className="flex items-center space-x-2">

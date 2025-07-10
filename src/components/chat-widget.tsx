@@ -10,12 +10,12 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { chat } from '@/ai/flows/chat-flow';
 import { type Message } from '@/types';
 import { cn } from '@/lib/utils';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', content: 'Olá! Como posso te ajudar hoje?' }
+    { role: 'model', content: 'Olá! Como posso te ajudar hoje com suas viagens?' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -158,12 +158,15 @@ export default function ChatWidget() {
           data-state={isOpen ? "open" : "closed"}
          >
           <CardHeader className="flex flex-row items-center justify-between border-b">
-            <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-                <Avatar className="h-8 w-8">
-                    <AvatarFallback><Bot size={20}/></AvatarFallback>
-                </Avatar>
-                Assistente de Viagens
-            </CardTitle>
+            <div className='flex items-center gap-2'>
+              <Avatar className="h-8 w-8 bg-primary/20 text-primary">
+                  <AvatarFallback><Bot size={20}/></AvatarFallback>
+              </Avatar>
+              <div>
+                <CardTitle className="font-headline text-lg">Assistente Fadex</CardTitle>
+                <CardDescription className="text-xs">Potencializado por IA</CardDescription>
+              </div>
+            </div>
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsOpen(false)}>
               <X className="h-5 w-5" />
               <span className="sr-only">Fechar</span>
@@ -180,7 +183,7 @@ export default function ChatWidget() {
                     }`}
                   >
                     {message.role === 'model' && (
-                      <Avatar className="flex-shrink-0">
+                      <Avatar className="flex-shrink-0 bg-primary/20 text-primary">
                         <AvatarFallback><Bot /></AvatarFallback>
                       </Avatar>
                     )}
@@ -191,7 +194,7 @@ export default function ChatWidget() {
                           : 'bg-muted'
                       }`}
                     >
-                      <p className="text-sm break-words">{message.content}</p>
+                      <p className="text-sm break-words whitespace-pre-wrap">{message.content}</p>
                     </div>
                     {message.role === 'user' && (
                        <Avatar className="flex-shrink-0">
@@ -202,7 +205,7 @@ export default function ChatWidget() {
                 ))}
                 {isLoading && (
                   <div className="flex items-start gap-3 justify-start">
-                    <Avatar>
+                    <Avatar className="bg-primary/20 text-primary">
                       <AvatarFallback><Bot /></AvatarFallback>
                     </Avatar>
                     <div className="max-w-lg rounded-lg px-4 py-2 bg-muted flex items-center">

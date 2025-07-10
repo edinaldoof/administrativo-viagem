@@ -120,7 +120,7 @@ export default function CriarRequisicaoPage() {
       case 'ai-import':
         return (
           <>
-            <Button variant="outline" onClick={resetToSelection} className="mb-4">
+            <Button variant="ghost" onClick={resetToSelection} className="mb-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar à seleção
             </Button>
@@ -180,7 +180,7 @@ export default function CriarRequisicaoPage() {
       case 'manual-creation':
         return (
             <>
-              <Button variant="outline" onClick={resetToSelection} className="mb-4">
+              <Button variant="ghost" onClick={resetToSelection} className="mb-4">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Voltar à seleção
               </Button>
@@ -224,7 +224,7 @@ export default function CriarRequisicaoPage() {
     <div className="p-4 md:p-8 pt-6">
       <div className="max-w-6xl mx-auto space-y-4">
         <div className="space-y-2">
-          <h2 className="text-3xl font-bold tracking-tight">Criar Requisição</h2>
+          <h2 className="text-3xl font-headline font-bold tracking-tight">Criar Requisição</h2>
           <p className="text-muted-foreground">
             Escolha como você quer iniciar uma nova solicitação de viagem.
           </p>
@@ -234,5 +234,3 @@ export default function CriarRequisicaoPage() {
     </div>
   );
 }
-
-    

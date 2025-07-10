@@ -48,7 +48,7 @@ export default function Home() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium font-body">
                 Total de Solicitações
               </CardTitle>
               <ListChecks className="h-4 w-4 text-muted-foreground" />
@@ -62,7 +62,7 @@ export default function Home() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle className="text-sm font-medium font-body">
                 Total de Passageiros
               </CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
@@ -76,7 +76,7 @@ export default function Home() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Rascunhos</CardTitle>
+              <CardTitle className="text-sm font-medium font-body">Rascunhos</CardTitle>
               <FileSignature className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>

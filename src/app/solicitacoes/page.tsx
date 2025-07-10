@@ -42,7 +42,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { RequestForm } from "@/components/request-form";
 import { DocumentPreview } from "@/components/document-preview";
@@ -307,6 +307,9 @@ export default function SolicitacoesPage() {
             <DialogTitle className="font-headline text-2xl">
               {selectedRequest ? "Editar Solicitação de Viagem" : "Criar Nova Solicitação de Viagem"}
             </DialogTitle>
+             <DialogDescription>
+                {selectedRequest ? "Edite os detalhes da solicitação de viagem existente." : "Preencha o formulário para criar uma nova solicitação de viagem."}
+            </DialogDescription>
           </DialogHeader>
           <div className="flex-grow overflow-y-auto pr-6 -mr-6">
             <RequestForm
@@ -322,6 +325,9 @@ export default function SolicitacoesPage() {
         <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="font-headline text-2xl">Visualizar Solicitação</DialogTitle>
+             <DialogDescription>
+                Visualize e exporte a solicitação de viagem.
+            </DialogDescription>
           </DialogHeader>
           <div className="flex-grow overflow-y-auto p-1">
             <DocumentPreview ref={previewRef} request={selectedRequest} />
