@@ -1,8 +1,8 @@
 
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Loader2, Send, User, X } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Bot, Loader2, Send, User, X, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -20,6 +20,59 @@ export default function ChatWidget() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  
+  const [position, setPosition] = useState<{x: number, y: number} | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartPos = useRef({ x: 0, y: 0 });
+  const widgetRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setPosition({ x: window.innerWidth - 80, y: window.innerHeight - 80 });
+  }, []);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (isOpen || !position) return; // Don't drag when chat is open
+    setIsDragging(true);
+    dragStartPos.current = {
+      x: e.clientX - position.x,
+      y: e.clientY - position.y,
+    };
+    // Prevent text selection while dragging
+    e.preventDefault();
+  };
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging || !widgetRef.current || !position) return;
+
+    let newX = e.clientX - dragStartPos.current.x;
+    let newY = e.clientY - dragStartPos.current.y;
+
+    // Constrain movement within the viewport
+    const widgetRect = widgetRef.current.getBoundingClientRect();
+    newX = Math.max(0, Math.min(newX, window.innerWidth - widgetRect.width));
+    newY = Math.max(0, Math.min(newY, window.innerHeight - widgetRect.height));
+
+    setPosition({ x: newX, y: newY });
+  }, [isDragging, position]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    } else {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, handleMouseMove, handleMouseUp]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,25 +108,35 @@ export default function ChatWidget() {
     }
   }, [messages]);
 
+  if (!position) {
+    return null; // Render nothing until the position is set on the client
+  }
+
   return (
-    <>
-      <div className={cn(
-        "fixed bottom-4 right-4 z-50 transition-all duration-300",
-        isOpen ? "pointer-events-none opacity-0 scale-95" : "pointer-events-auto opacity-100 scale-100"
-      )}>
+    <div
+      ref={widgetRef}
+      className="fixed z-50"
+      style={{
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+        touchAction: 'none',
+      }}
+    >
+      {!isOpen && (
         <Button
-          onClick={() => setIsOpen(true)}
-          className="rounded-full w-16 h-16 bg-primary shadow-lg hover:scale-110 transition-transform"
+          onMouseDown={handleMouseDown}
+          onClick={() => !isDragging && setIsOpen(true)}
+          className={cn(
+            "rounded-full w-16 h-16 bg-primary shadow-lg transition-transform",
+            isDragging ? "cursor-grabbing scale-110" : "cursor-grab hover:scale-110"
+          )}
         >
           <Bot className="w-8 h-8" />
         </Button>
-      </div>
+      )}
 
-      <div className={cn(
-        "fixed bottom-4 right-4 z-50 transition-all duration-300",
-        !isOpen ? "pointer-events-none opacity-0 scale-95" : "pointer-events-auto opacity-100 scale-100"
-      )}>
-        <Card className="w-[380px] h-[600px] flex flex-col shadow-2xl">
+      {isOpen && (
+         <Card className="w-[380px] h-[600px] flex flex-col shadow-2xl absolute bottom-0 right-0">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-lg">
                 <Avatar className="h-8 w-8">
@@ -143,7 +206,7 @@ export default function ChatWidget() {
             </form>
           </CardFooter>
         </Card>
-      </div>
-    </>
+      )}
+    </div>
   );
 }
