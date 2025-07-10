@@ -125,16 +125,18 @@ export default function PassageirosPage() {
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Gerenciar Passageiros</h2>
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Gerenciar Passageiros</h2>
+          <p className="text-muted-foreground">
+            Adicione, edite e gerencie os passageiros que podem ser incluídos nas solicitações de viagem.
+          </p>
+        </div>
         <Button onClick={openFormForNew}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Novo Passageiro
         </Button>
       </div>
-      <p className="text-muted-foreground">
-        Adicione, edite e gerencie os passageiros que podem ser incluídos nas solicitações de viagem.
-      </p>
-
+      
       <div className="rounded-lg border shadow-sm">
         <Table>
           <TableHeader>
@@ -273,4 +275,3 @@ export default function PassageirosPage() {
     </div>
   );
 }
-
