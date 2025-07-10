@@ -100,14 +100,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </SidebarMenu>
                 </SidebarContent>
             </Sidebar>
-            <SidebarInset>
+            <div className="flex flex-1 flex-col">
                  <header className="flex h-14 items-center justify-end gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
                     <ThemeToggle />
                 </header>
                 <main className="flex-1 overflow-auto">
                  {children}
                 </main>
-            </SidebarInset>
+            </div>
 
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                 <DialogContent className="sm:max-w-4xl h-[90vh] flex flex-col">
