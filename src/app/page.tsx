@@ -34,7 +34,7 @@ export default function Home() {
 
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="flex-1 space-y-4 p-4 pt-6 md:p-8">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-headline font-bold tracking-tight">
           Painel de Controle
@@ -91,7 +91,7 @@ export default function Home() {
         <Card className="col-span-1 lg:col-span-4">
           <CardHeader>
             <CardTitle>Atividade Recente</CardTitle>
-            <CardDescription>
+            <CardDescription className="text-left">
               As últimas 5 solicitações criadas ou atualizadas.
             </CardDescription>
           </CardHeader>
