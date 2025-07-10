@@ -19,7 +19,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar as CalendarIcon, PlusCircle, Trash2, Users, Plane, Building, ArrowRightLeft } from "lucide-react";
 import { Checkbox } from "./ui/checkbox";
-import { getPassengers } from "@/lib/actions";
+import { getPassengers, savePassengers } from "@/lib/actions";
+import { useToast } from "@/hooks/use-toast";
 
 interface RequestFormProps {
   onSubmit: (data: TravelRequest) => void;
@@ -37,6 +38,7 @@ const formatCpf = (value: string) => {
 
 export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
     const [passengerDb, setPassengerDb] = useState<PassengerProfile[]>([]);
+    const { toast } = useToast();
 
     useEffect(() => {
         setPassengerDb(getPassengers());
@@ -90,6 +92,43 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
   }, [form, passengerDb]);
 
   const handleFormSubmit = (data: TravelRequestFormValues) => {
+    // 1. Salvar ou atualizar passageiros na base de dados
+    const currentPassengerDb = getPassengers();
+    const newPassengersToSave: PassengerProfile[] = [];
+    const updatedPassengerDb = [...currentPassengerDb];
+
+    for (const passenger of data.passengers) {
+        const existingPassengerIndex = updatedPassengerDb.findIndex(p => p.cpf === passenger.cpf);
+        if (existingPassengerIndex > -1) {
+            // Atualiza se houver mudança (opcional, mas bom ter)
+            updatedPassengerDb[existingPassengerIndex] = {
+                ...updatedPassengerDb[existingPassengerIndex],
+                name: passenger.name,
+                birthDate: passenger.birthDate
+            };
+        } else {
+            // Adiciona novo passageiro à lista para salvar
+            const newProfile: PassengerProfile = {
+                id: uuidv4(),
+                name: passenger.name,
+                cpf: passenger.cpf,
+                birthDate: passenger.birthDate
+            };
+            newPassengersToSave.push(newProfile);
+            updatedPassengerDb.push(newProfile);
+        }
+    }
+    
+    savePassengers(updatedPassengerDb);
+    if (newPassengersToSave.length > 0) {
+        toast({
+            title: "Passageiros Salvos!",
+            description: `${newPassengersToSave.length} novo(s) passageiro(s) foram adicionados à sua lista.`
+        });
+    }
+
+
+    // 2. Criar o objeto da solicitação e chamar o onSubmit
     const fullData: TravelRequest = {
       id: initialData?.id || data.billing.webId || uuidv4(),
       createdAt: initialData?.createdAt || new Date(),

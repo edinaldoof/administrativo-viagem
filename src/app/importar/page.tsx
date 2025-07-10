@@ -7,8 +7,8 @@ import { FileUp, Loader2, Wand2, FileText, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { extractInfoFromPdf } from '@/ai/flows/extract-info-flow';
-import { type TravelRequest } from '@/types';
-import { saveRequests, getRequests } from '@/lib/actions';
+import { type TravelRequest, type PassengerProfile } from '@/types';
+import { saveRequests, getRequests, getPassengers, savePassengers } from '@/lib/actions';
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -78,9 +78,32 @@ export default function ImportarPage() {
           }))
       };
 
+      // Salva a solicitação
       const currentRequests = getRequests();
       saveRequests([...currentRequests, newRequest]);
       
+      // Verifica e salva novos passageiros
+      const passengerDb = getPassengers();
+      const newPassengersToSave: PassengerProfile[] = [];
+      for (const passenger of newRequest.passengers) {
+          const exists = passengerDb.some(p => p.cpf === passenger.cpf);
+          if (!exists) {
+              newPassengersToSave.push({
+                  id: uuidv4(),
+                  name: passenger.name,
+                  cpf: passenger.cpf,
+                  birthDate: passenger.birthDate
+              });
+          }
+      }
+      if (newPassengersToSave.length > 0) {
+          savePassengers([...passengerDb, ...newPassengersToSave]);
+          toast({
+              title: 'Passageiros Adicionados!',
+              description: `${newPassengersToSave.length} novo(s) passageiro(s) foram adicionados à sua lista.`,
+          });
+      }
+
       toast({
         title: 'Sucesso!',
         description: 'Informações extraídas e nova solicitação criada.',
@@ -156,5 +179,3 @@ export default function ImportarPage() {
     </div>
   );
 }
-
-    
