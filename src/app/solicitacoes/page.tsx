@@ -183,9 +183,9 @@ export default function SolicitacoesPage() {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div>
+    <div className="flex flex-col">
+       <div className="flex justify-between items-center mb-4">
+        <div className="space-y-2">
           <h1 className="font-headline text-3xl font-bold tracking-tight">
             Solicitações de Viagem
           </h1>
@@ -199,7 +199,7 @@ export default function SolicitacoesPage() {
         </Button>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 mb-8">
         <div className="relative flex-grow">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input

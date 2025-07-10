@@ -34,15 +34,15 @@ export default function Home() {
 
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between space-y-2">
+    <div className="flex flex-col">
+      <div className="space-y-2 mb-8">
         <h2 className="text-3xl font-headline font-bold tracking-tight">
           Painel de Controle
         </h2>
+        <p className="text-muted-foreground">
+          Um resumo das suas solicitações de viagem.
+        </p>
       </div>
-      <p className="text-muted-foreground">
-        Um resumo das suas solicitações de viagem.
-      </p>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
@@ -87,7 +87,7 @@ export default function Home() {
         </Card>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-4 mt-8">
         <Card>
           <CardHeader>
             <CardTitle>Atividade Recente</CardTitle>

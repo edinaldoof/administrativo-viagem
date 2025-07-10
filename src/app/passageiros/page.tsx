@@ -149,9 +149,9 @@ export default function PassageirosPage() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center space-y-2 md:space-y-0">
-        <div>
+    <div className="flex flex-col">
+      <div className="flex justify-between items-center mb-8">
+        <div className="space-y-2">
           <h2 className="text-3xl font-headline font-bold tracking-tight">Gerenciar Passageiros</h2>
           <p className="text-muted-foreground">
             Adicione, edite e gerencie os passageiros que podem ser incluídos nas solicitações de viagem.
