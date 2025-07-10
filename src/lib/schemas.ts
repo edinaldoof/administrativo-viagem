@@ -25,11 +25,24 @@ export const itinerarySchema = z.object({
     path: ["returnDate"],
 });
 
+const validateCpf = (cpf: string) => {
+  cpf = cpf.replace(/[^\d]+/g, '');
+  if (cpf.length !== 11 || !!cpf.match(/(\d)\1{10}/)) return false;
+
+  const digits = cpf.split('').map(Number);
+  
+  const validator = (n: number) => {
+    const rest = digits.slice(0, n).reduce((sum, digit, index) => sum + digit * (n + 1 - index), 0) % 11;
+    return rest < 2 ? 0 : 11 - rest;
+  };
+  
+  return validator(9) === digits[9] && validator(10) === digits[10];
+};
 
 export const passengerSchema = z.object({
   id: z.string(),
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres."),
-  cpf: z.string().length(14, "O CPF deve ter 11 dígitos."),
+  cpf: z.string().refine(validateCpf, { message: "CPF inválido." }),
   documents: z.array(fileSchema).optional().default([]),
   itinerary: z.array(itinerarySchema).min(1, "É necessário pelo menos um trecho no itinerário."),
 });
