@@ -171,12 +171,12 @@ const extractInfoFlow = ai.defineFlow(
     const { output: rawText } = await ai.generate({
         prompt: `Extraia todo o texto do documento a seguir. Mantenha a formatação e as quebras de linha o mais próximo possível do original. Documento: {{media url="${input.pdfDataUri}"}}`,
         output: {
-            schema: z.string()
+            schema: z.string().nullable()
         }
     });
 
     if (!rawText) {
-        throw new Error("A IA não conseguiu ler o conteúdo do PDF.");
+        throw new Error("A IA não conseguiu ler o conteúdo do PDF. O documento pode estar em branco ou ser uma imagem.");
     }
     
     // 2. Processa o texto com a lógica refinada
