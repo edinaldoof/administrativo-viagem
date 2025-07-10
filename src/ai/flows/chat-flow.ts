@@ -4,19 +4,12 @@
  * @fileOverview Flow para um chatbot assistente de viagens.
  *
  * - chat - Envia uma mensagem para o chatbot e obtém uma resposta.
- * - Message - O tipo para uma única mensagem na conversa.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { getRequests } from '@/lib/actions';
-
-// Esquema para uma única mensagem no histórico de chat
-export const MessageSchema = z.object({
-  role: z.enum(['user', 'model']),
-  content: z.string(),
-});
-export type Message = z.infer<typeof MessageSchema>;
+import { type Message, MessageSchema } from '@/types';
 
 // Define o prompt do sistema para o chatbot
 const chatPrompt = ai.definePrompt({

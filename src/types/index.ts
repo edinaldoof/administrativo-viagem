@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export type DocumentFile = {
   name: string;
   size: number;
@@ -50,3 +52,12 @@ export type PassengerProfile = {
   cpf: string;
   birthDate: Date;
 };
+
+// --- Tipos para o Chat ---
+
+// Esquema para uma única mensagem no histórico de chat
+export const MessageSchema = z.object({
+  role: z.enum(['user', 'model']),
+  content: z.string(),
+});
+export type Message = z.infer<typeof MessageSchema>;
