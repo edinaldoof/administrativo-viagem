@@ -4,8 +4,9 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PlusCircle, Edit, Trash2, User, MoreVertical } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, User, MoreVertical, Plane, Calendar as CalendarIconLucide } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import {
   Table,
   TableBody,
@@ -19,8 +20,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   DropdownMenu,
@@ -43,14 +44,16 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
-import { getPassengers, savePassengers } from '@/lib/actions';
-import { type PassengerProfile } from '@/types';
+import { getPassengers, savePassengers, getRequests } from '@/lib/actions';
+import { type PassengerProfile, type TravelRequest } from '@/types';
 import { passengerProfileSchema } from '@/lib/schemas';
 import { v4 as uuidv4 } from 'uuid';
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 const formatCpf = (value: string) => {
   return value
@@ -63,9 +66,12 @@ const formatCpf = (value: string) => {
 
 export default function PassageirosPage() {
   const [passengers, setPassengers] = useState<PassengerProfile[]>([]);
+  const [allRequests, setAllRequests] = useState<TravelRequest[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [selectedPassenger, setSelectedPassenger] = useState<PassengerProfile | null>(null);
+  const [passengerForDetails, setPassengerForDetails] = useState<PassengerProfile | null>(null);
   const [passengerToDelete, setPassengerToDelete] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -75,6 +81,7 @@ export default function PassageirosPage() {
 
   useEffect(() => {
     setPassengers(getPassengers());
+    setAllRequests(getRequests());
   }, []);
 
   const handleSavePassengers = (updatedPassengers: PassengerProfile[]) => {
@@ -95,6 +102,11 @@ export default function PassageirosPage() {
     });
     setSelectedPassenger(passenger);
     setIsFormOpen(true);
+  };
+
+  const openDetails = (passenger: PassengerProfile) => {
+    setPassengerForDetails(passenger);
+    setIsDetailsOpen(true);
   };
 
   const confirmDelete = (id: string) => {
@@ -122,6 +134,20 @@ export default function PassageirosPage() {
     setSelectedPassenger(null);
   };
   
+  const getRequestsForPassenger = (cpf: string) => {
+    return allRequests
+      .filter(req => req.passengers.some(p => p.cpf === cpf))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  };
+
+  const getMainItinerarySummary = (request: TravelRequest) => {
+    const passengerInRequest = request.passengers.find(p => p.cpf === passengerForDetails?.cpf);
+    const itinerary = passengerInRequest?.itinerary;
+    if (!itinerary || itinerary.length === 0) return 'Sem itinerário';
+    const firstLeg = itinerary[0];
+    return `${firstLeg.origin} → ${firstLeg.destination}`;
+  };
+
   return (
     <div className="p-4 md:p-8 pt-6">
       <div className="max-w-6xl mx-auto space-y-4">
@@ -151,13 +177,13 @@ export default function PassageirosPage() {
             <TableBody>
               {passengers.length > 0 ? (
                 passengers.map((passenger) => (
-                  <TableRow key={passenger.id}>
+                  <TableRow key={passenger.id} className="cursor-pointer" onClick={() => openDetails(passenger)}>
                     <TableCell className="font-medium flex items-center gap-2">
                       <User className="h-4 w-4 text-muted-foreground"/> {passenger.name}
                     </TableCell>
                     <TableCell>{passenger.cpf}</TableCell>
                     <TableCell>{new Date(passenger.birthDate).toLocaleDateString()}</TableCell>
-                    <TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="h-8 w-8 p-0">
@@ -281,6 +307,48 @@ export default function PassageirosPage() {
               </form>
             </Form>
           </DialogContent>
+        </Dialog>
+
+        <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+            <DialogContent className="sm:max-w-xl">
+                {passengerForDetails && (
+                    <>
+                        <DialogHeader>
+                            <DialogTitle className="text-2xl">Histórico de Viagens</DialogTitle>
+                            <DialogDescription>
+                                Exibindo todas as solicitações para {passengerForDetails.name}.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <Separator />
+                        <div className="max-h-[60vh] overflow-y-auto p-1 -mx-4 px-4 space-y-4">
+                            {getRequestsForPassenger(passengerForDetails.cpf).length > 0 ? (
+                                getRequestsForPassenger(passengerForDetails.cpf).map(request => (
+                                    <Link key={request.id} href="/solicitacoes" passHref>
+                                        <div className="block border rounded-lg p-4 hover:bg-muted/50 transition-colors">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <p className="font-semibold">{request.title}</p>
+                                                    <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
+                                                        <Plane size={14} /> {getMainItinerarySummary(request)}
+                                                    </p>
+                                                </div>
+                                                <Badge variant="outline">{request.status}</Badge>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground flex items-center gap-2 mt-2">
+                                                <CalendarIconLucide size={12} /> Criado em: {new Date(request.createdAt).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                    </Link>
+                                ))
+                            ) : (
+                                <div className="text-center py-10">
+                                    <p className="text-muted-foreground">Nenhuma solicitação de viagem encontrada para este passageiro.</p>
+                                </div>
+                            )}
+                        </div>
+                    </>
+                )}
+            </DialogContent>
         </Dialog>
         
          <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
