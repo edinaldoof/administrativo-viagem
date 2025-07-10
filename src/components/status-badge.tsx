@@ -20,8 +20,8 @@ const statusConfig: Record<TravelRequestStatus, { label: string; className: stri
 
 export function StatusBadge({ status, onStatusChange }: StatusBadgeProps) {
   return (
-    <Select value={status} onValueChange={onStatusChange}>
-      <SelectTrigger className="w-[130px] h-8 p-0 border-none focus:ring-0 focus:ring-offset-0 bg-transparent">
+    <Select value={status} onValueChange={(value) => onStatusChange(value as TravelRequestStatus)}>
+      <SelectTrigger className="w-auto h-auto p-0 border-none focus:ring-0 focus:ring-offset-0 bg-transparent">
         <SelectValue asChild>
           <Badge variant="outline" className={`cursor-pointer ${statusConfig[status].className}`}>
             {statusConfig[status].label}
@@ -30,7 +30,7 @@ export function StatusBadge({ status, onStatusChange }: StatusBadgeProps) {
       </SelectTrigger>
       <SelectContent>
         {Object.entries(statusConfig).map(([key, { label }]) => (
-          <SelectItem key={key} value={key}>
+          <SelectItem key={key} value={key as TravelRequestStatus}>
             {label}
           </SelectItem>
         ))}

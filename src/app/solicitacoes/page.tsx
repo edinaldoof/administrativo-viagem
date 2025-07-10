@@ -46,11 +46,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useToast } from "@/hooks/use-toast";
 import { RequestForm } from "@/components/request-form";
 import { DocumentPreview } from "@/components/document-preview";
-import { type TravelRequest } from "@/types";
+import { type TravelRequest, TravelRequestStatus } from "@/types";
 import { getRequests, saveRequests } from "@/lib/actions";
 import { exportToPNG, exportToPDF, exportToExcel } from "@/lib/export";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { StatusBadge } from "@/components/status-badge";
 
 
 type FilterType = 'all' | 'title' | 'passenger' | 'account' | 'webId';
@@ -125,6 +126,13 @@ export default function SolicitacoesPage() {
     setIsFormOpen(false);
     setSelectedRequest(null);
   };
+
+  const handleStatusChange = (requestId: string, newStatus: TravelRequestStatus) => {
+    const updatedRequests = requests.map(req => 
+        req.id === requestId ? { ...req, status: newStatus } : req
+    );
+    handleSaveRequests(updatedRequests);
+  };
   
   const getMainItinerary = (request: TravelRequest) => {
      const firstPassenger = request.passengers[0];
@@ -176,193 +184,191 @@ export default function SolicitacoesPage() {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   return (
-    <div className="p-4 md:p-8 pt-6">
-      <div className="max-w-6xl mx-auto space-y-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="font-headline text-3xl font-bold tracking-tight">
-              Solicitações de Viagem
-            </h1>
-            <p className="text-muted-foreground">
-              Gerencie, visualize e exporte todas as suas solicitações de viagem.
-            </p>
-          </div>
-           <Button onClick={openFormForNew}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Nova Solicitação
-          </Button>
+    <div className="p-4 md:p-8 pt-6 space-y-4">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="font-headline text-3xl font-bold tracking-tight">
+            Solicitações de Viagem
+          </h1>
+          <p className="text-muted-foreground">
+            Gerencie, visualize e exporte todas as suas solicitações de viagem.
+          </p>
         </div>
-         <div className="flex w-full md:max-w-md items-center gap-2">
-            <div className="relative flex-grow">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                placeholder="Filtrar solicitações..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-                />
-            </div>
-            <Select value={filterType} onValueChange={(value) => setFilterType(value as FilterType)}>
-                <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="Filtrar por" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="title">Título</SelectItem>
-                    <SelectItem value="passenger">Passageiro</SelectItem>
-                    <SelectItem value="account">Conta</SelectItem>
-                    <SelectItem value="webId">WEB ID</SelectItem>
-                </SelectContent>
-            </Select>
+          <Button onClick={openFormForNew}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Nova Solicitação
+        </Button>
+      </div>
+        <div className="flex w-full md:max-w-md items-center gap-2">
+          <div className="relative flex-grow">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+              placeholder="Filtrar solicitações..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+              />
           </div>
-        <div className="rounded-lg border shadow-sm">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Título</TableHead>
-                <TableHead className="hidden lg:table-cell">Passageiro</TableHead>
-                <TableHead className="hidden xl:table-cell">Itinerário</TableHead>
-                <TableHead className="hidden md:table-cell">Status</TableHead>
-                <TableHead className="hidden md:table-cell">Conta</TableHead>
-                <TableHead className="hidden lg:table-cell">Criado em</TableHead>
-                <TableHead>
-                  <span className="sr-only">Ações</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredRequests.length > 0 ? (
-                filteredRequests.map((request) => (
-                  <TableRow key={request.id}>
-                    <TableCell className="font-medium">{request.title}</TableCell>
-                    <TableCell className="hidden lg:table-cell">
+          <Select value={filterType} onValueChange={(value) => setFilterType(value as FilterType)}>
+              <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Filtrar por" />
+              </SelectTrigger>
+              <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="title">Título</SelectItem>
+                  <SelectItem value="passenger">Passageiro</SelectItem>
+                  <SelectItem value="account">Conta</SelectItem>
+                  <SelectItem value="webId">WEB ID</SelectItem>
+              </SelectContent>
+          </Select>
+        </div>
+      <div className="rounded-lg border shadow-sm">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Título</TableHead>
+              <TableHead className="hidden lg:table-cell">Passageiro</TableHead>
+              <TableHead className="hidden xl:table-cell">Itinerário</TableHead>
+              <TableHead className="hidden md:table-cell">Status</TableHead>
+              <TableHead className="hidden md:table-cell">Conta</TableHead>
+              <TableHead className="hidden lg:table-cell">Criado em</TableHead>
+              <TableHead>
+                <span className="sr-only">Ações</span>
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredRequests.length > 0 ? (
+              filteredRequests.map((request) => (
+                <TableRow key={request.id}>
+                  <TableCell className="font-medium">{request.title}</TableCell>
+                  <TableCell className="hidden lg:table-cell">
+                      <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground"/>
+                          <span className="truncate max-w-[150px]" title={getPassengerInfo(request)}>{getPassengerInfo(request)}</span>
+                      </div>
+                  </TableCell>
+                  <TableCell className="hidden xl:table-cell">
                         <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-muted-foreground"/>
-                            <span className="truncate max-w-[150px]" title={getPassengerInfo(request)}>{getPassengerInfo(request)}</span>
+                            <Plane className="h-4 w-4 text-muted-foreground"/>
+                          <span className="truncate max-w-[150px]" title={getMainItinerary(request)}>{getMainItinerary(request)}</span>
                         </div>
-                    </TableCell>
-                    <TableCell className="hidden xl:table-cell">
-                         <div className="flex items-center gap-2">
-                             <Plane className="h-4 w-4 text-muted-foreground"/>
-                            <span className="truncate max-w-[150px]" title={getMainItinerary(request)}>{getMainItinerary(request)}</span>
-                         </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <Badge variant="outline">{request.status}</Badge>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">{request.billing.account}</TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                        <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4 text-muted-foreground"/>
-                            <span>{new Date(request.createdAt).toLocaleDateString()}</span>
-                        </div>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Abrir menu</span>
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openPreview(request)}>
-                            <FileText className="mr-2 h-4 w-4" />
-                            <span>Ver e Exportar</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => openFormForEdit(request)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            <span>Editar</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDuplicate(request)}>
-                            <Copy className="mr-2 h-4 w-4" />
-                            <span>Duplicar</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={() => confirmDelete(request.id)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            <span>Excluir</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
-                    {searchTerm ? "Nenhuma solicitação encontrada para sua busca." : "Nenhuma solicitação de viagem encontrada."}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    <StatusBadge status={request.status} onStatusChange={(newStatus) => handleStatusChange(request.id, newStatus)} />
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">{request.billing.account}</TableCell>
+                  <TableCell className="hidden lg:table-cell">
+                      <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4 text-muted-foreground"/>
+                          <span>{new Date(request.createdAt).toLocaleDateString()}</span>
+                      </div>
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Abrir menu</span>
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openPreview(request)}>
+                          <FileText className="mr-2 h-4 w-4" />
+                          <span>Ver e Exportar</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => openFormForEdit(request)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          <span>Editar</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDuplicate(request)}>
+                          <Copy className="mr-2 h-4 w-4" />
+                          <span>Duplicar</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => confirmDelete(request.id)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          <span>Excluir</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center">
+                  {searchTerm ? "Nenhuma solicitação encontrada para sua busca." : "Nenhuma solicitação de viagem encontrada."}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+    <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <DialogContent className="sm:max-w-4xl h-[90vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="font-headline text-2xl">
+            {selectedRequest ? "Editar Solicitação de Viagem" : "Criar Nova Solicitação de Viagem"}
+          </DialogTitle>
+            <DialogDescription>
+              {selectedRequest ? "Edite os detalhes da solicitação de viagem existente." : "Preencha o formulário para criar uma nova solicitação de viagem."}
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex-grow overflow-y-auto pr-6 -mr-6">
+          <RequestForm
+            key={selectedRequest?.id || 'new'}
+            onSubmit={handleFormSubmit}
+            initialData={selectedRequest}
+          />
         </div>
+      </DialogContent>
+    </Dialog>
+    
+    <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+      <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="font-headline text-2xl">Visualizar Solicitação</DialogTitle>
+            <DialogDescription>
+              Visualize e exporte a solicitação de viagem.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex-grow overflow-y-auto p-1">
+          <DocumentPreview ref={previewRef} request={selectedRequest} />
+        </div>
+        <div className="flex-shrink-0 pt-4 flex items-center justify-end gap-2 border-t">
+            <Button variant="outline" onClick={() => selectedRequest && exportToPNG(previewRef.current, selectedRequest.title)}>
+                <Download className="mr-2 h-4 w-4" /> PNG
+            </Button>
+            <Button variant="outline" onClick={() => selectedRequest && exportToPDF(previewRef.current, selectedRequest.title)}>
+                <Download className="mr-2 h-4 w-4" /> PDF
+            </Button>
+            <Button variant="outline" onClick={() => selectedRequest && exportToExcel(selectedRequest)}>
+                <Download className="mr-2 h-4 w-4" /> Excel
+            </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
 
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="sm:max-w-4xl h-[90vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="font-headline text-2xl">
-              {selectedRequest ? "Editar Solicitação de Viagem" : "Criar Nova Solicitação de Viagem"}
-            </DialogTitle>
-             <DialogDescription>
-                {selectedRequest ? "Edite os detalhes da solicitação de viagem existente." : "Preencha o formulário para criar uma nova solicitação de viagem."}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex-grow overflow-y-auto pr-6 -mr-6">
-            <RequestForm
-              key={selectedRequest?.id || 'new'}
-              onSubmit={handleFormSubmit}
-              initialData={selectedRequest}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
-      
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="font-headline text-2xl">Visualizar Solicitação</DialogTitle>
-             <DialogDescription>
-                Visualize e exporte a solicitação de viagem.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex-grow overflow-y-auto p-1">
-            <DocumentPreview ref={previewRef} request={selectedRequest} />
-          </div>
-          <div className="flex-shrink-0 pt-4 flex items-center justify-end gap-2 border-t">
-              <Button variant="outline" onClick={() => selectedRequest && exportToPNG(previewRef.current, selectedRequest.title)}>
-                  <Download className="mr-2 h-4 w-4" /> PNG
-              </Button>
-              <Button variant="outline" onClick={() => selectedRequest && exportToPDF(previewRef.current, selectedRequest.title)}>
-                  <Download className="mr-2 h-4 w-4" /> PDF
-              </Button>
-              <Button variant="outline" onClick={() => selectedRequest && exportToExcel(selectedRequest)}>
-                  <Download className="mr-2 h-4 w-4" /> Excel
-              </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Você tem certeza absoluta?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Esta ação não pode ser desfeita. Isso excluirá permanentemente a solicitação de viagem.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-    </div>
+    <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Você tem certeza absoluta?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Esta ação não pode ser desfeita. Isso excluirá permanentemente a solicitação de viagem.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            Excluir
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </div>
   );
 }

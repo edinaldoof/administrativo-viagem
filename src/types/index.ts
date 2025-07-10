@@ -38,7 +38,7 @@ export type Billing = {
   webId?: string;
 };
 
-export type TravelRequestStatus = 'Draft';
+export type TravelRequestStatus = 'Draft' | 'Submitted' | 'Approved' | 'Rejected';
 
 export type TravelRequest = {
   id: string;
