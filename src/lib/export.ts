@@ -45,32 +45,48 @@ export const exportToExcel = (request: TravelRequest) => {
 
     // Request Info
     const requestInfo = [
-        ["Request Title", request.title],
-        ["Request ID", request.id],
-        ["Created At", new Date(request.createdAt).toLocaleDateString()],
-        ["Cost Center", request.billing.costCenter]
+        ["Título da Solicitação", request.title],
+        ["ID da Solicitação", request.id],
+        ["Criado em", new Date(request.createdAt).toLocaleDateString()],
+        ["Centro de Custo", request.billing.costCenter]
     ];
     const wsRequest = utils.aoa_to_sheet(requestInfo);
-    utils.book_append_sheet(wb, wsRequest, "Request Info");
+    utils.book_append_sheet(wb, wsRequest, "Info da Solicitação");
 
-    // Passengers
-    const passengersData = request.passengers.map(p => ({
-        Name: p.name,
-        CPF: p.cpf,
-        Documents: p.documents.map(d => d.name).join(', ')
-    }));
-    const wsPassengers = utils.json_to_sheet(passengersData);
-    utils.book_append_sheet(wb, wsPassengers, "Passengers");
+    // Passengers and Itineraries
+    const exportData = [];
+    exportData.push(["Nome Passageiro", "CPF", "Origem", "Destino", "Data Partida", "Ida e Volta?", "Data Retorno", "Documentos"]);
 
-    // Itinerary
-    const itineraryData = request.itinerary.map(i => ({
-        Origin: i.origin,
-        Destination: i.destination,
-        Departure: new Date(i.departureDate).toLocaleString(),
-        Return: i.isRoundTrip && i.returnDate ? new Date(i.returnDate).toLocaleString() : "N/A"
-    }));
-    const wsItinerary = utils.json_to_sheet(itineraryData);
-    utils.book_append_sheet(wb, wsItinerary, "Itinerary");
-
+    for (const passenger of request.passengers) {
+        if (passenger.itinerary.length > 0) {
+            for (const leg of passenger.itinerary) {
+                exportData.push([
+                    passenger.name,
+                    passenger.cpf,
+                    leg.origin,
+                    leg.destination,
+                    new Date(leg.departureDate).toLocaleDateString(),
+                    leg.isRoundTrip ? "Sim" : "Não",
+                    leg.returnDate ? new Date(leg.returnDate).toLocaleDateString() : "N/A",
+                    passenger.documents.map(d => d.name).join(', ')
+                ]);
+            }
+        } else {
+             exportData.push([
+                passenger.name,
+                passenger.cpf,
+                "N/A",
+                "N/A",
+                "N/A",
+                "N/A",
+                "N/A",
+                passenger.documents.map(d => d.name).join(', ')
+            ]);
+        }
+    }
+    
+    const wsPassengers = utils.aoa_to_sheet(exportData);
+    utils.book_append_sheet(wb, wsPassengers, "Passageiros e Itinerários");
+    
     writeFile(wb, `${request.title.replace(/\s+/g, '_')}.xlsx`);
 }

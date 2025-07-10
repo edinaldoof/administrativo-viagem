@@ -117,6 +117,14 @@ export default function Home() {
     setIsFormOpen(false);
     setSelectedRequest(null);
   };
+  
+  const getMainItinerary = (request: TravelRequest) => {
+    const firstPassenger = request.passengers[0];
+    if (!firstPassenger || !firstPassenger.itinerary || firstPassenger.itinerary.length === 0) {
+      return 'N/A';
+    }
+    return firstPassenger.itinerary.map(i => i.origin).join(', ');
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -140,7 +148,7 @@ export default function Home() {
               <TableRow>
                 <TableHead>Título</TableHead>
                 <TableHead className="hidden md:table-cell">Passageiros</TableHead>
-                <TableHead className="hidden md:table-cell">Itinerário</TableHead>
+                <TableHead className="hidden md:table-cell">Itinerário Principal</TableHead>
                 <TableHead className="hidden lg:table-cell">Criado em</TableHead>
                 <TableHead>
                   <span className="sr-only">Ações</span>
@@ -161,7 +169,7 @@ export default function Home() {
                     <TableCell className="hidden md:table-cell">
                          <div className="flex items-center gap-1">
                              <Plane className="h-4 w-4 text-muted-foreground"/>
-                            <span>{request.itinerary.map(i => i.origin).join(', ')}</span>
+                            <span>{getMainItinerary(request)}</span>
                          </div>
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">

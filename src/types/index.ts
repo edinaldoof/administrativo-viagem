@@ -6,15 +6,25 @@ export type DocumentFile = {
   fileObject?: File; // The actual file object for uploads
 };
 
+export type ItinerarySegment = {
+  id:string;
+  origin: string;
+  destination: string;
+  departureDate: Date;
+  isRoundTrip: boolean;
+  returnDate?: Date;
+};
+
 export type Passenger = {
   id: string;
   name: string;
   cpf: string;
   documents: DocumentFile[];
+  itinerary: Itinerário[]; // MUDANÇA: Itinerário agora é por passageiro
 };
 
-export type ItinerarySegment = {
-  id:string;
+export type Itinerário = {
+  id: string;
   origin: string;
   destination: string;
   departureDate: Date;
@@ -32,6 +42,5 @@ export type TravelRequest = {
   status: 'Draft' | 'Submitted' | 'Approved' | 'Rejected';
   createdAt: Date;
   passengers: Passenger[];
-  itinerary: ItinerarySegment[];
   billing: Billing;
 };

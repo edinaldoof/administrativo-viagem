@@ -5,7 +5,7 @@ import React from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { travelRequestSchema, type TravelRequestFormValues } from "@/lib/schemas";
-import { type TravelRequest, type Passenger, type DocumentFile } from "@/types";
+import { type TravelRequest } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,30 +34,38 @@ const formatCpf = (value: string) => {
     .substring(0, 14);
 };
 
+
 export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
-  const form = useForm<TravelRequestFormValues>({
-    resolver: zodResolver(travelRequestSchema),
-    defaultValues: initialData ? {
-      title: initialData.title,
-      billing: initialData.billing,
-      passengers: initialData.passengers,
-      itinerary: initialData.itinerary.map(i => ({...i, departureDate: new Date(i.departureDate), returnDate: i.returnDate ? new Date(i.returnDate) : undefined}))
-    } : {
-      title: "",
-      billing: { costCenter: "" },
-      passengers: [{ id: uuidv4(), name: "", cpf: "", documents: [] }],
-      itinerary: [{ id: uuidv4(), origin: "", destination: "", departureDate: new Date(), isRoundTrip: false }],
-    },
-  });
-  
+    const form = useForm<TravelRequestFormValues>({
+        resolver: zodResolver(travelRequestSchema),
+        defaultValues: initialData 
+        ? {
+            ...initialData,
+            passengers: initialData.passengers.map(p => ({
+                ...p,
+                itinerary: p.itinerary.map(i => ({
+                    ...i,
+                    departureDate: new Date(i.departureDate),
+                    returnDate: i.returnDate ? new Date(i.returnDate) : undefined,
+                }))
+            }))
+        }
+        : {
+            title: "",
+            billing: { costCenter: "" },
+            passengers: [{ 
+                id: uuidv4(), 
+                name: "", 
+                cpf: "", 
+                documents: [], 
+                itinerary: [{ id: uuidv4(), origin: "", destination: "", departureDate: new Date(), isRoundTrip: false }] 
+            }],
+        },
+    });
+
   const { fields: passengerFields, append: appendPassenger, remove: removePassenger } = useFieldArray({
     control: form.control,
     name: "passengers",
-  });
-
-  const { fields: itineraryFields, append: appendItinerary, remove: removeItinerary, update: updateItinerary } = useFieldArray({
-    control: form.control,
-    name: "itinerary",
   });
 
   const handleFormSubmit = (data: TravelRequestFormValues) => {
@@ -69,23 +77,6 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
     };
     onSubmit(fullData);
   };
-  
-  const handleRoundTrip = (index: number) => {
-    const currentItinerary = form.getValues(`itinerary.${index}`);
-    const isRoundTrip = !currentItinerary.isRoundTrip;
-    updateItinerary(index, { ...currentItinerary, isRoundTrip });
-  };
-  
-  const createReturnLeg = (index: number) => {
-      const originLeg = form.getValues(`itinerary.${index}`);
-      appendItinerary({
-          id: uuidv4(),
-          origin: originLeg.destination,
-          destination: originLeg.origin,
-          departureDate: originLeg.returnDate || new Date(),
-          isRoundTrip: false,
-      })
-  }
 
   return (
     <Form {...form}>
@@ -119,7 +110,7 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
 
         <div className="space-y-4">
             <h3 className="text-lg font-semibold flex items-center gap-2"><Users /> Passageiros</h3>
-             <Accordion type="multiple" defaultValue={['passenger-0']} className="w-full">
+             <Accordion type="multiple" defaultValue={passengerFields.map((_, index) => `passenger-${index}`)} className="w-full">
                 {passengerFields.map((field, index) => (
                   <AccordionItem value={`passenger-${index}`} key={field.id} className="border rounded-md px-4">
                      <AccordionTrigger className="hover:no-underline">
@@ -161,82 +152,15 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
                                 </FormItem>
                             )}
                         />
+                        
+                        <ItinerarySubForm passengerIndex={index} form={form} />
+
                         {passengerFields.length > 1 && <Button type="button" variant="destructive" size="sm" onClick={() => removePassenger(index)}><Trash2 className="mr-2 h-4 w-4" />Remover Passageiro</Button>}
                      </AccordionContent>
                   </AccordionItem>
                 ))}
              </Accordion>
-             <Button type="button" variant="outline" onClick={() => appendPassenger({ id: uuidv4(), name: "", cpf: "", documents: [] })}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Passageiro</Button>
-        </div>
-        
-        <div className="space-y-4">
-             <h3 className="text-lg font-semibold flex items-center gap-2"><Plane /> Itinerário</h3>
-             <div className="space-y-4">
-                {itineraryFields.map((field, index) => (
-                    <div key={field.id} className="p-4 border rounded-md space-y-4 relative">
-                         <h4 className="font-medium">Trecho {index + 1}</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField control={form.control} name={`itinerary.${index}.origin`} render={({ field }) => (
-                                <FormItem><FormLabel>Origem</FormLabel><FormControl><Input placeholder="Cidade ou Aeroporto" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                             <FormField control={form.control} name={`itinerary.${index}.destination`} render={({ field }) => (
-                                <FormItem><FormLabel>Destino</FormLabel><FormControl><Input placeholder="Cidade ou Aeroporto" {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                             <FormField control={form.control} name={`itinerary.${index}.departureDate`} render={({ field }) => (
-                                <FormItem className="flex flex-col"><FormLabel>Data de Partida</FormLabel>
-                                    <Popover><PopoverTrigger asChild>
-                                        <FormControl>
-                                            <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                                                {field.value ? format(field.value, "dd/MM/yyyy") : <span>Escolha uma data</span>}
-                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                            </Button>
-                                        </FormControl>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0" align="start">
-                                        <Calendar locale={ptBR} mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}/>
-                                    </PopoverContent></Popover>
-                                <FormMessage /></FormItem>
-                            )} />
-                            {form.watch(`itinerary.${index}.isRoundTrip`) && (
-                                <FormField control={form.control} name={`itinerary.${index}.returnDate`} render={({ field }) => (
-                                    <FormItem className="flex flex-col"><FormLabel>Data de Retorno</FormLabel>
-                                        <Popover><PopoverTrigger asChild>
-                                            <FormControl>
-                                                <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                                                    {field.value ? format(field.value, "dd/MM/yyyy") : <span>Escolha uma data</span>}
-                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                </Button>
-                                            </FormControl>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0" align="start">
-                                            <Calendar locale={ptBR} mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < form.getValues(`itinerary.${index}.departureDate`)} />
-                                        </PopoverContent></Popover>
-                                    <FormMessage /></FormItem>
-                                )} />
-                            )}
-                        </div>
-                         <div className="flex items-center space-x-2">
-                             <Checkbox id={`round-trip-${index}`} checked={form.watch(`itinerary.${index}.isRoundTrip`)} onCheckedChange={() => handleRoundTrip(index)}/>
-                             <label htmlFor={`round-trip-${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Viagem de ida e volta</label>
-                         </div>
-                        {itineraryFields.length > 1 && (
-                            <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => removeItinerary(index)}>
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
-                        )}
-                    </div>
-                ))}
-            </div>
-             <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={() => appendItinerary({ id: uuidv4(), origin: "", destination: "", departureDate: new Date(), isRoundTrip: false })}>
-                  <PlusCircle className="mr-2 h-4 w-4" />Adicionar Trecho
-                </Button>
-                <Button type="button" variant="outline" onClick={() => createReturnLeg(itineraryFields.length - 1)}>
-                  <ArrowRightLeft className="mr-2 h-4 w-4" />Trecho de Volta Automático
-                </Button>
-             </div>
+             <Button type="button" variant="outline" onClick={() => appendPassenger({ id: uuidv4(), name: "", cpf: "", documents: [], itinerary: [{id: uuidv4(), origin: "", destination: "", departureDate: new Date(), isRoundTrip: false}] })}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Passageiro</Button>
         </div>
 
         <Button type="submit" className="w-full">
@@ -245,4 +169,105 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
       </form>
     </Form>
   );
+}
+
+// Sub-component for itinerary to keep the main form cleaner
+function ItinerarySubForm({ passengerIndex, form }: { passengerIndex: number, form: any }) {
+    const { fields, append, remove, update } = useFieldArray({
+        control: form.control,
+        name: `passengers.${passengerIndex}.itinerary`
+    });
+
+    const handleRoundTrip = (itineraryIndex: number) => {
+        const currentItinerary = form.getValues(`passengers.${passengerIndex}.itinerary.${itineraryIndex}`);
+        update(itineraryIndex, { ...currentItinerary, isRoundTrip: !currentItinerary.isRoundTrip });
+    };
+
+    const createReturnLeg = (itineraryIndex: number) => {
+        const originLeg = form.getValues(`passengers.${passengerIndex}.itinerary.${itineraryIndex}`);
+        append({
+            id: uuidv4(),
+            origin: originLeg.destination,
+            destination: originLeg.origin,
+            departureDate: originLeg.returnDate || new Date(),
+            isRoundTrip: false,
+        });
+    };
+    
+    return (
+        <div className="space-y-4 pt-4 border-t">
+            <h3 className="text-lg font-semibold flex items-center gap-2"><Plane /> Itinerário do Passageiro</h3>
+            <div className="space-y-4">
+                {fields.map((field, index) => (
+                    <div key={field.id} className="p-4 border rounded-md space-y-4 relative bg-slate-50">
+                        <h4 className="font-medium">Trecho {index + 1}</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField control={form.control} name={`passengers.${passengerIndex}.itinerary.${index}.origin`} render={({ field }) => (
+                                <FormItem><FormLabel>Origem</FormLabel><FormControl><Input placeholder="Cidade ou Aeroporto" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <FormField control={form.control} name={`passengers.${passengerIndex}.itinerary.${index}.destination`} render={({ field }) => (
+                                <FormItem><FormLabel>Destino</FormLabel><FormControl><Input placeholder="Cidade ou Aeroporto" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField control={form.control} name={`passengers.${passengerIndex}.itinerary.${index}.departureDate`} render={({ field }) => (
+                                <FormItem className="flex flex-col"><FormLabel>Data de Partida</FormLabel>
+                                    <Popover><PopoverTrigger asChild>
+                                        <FormControl>
+                                            <Button variant={"outline"} className={cn("pl-3 text-left font-normal bg-white", !field.value && "text-muted-foreground")}>
+                                                {field.value ? format(field.value, "dd/MM/yyyy", { locale: ptBR }) : <span>Escolha uma data</span>}
+                                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                            </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar locale={ptBR} mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))} />
+                                    </PopoverContent></Popover>
+                                <FormMessage /></FormItem>
+                            )} />
+                            {form.watch(`passengers.${passengerIndex}.itinerary.${index}.isRoundTrip`) && (
+                                <FormField control={form.control} name={`passengers.${passengerIndex}.itinerary.${index}.returnDate`} render={({ field }) => (
+                                    <FormItem className="flex flex-col"><FormLabel>Data de Retorno</FormLabel>
+                                        <Popover><PopoverTrigger asChild>
+                                            <FormControl>
+                                                <Button variant={"outline"} className={cn("pl-3 text-left font-normal bg-white", !field.value && "text-muted-foreground")}>
+                                                    {field.value ? format(field.value, "dd/MM/yyyy", { locale: ptBR }) : <span>Escolha uma data</span>}
+                                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                </Button>
+                                            </FormControl>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0" align="start">
+                                            <Calendar locale={ptBR} mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < form.getValues(`passengers.${passengerIndex}.itinerary.${index}.departureDate`)} />
+                                        </PopoverContent></Popover>
+                                    <FormMessage /></FormItem>
+                                )} />
+                            )}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <Checkbox id={`round-trip-${passengerIndex}-${index}`} checked={form.watch(`passengers.${passengerIndex}.itinerary.${index}.isRoundTrip`)} onCheckedChange={() => handleRoundTrip(index)} />
+                            <label htmlFor={`round-trip-${passengerIndex}-${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Viagem de ida e volta</label>
+                        </div>
+                        {fields.length > 1 && (
+                            <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2" onClick={() => remove(index)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                        )}
+                    </div>
+                ))}
+            </div>
+            <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={() => append({ id: uuidv4(), origin: "", destination: "", departureDate: new Date(), isRoundTrip: false })}>
+                    <PlusCircle className="mr-2 h-4 w-4" />Adicionar Trecho
+                </Button>
+                { form.watch(`passengers.${passengerIndex}.itinerary.${fields.length - 1}.isRoundTrip`) &&
+                  form.watch(`passengers.${passengerIndex}.itinerary.${fields.length - 1}.returnDate`) &&
+                  (
+                    <Button type="button" variant="outline" onClick={() => createReturnLeg(fields.length - 1)}>
+                      <ArrowRightLeft className="mr-2 h-4 w-4" />Trecho de Volta Automático
+                    </Button>
+                  )
+                }
+            </div>
+        </div>
+    );
 }

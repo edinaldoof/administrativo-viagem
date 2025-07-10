@@ -5,13 +5,7 @@ const fileSchema = z.object({
   size: z.number(),
   type: z.string(),
   url: z.string(),
-});
-
-export const passengerSchema = z.object({
-  id: z.string(),
-  name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres."),
-  cpf: z.string().length(14, "O CPF deve ter 11 dígitos."),
-  documents: z.array(fileSchema).optional().default([]),
+  fileObject: z.any().optional(),
 });
 
 export const itinerarySchema = z.object({
@@ -31,10 +25,18 @@ export const itinerarySchema = z.object({
     path: ["returnDate"],
 });
 
+
+export const passengerSchema = z.object({
+  id: z.string(),
+  name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres."),
+  cpf: z.string().length(14, "O CPF deve ter 11 dígitos."),
+  documents: z.array(fileSchema).optional().default([]),
+  itinerary: z.array(itinerarySchema).min(1, "É necessário pelo menos um trecho no itinerário."),
+});
+
 export const travelRequestSchema = z.object({
   title: z.string().min(3, "O título deve ter pelo menos 3 caracteres."),
   passengers: z.array(passengerSchema).min(1, "É necessário pelo menos um passageiro."),
-  itinerary: z.array(itinerarySchema).min(1, "É necessário pelo menos um trecho no itinerário."),
   billing: z.object({
     costCenter: z.string().min(1, "O centro de custo é obrigatório."),
   })

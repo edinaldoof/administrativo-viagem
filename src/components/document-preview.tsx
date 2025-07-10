@@ -39,43 +39,42 @@ export const DocumentPreview = React.forwardRef<HTMLDivElement, DocumentPreviewP
 
         <section className="mb-8">
           <h2 className="text-xl font-headline font-bold mb-4 flex items-center gap-2"><User />Passageiros</h2>
-          <div className="space-y-4">
+          <div className="space-y-6">
             {request.passengers.map((passenger, index) => (
-              <Card key={passenger.id} className="bg-gray-50">
-                <CardHeader>
+              <Card key={passenger.id} className="bg-gray-50 overflow-hidden">
+                <CardHeader className="bg-gray-100">
                   <CardTitle className="text-lg">Passageiro {index + 1}: {passenger.name}</CardTitle>
+                   <p className="text-sm text-muted-foreground"><span className="font-semibold">CPF:</span> {passenger.cpf}</p>
                 </CardHeader>
-                <CardContent>
-                  <p><span className="font-semibold">CPF:</span> {passenger.cpf}</p>
+                <CardContent className="pt-4">
+                  
+                  <div className="mb-4">
+                      <h4 className="font-semibold mb-2 flex items-center gap-2 text-md"><Plane size={16} /> Itinerário</h4>
+                      <div className="space-y-3 pl-2">
+                        {passenger.itinerary.map((segment, segIndex) => (
+                           <Card key={segment.id} className="bg-white">
+                               <CardHeader className="p-3">
+                                   <CardTitle className="text-base">Trecho {segIndex + 1}: {segment.origin} para {segment.destination}</CardTitle>
+                               </CardHeader>
+                               <CardContent className="p-3 pt-0 text-sm">
+                                   <p><span className="font-semibold">Partida:</span> {new Date(segment.departureDate).toLocaleDateString()}</p>
+                                   {segment.isRoundTrip && segment.returnDate && (
+                                       <p><span className="font-semibold">Retorno:</span> {new Date(segment.returnDate).toLocaleDateString()}</p>
+                                   )}
+                               </CardContent>
+                           </Card>
+                        ))}
+                      </div>
+                  </div>
+
                   {passenger.documents && passenger.documents.length > 0 && (
-                     <div className="mt-2">
-                        <p className="font-semibold">Documentos Anexados:</p>
-                        <ul className="list-disc pl-5 text-sm">
+                     <div>
+                        <h4 className="font-semibold mb-2 flex items-center gap-2 text-md"><FileText size={16}/> Documentos Anexados:</h4>
+                        <ul className="list-disc pl-7 text-sm space-y-1">
                            {passenger.documents.map((doc, i) => <li key={i}>{doc.name}</li>)}
                         </ul>
                      </div>
                   )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        <Separator className="my-6" />
-        
-        <section className="mb-8">
-          <h2 className="text-xl font-headline font-bold mb-4 flex items-center gap-2"><Plane />Itinerário</h2>
-           <div className="space-y-4">
-            {request.itinerary.map((segment, index) => (
-              <Card key={segment.id} className="bg-gray-50">
-                 <CardHeader>
-                  <CardTitle className="text-lg">Trecho {index + 1}: {segment.origin} para {segment.destination}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p><span className="font-semibold">Partida:</span> {new Date(segment.departureDate).toLocaleString()}</p>
-                    {segment.isRoundTrip && segment.returnDate && (
-                         <p><span className="font-semibold">Retorno:</span> {new Date(segment.returnDate).toLocaleString()}</p>
-                    )}
                 </CardContent>
               </Card>
             ))}
