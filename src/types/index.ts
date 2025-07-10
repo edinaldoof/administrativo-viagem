@@ -36,10 +36,12 @@ export type Billing = {
   webId?: string;
 };
 
+export type TravelRequestStatus = 'Draft' | 'Submitted' | 'Approved' | 'Rejected';
+
 export type TravelRequest = {
   id: string;
   title: string;
-  status: 'Draft' | 'Submitted' | 'Approved' | 'Rejected';
+  status: TravelRequestStatus;
   createdAt: Date;
   passengers: Passenger[];
   billing: Billing;

@@ -13,7 +13,8 @@ import {
   Plane,
   Download,
   Search,
-  Calendar
+  Calendar,
+  CheckCircle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -45,11 +46,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useToast } from "@/hooks/use-toast";
 import { RequestForm } from "@/components/request-form";
 import { DocumentPreview } from "@/components/document-preview";
-import { type TravelRequest } from "@/types";
+import { type TravelRequest, type TravelRequestStatus } from "@/types";
 import { getRequests, saveRequests } from "@/lib/actions";
 import { exportToPNG, exportToPDF, exportToExcel } from "@/lib/export";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { StatusBadge } from "@/components/status-badge";
 
 
 type FilterType = 'all' | 'title' | 'passenger' | 'account' | 'webId';
@@ -123,6 +125,21 @@ export default function SolicitacoesPage() {
     toast({ title: "Sucesso", description: `Solicitação ${selectedRequest ? 'atualizada' : 'criada'} com sucesso.` });
     setIsFormOpen(false);
     setSelectedRequest(null);
+  };
+
+  const handleStatusChange = (id: string, newStatus: TravelRequestStatus) => {
+    const updatedRequests = requests.map((req) => 
+      req.id === id ? { ...req, status: newStatus } : req
+    );
+    handleSaveRequests(updatedRequests);
+    toast({
+      description: (
+        <div className="flex items-center gap-2">
+            <CheckCircle className="h-4 w-4 text-green-500" /> 
+            <span>Status da solicitação atualizado para <strong>{newStatus}</strong>.</span>
+        </div>
+      )
+    });
   };
   
   const getMainItinerary = (request: TravelRequest) => {
@@ -220,8 +237,8 @@ export default function SolicitacoesPage() {
                 <TableHead>Título</TableHead>
                 <TableHead className="hidden lg:table-cell">Passageiro</TableHead>
                 <TableHead className="hidden xl:table-cell">Itinerário</TableHead>
+                <TableHead className="hidden md:table-cell">Status</TableHead>
                 <TableHead className="hidden md:table-cell">Conta</TableHead>
-                <TableHead className="hidden md:table-cell">WEB ID</TableHead>
                 <TableHead className="hidden lg:table-cell">Criado em</TableHead>
                 <TableHead>
                   <span className="sr-only">Ações</span>
@@ -245,8 +262,13 @@ export default function SolicitacoesPage() {
                             <span className="truncate max-w-[150px]" title={getMainItinerary(request)}>{getMainItinerary(request)}</span>
                          </div>
                     </TableCell>
-                     <TableCell className="hidden md:table-cell">{request.billing.account}</TableCell>
-                    <TableCell className="hidden md:table-cell">{request.billing.webId}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <StatusBadge
+                        status={request.status}
+                        onStatusChange={(newStatus) => handleStatusChange(request.id, newStatus)}
+                      />
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">{request.billing.account}</TableCell>
                     <TableCell className="hidden lg:table-cell">
                         <div className="flex items-center gap-1">
                             <Calendar className="h-4 w-4 text-muted-foreground"/>
