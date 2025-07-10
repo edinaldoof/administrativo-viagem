@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Bot, Loader2, Send, User, X, GripVertical } from 'lucide-react';
+import { Bot, Loader2, Send, User, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -46,7 +46,10 @@ export default function ChatWidget() {
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isDragging || !widgetRef.current || !position) return;
 
-    setDidDrag(true); 
+    // Se o movimento for maior que um pequeno threshold, considera-se arrasto.
+    if (Math.abs(e.clientX - (position.x + dragStartPos.current.x)) > 3 || Math.abs(e.clientY - (position.y + dragStartPos.current.y)) > 3) {
+      setDidDrag(true); 
+    }
 
     let newX = e.clientX - dragStartPos.current.x;
     let newY = e.clientY - dragStartPos.current.y;
@@ -61,13 +64,16 @@ export default function ChatWidget() {
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
   }, []);
-
+  
   const handleClick = () => {
+    // Só abre se não tiver ocorrido um arrasto
     if (!didDrag) {
       setIsOpen(true);
     }
+    // Reseta o estado de arrasto para o próximo clique
+    setDidDrag(false);
   };
-  
+
   useEffect(() => {
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
@@ -136,7 +142,7 @@ export default function ChatWidget() {
           onMouseDown={handleMouseDown}
           onClick={handleClick}
           className={cn(
-            "rounded-full w-16 h-16 bg-primary shadow-lg transition-transform",
+            "rounded-full w-16 h-16 bg-primary shadow-lg transition-transform will-change-transform",
             isDragging ? "cursor-grabbing scale-110" : "cursor-grab hover:scale-110"
           )}
         >
@@ -145,9 +151,14 @@ export default function ChatWidget() {
       )}
 
       {isOpen && (
-         <Card className="w-[380px] h-[600px] flex flex-col shadow-2xl absolute bottom-0 right-0">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-lg">
+         <Card className={cn(
+            "w-[380px] h-[600px] flex flex-col shadow-2xl absolute bottom-0 right-0",
+            "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=right]:slide-in-from-left-2"
+          )}
+          data-state={isOpen ? "open" : "closed"}
+         >
+          <CardHeader className="flex flex-row items-center justify-between border-b">
+            <CardTitle className="flex items-center gap-2 text-lg font-semibold">
                 <Avatar className="h-8 w-8">
                     <AvatarFallback><Bot size={20}/></AvatarFallback>
                 </Avatar>
@@ -155,6 +166,7 @@ export default function ChatWidget() {
             </CardTitle>
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsOpen(false)}>
               <X className="h-5 w-5" />
+              <span className="sr-only">Fechar</span>
             </Button>
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden p-0">
@@ -168,7 +180,7 @@ export default function ChatWidget() {
                     }`}
                   >
                     {message.role === 'model' && (
-                      <Avatar>
+                      <Avatar className="flex-shrink-0">
                         <AvatarFallback><Bot /></AvatarFallback>
                       </Avatar>
                     )}
@@ -179,10 +191,10 @@ export default function ChatWidget() {
                           : 'bg-muted'
                       }`}
                     >
-                      <p className="text-sm">{message.content}</p>
+                      <p className="text-sm break-words">{message.content}</p>
                     </div>
                     {message.role === 'user' && (
-                      <Avatar>
+                       <Avatar className="flex-shrink-0">
                         <AvatarFallback><User /></AvatarFallback>
                       </Avatar>
                     )}
@@ -208,9 +220,11 @@ export default function ChatWidget() {
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Pergunte algo..."
                 disabled={isLoading}
+                autoComplete="off"
               />
               <Button type="submit" disabled={isLoading || !input.trim()}>
                 <Send className="h-4 w-4" />
+                <span className="sr-only">Enviar</span>
               </Button>
             </form>
           </CardFooter>
