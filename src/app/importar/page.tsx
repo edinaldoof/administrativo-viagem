@@ -117,7 +117,7 @@ export default function ImportarPage() {
     <div className="p-4 md:p-8 pt-6">
       <div className="max-w-6xl mx-auto space-y-4">
         <div className="space-y-2">
-          <h2 className="text-3xl font-bold tracking-tight">Importar Solicitação com IA</h2>
+          <h2 className="text-3xl font-bold tracking-tight">Importar Requisição</h2>
           <p className="text-muted-foreground">
             Envie um arquivo PDF e revise as informações extraídas pela IA antes de salvar.
           </p>

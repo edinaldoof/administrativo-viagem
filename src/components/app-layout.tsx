@@ -93,7 +93,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                             >
                                 <Link href="/importar">
                                   <FileUp />
-                                  <span>Importar com IA</span>
+                                  <span>Importar Requisição</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
