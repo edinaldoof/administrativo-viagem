@@ -22,7 +22,7 @@ const ExtractInfoInputSchema = z.object({
 });
 export type ExtractInfoInput = z.infer<typeof ExtractInfoInputSchema>;
 
-// A saída deve corresponder ao esquema do formulário de viagem, mas sem os IDs e datas gerados pelo sistema
+// A saída deve corresponder ao esquema do formulário de viagem
 const ExtractInfoOutputSchema = travelRequestSchema;
 export type ExtractInfoOutput = z.infer<typeof ExtractInfoOutputSchema>;
 
@@ -32,29 +32,16 @@ export async function extractInfoFromPdf(input: ExtractInfoInput): Promise<Extra
   return extractInfoFlow(input);
 }
 
-
-// Define o prompt para o Genkit
-const extractPrompt = ai.definePrompt({
-  name: 'extractTravelInfoPrompt',
-  input: { schema: ExtractInfoInputSchema },
-  output: { schema: ExtractInfoOutputSchema },
-  prompt: `Você é um assistente especializado em extrair informações de documentos de solicitação de viagem em formato PDF.
-Sua tarefa é analisar o PDF fornecido e preencher os campos de acordo com o esquema de saída JSON.
-
-PDF para análise: {{media url=pdfDataUri}}
-
-Por favor, extraia as seguintes informações:
-- Título da solicitação.
-- Detalhes de faturamento, incluindo centro de custo, conta, descrição e WEB ID.
-- Uma lista de todos os passageiros.
-- Para cada passageiro, extraia o nome completo, CPF e data de nascimento.
-- Para cada passageiro, extraia a lista de itinerários (trechos da viagem).
-- Para cada itinerário, extraia a origem, destino, data de partida e, se houver, a data de retorno (e se é ida e volta).
-- Se não encontrar um valor para um campo opcional, omita-o do JSON. Campos obrigatórios como nome, cpf, origem, destino e datas devem ser preenchidos.
-- Preste muita atenção aos formatos de data e CPF.
-
-Retorne os dados estritamente no formato JSON especificado.`,
-});
+// Função para converter data do formato DD/MM/AAAA para um objeto Date
+const parseDate = (dateString: string | null): Date | undefined => {
+    if (!dateString) return undefined;
+    const parts = dateString.split('/');
+    if (parts.length === 3) {
+      // new Date(year, monthIndex, day)
+      return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+    }
+    return undefined;
+};
 
 
 // Define o fluxo do Genkit
@@ -65,12 +52,88 @@ const extractInfoFlow = ai.defineFlow(
     outputSchema: ExtractInfoOutputSchema,
   },
   async (input) => {
-    const { output } = await extractPrompt(input);
+    // 1. Pede à IA para extrair o texto bruto do PDF
+    const { output: rawText } = await ai.generate({
+        prompt: `Extraia todo o texto do documento a seguir. Mantenha a formatação e as quebras de linha o mais próximo possível do original. Documento: {{media url="${input.pdfDataUri}"}}`,
+        output: {
+            schema: z.string()
+        }
+    });
+
+    if (!rawText) {
+        throw new Error("A IA não conseguiu ler o conteúdo do PDF.");
+    }
     
-    if (!output) {
-        throw new Error("A IA não conseguiu extrair as informações do PDF.");
+    // 2. Aplica as expressões regulares no texto extraído
+    const extract = (regex: RegExp, group = 1) => {
+        const match = rawText.match(regex);
+        return match && match[group] ? match[group].trim().replace(/\s+/g, ' ') : null;
+    };
+    
+    const extractAll = (regex: RegExp) => {
+        const matches = [...rawText.matchAll(regex)];
+        return matches.map(m => m.slice(1).map(s => s.trim().replace(/\s+/g, ' ')));
     }
 
-    return output;
+    const passengerMatch = extractAll(/CPF E NOME:\s*([0-9.-]+)\s*-\s*([A-Za-zÀ-ú\s]+)/g);
+    const birthDateMatch = extractAll(/DATA DE NASCIMENTO:\s*(\d{2}\/\d{2}\/\d{4})/g);
+    const originMatch = extractAll(/CIDADE DE ORIGEM:\s*(.+)/g);
+    const destinationMatch = extractAll(/CIDADE DE DESTINO:\s*(.+)/g);
+    const departureDateMatch = extractAll(/DATA DE SA[IÍ]DA:\s*(\d{2}\/\d{2}\/\d{4})/gi);
+    const returnDateMatch = extractAll(/DATA DE RETORNO:\s*(\d{2}\/\d{2}\/\d{4})/g);
+
+    // 3. Monta o objeto de saída
+    const title = extract(/Requisição para Compra de Passagens\s*([\s\S]*?)(?:DO PIAUÍ|Número da Solicitação:)/) || "Título não encontrado";
+    const webId = extract(/Número da Solicitação: WEB:(\S+)/);
+    const account = extract(/NUMERO DO PROJETO:\s*(\d+)/);
+    const description = extract(/JUSTIFICATIVA\/FINALIDADE:\s*([\s\S]*?)\s*USUÁRIO DE CADASTRO:/);
+
+    const departureDate = parseDate(departureDateMatch[0]?.[0]);
+    const returnDate = parseDate(returnDateMatch[0]?.[0]);
+    
+    const itinerary = [];
+    if (departureDate) {
+        itinerary.push({
+            id: 'temp-ida',
+            origin: originMatch[0]?.[0] || "",
+            destination: destinationMatch[0]?.[0] || "",
+            departureDate: departureDate,
+            isRoundTrip: !!returnDate
+        });
+
+        if (returnDate) {
+             itinerary[0].returnDate = returnDate;
+        }
+    }
+
+
+    const passengers = passengerMatch.map((p, index) => ({
+        id: `temp-pass-${index}`,
+        cpf: p[0] || "",
+        name: p[1] || "",
+        birthDate: parseDate(birthDateMatch[index]?.[0]) || new Date(),
+        documents: [],
+        itinerary: itinerary
+    }));
+    
+    const extractedData = {
+        title: title,
+        passengers: passengers,
+        billing: {
+            costCenter: "N/A", // Este campo não foi encontrado nos padrões, usando um placeholder
+            webId: webId || "",
+            account: account || "",
+            description: description || ""
+        },
+    };
+
+    // 4. Valida e retorna os dados extraídos
+    try {
+        const validatedOutput = ExtractInfoOutputSchema.parse(extractedData);
+        return validatedOutput;
+    } catch (e) {
+        console.error("Erro de validação Zod:", e);
+        throw new Error("Os dados extraídos do PDF não são válidos.");
+    }
   }
 );
