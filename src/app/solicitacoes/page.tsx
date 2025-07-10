@@ -177,8 +177,8 @@ export default function SolicitacoesPage() {
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center md:space-x-4">
-          <div className="space-y-2 mb-4 md:mb-0">
+        <div className="flex justify-between items-center">
+          <div>
             <h1 className="font-headline text-3xl font-bold tracking-tight">
               Solicitações de Viagem
             </h1>

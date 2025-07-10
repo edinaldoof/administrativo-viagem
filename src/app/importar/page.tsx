@@ -68,6 +68,8 @@ export default function ImportarPage() {
               ...p,
               id: uuidv4(),
               birthDate: p.birthDate ? new Date(p.birthDate) : new Date(),
+              email: p.email || "",
+              phone: p.phone || "",
               itinerary: (p.itinerary || []).map(i => ({
                   ...i,
                   id: uuidv4(),
@@ -88,6 +90,7 @@ export default function ImportarPage() {
       const updatedPassengerDb = [...passengerDb];
 
       for (const passenger of newRequest.passengers) {
+          if (!passenger.cpf) continue;
           const existingPassengerIndex = updatedPassengerDb.findIndex(p => p.cpf === passenger.cpf);
           const profileData: PassengerProfile = {
               id: existingPassengerIndex > -1 ? updatedPassengerDb[existingPassengerIndex].id : uuidv4(),
@@ -142,7 +145,7 @@ export default function ImportarPage() {
         </p>
       </div>
       
-      <div className="max-w-2xl mx-auto pt-6">
+      <div className="pt-6">
         <div
           {...getRootProps()}
           className={`flex justify-center w-full rounded-lg border-2 border-dashed border-input p-12 text-center transition-colors ${

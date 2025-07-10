@@ -102,6 +102,7 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
     const updatedPassengerDb = [...currentPassengerDb];
 
     for (const passenger of data.passengers) {
+        if (!passenger.cpf) continue;
         const existingPassengerIndex = updatedPassengerDb.findIndex(p => p.cpf === passenger.cpf);
         const profileData = {
           id: existingPassengerIndex > -1 ? updatedPassengerDb[existingPassengerIndex].id : uuidv4(),
