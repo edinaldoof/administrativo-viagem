@@ -13,6 +13,7 @@ import {
   Plane,
   Download,
   FileUp,
+  User,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -126,6 +127,17 @@ export default function Home() {
     return firstPassenger.itinerary.map(i => i.origin).join(', ');
   }
 
+  const getPassengerInfo = (request: TravelRequest) => {
+    if (!request.passengers || request.passengers.length === 0) {
+      return 'Nenhum passageiro';
+    }
+    const firstPassengerName = request.passengers[0].name;
+    if (request.passengers.length > 1) {
+      return `${firstPassengerName} +${request.passengers.length - 1}`;
+    }
+    return firstPassengerName;
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b">
@@ -147,7 +159,7 @@ export default function Home() {
             <TableHeader>
               <TableRow>
                 <TableHead>Título</TableHead>
-                <TableHead className="hidden md:table-cell">Passageiros</TableHead>
+                <TableHead className="hidden md:table-cell">Passageiro Principal</TableHead>
                 <TableHead className="hidden md:table-cell">Itinerário Principal</TableHead>
                 <TableHead className="hidden lg:table-cell">Criado em</TableHead>
                 <TableHead>
@@ -162,8 +174,8 @@ export default function Home() {
                     <TableCell className="font-medium">{request.title}</TableCell>
                     <TableCell className="hidden md:table-cell">
                         <div className="flex items-center gap-1">
-                            <Users className="h-4 w-4 text-muted-foreground"/>
-                            <span>{request.passengers.length}</span>
+                            <User className="h-4 w-4 text-muted-foreground"/>
+                            <span>{getPassengerInfo(request)}</span>
                         </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
