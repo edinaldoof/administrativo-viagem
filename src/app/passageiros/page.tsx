@@ -149,7 +149,7 @@ export default function PassageirosPage() {
   };
 
   return (
-    <div className="p-4 md:p-8 pt-6 space-y-4">
+    <div className="space-y-4">
       <div className="flex justify-between items-center space-y-2 md:space-y-0">
         <div>
           <h2 className="text-3xl font-headline font-bold tracking-tight">Gerenciar Passageiros</h2>

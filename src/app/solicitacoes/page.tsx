@@ -183,7 +183,7 @@ export default function SolicitacoesPage() {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   return (
-    <div className="p-4 md:p-8 pt-6 space-y-4">
+    <div className="space-y-4">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="font-headline text-3xl font-bold tracking-tight">
