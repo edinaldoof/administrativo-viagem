@@ -5,6 +5,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { GoogleMap, useJsApiLoader, DirectionsService, DirectionsRenderer } from '@react-google-maps/api';
 import { Skeleton } from './ui/skeleton';
 import { useTheme } from 'next-themes';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { MapIcon } from 'lucide-react';
 
 const containerStyle = {
   width: '100%',
@@ -107,10 +109,11 @@ const RouteMap: React.FC<RouteMapProps> = ({ origin, destination }) => {
   const { theme } = useTheme();
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
 
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+    googleMapsApiKey: apiKey,
   });
 
   const directionsServiceOptions = useMemo<google.maps.DirectionsRequest>(() => ({
@@ -131,6 +134,20 @@ const RouteMap: React.FC<RouteMapProps> = ({ origin, destination }) => {
       setError(`Não foi possível encontrar a rota. Verifique os locais de origem e destino.`);
     }
   };
+
+  if (!apiKey) {
+    return (
+        <div className="flex items-center justify-center h-full">
+            <Alert variant="destructive" className="w-auto">
+                <MapIcon className="h-4 w-4" />
+                <AlertTitle>Configuração necessária</AlertTitle>
+                <AlertDescription>
+                    A chave da API do Google Maps não foi configurada.
+                </AlertDescription>
+            </Alert>
+        </div>
+    );
+  }
 
   if (loadError) {
     return <div className="p-4 text-destructive">Erro ao carregar o mapa. Verifique a chave da API.</div>;
