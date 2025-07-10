@@ -4,7 +4,7 @@
 import React from 'react';
 import { Sidebar, SidebarContent, SidebarInset, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarTrigger } from '@/components/ui/sidebar';
 import { Logo } from './logo';
-import { Home, ListChecks, FileUp, Bot, PlusCircle } from 'lucide-react';
+import { Home, ListChecks, FileUp, PlusCircle } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
@@ -13,9 +13,9 @@ import { useState } from 'react';
 import { type TravelRequest } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { getRequests, saveRequests } from '@/lib/actions';
-import { v4 as uuidv4 } from "uuid";
 import Link from 'next/link';
 import ChatWidget from './chat-widget';
+import { ThemeToggle } from './theme-toggle';
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -89,8 +89,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     </SidebarMenu>
                 </SidebarContent>
             </Sidebar>
-            <SidebarInset className="flex-1">
-                {children}
+            <SidebarInset className="flex-1 flex flex-col">
+                 <header className="flex h-14 items-center justify-end gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
+                    <ThemeToggle />
+                </header>
+                <main className="flex-1 overflow-auto">
+                 {children}
+                </main>
             </SidebarInset>
 
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
