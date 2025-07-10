@@ -43,6 +43,7 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
             ...initialData,
             passengers: initialData.passengers.map(p => ({
                 ...p,
+                birthDate: new Date(p.birthDate),
                 itinerary: (p.itinerary || []).map(i => ({
                     ...i,
                     departureDate: new Date(i.departureDate),
@@ -52,13 +53,14 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
         }
         : {
             title: "",
-            billing: { costCenter: "" },
+            billing: { costCenter: "", account: "", description: "", webId: "" },
             passengers: [{ 
                 id: uuidv4(), 
                 name: "", 
                 cpf: "", 
+                birthDate: new Date(),
                 documents: [], 
-                itinerary: [{ id: uuidv4(), origin: "", destination: "", departureDate: new Date(), isRoundTrip: false }] 
+                itinerary: [{ id: uuidv4(), origin: "", destination: "", departureDate: new Date(), isRoundTrip: false, ciaAerea: "", voo: "", horarios: "" }] 
             }],
         },
     });
@@ -95,17 +97,52 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
         
         <div className="space-y-4">
             <h3 className="text-lg font-semibold flex items-center gap-2"><Building /> Faturamento</h3>
-             <FormField
-                control={form.control}
-                name="billing.costCenter"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Centro de Custo</FormLabel>
-                    <FormControl><Input placeholder="ex: ENG-PROJETO-X" {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <FormField
+                  control={form.control}
+                  name="billing.costCenter"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Centro de Custo</FormLabel>
+                      <FormControl><Input placeholder="ex: ENG-PROJETO-X" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="billing.account"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Conta do Projeto</FormLabel>
+                      <FormControl><Input placeholder="ex: CONT 31/2024" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="billing.description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Descrição</FormLabel>
+                      <FormControl><Input placeholder="Descrição do projeto" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="billing.webId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>WEB ID</FormLabel>
+                      <FormControl><Input placeholder="ex: WEB 7735/2025" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+             </div>
         </div>
 
         <div className="space-y-4">
@@ -117,28 +154,45 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
                         Passageiro {index + 1}: {form.watch(`passengers.${index}.name`) || "Novo Passageiro"}
                      </AccordionTrigger>
                      <AccordionContent className="space-y-4 pt-2">
-                        <FormField
-                            control={form.control}
-                            name={`passengers.${index}.name`}
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Nome Completo</FormLabel>
-                                    <FormControl><Input placeholder="João da Silva" {...field} /></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name={`passengers.${index}.cpf`}
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>CPF</FormLabel>
-                                    <FormControl><Input placeholder="000.000.000-00" {...field} onChange={(e) => field.onChange(formatCpf(e.target.value))} /></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <FormField
+                              control={form.control}
+                              name={`passengers.${index}.name`}
+                              render={({ field }) => (
+                                  <FormItem>
+                                      <FormLabel>Nome Completo</FormLabel>
+                                      <FormControl><Input placeholder="João da Silva" {...field} /></FormControl>
+                                      <FormMessage />
+                                  </FormItem>
+                              )}
+                          />
+                          <FormField
+                              control={form.control}
+                              name={`passengers.${index}.cpf`}
+                              render={({ field }) => (
+                                  <FormItem>
+                                      <FormLabel>CPF</FormLabel>
+                                      <FormControl><Input placeholder="000.000.000-00" {...field} onChange={(e) => field.onChange(formatCpf(e.target.value))} /></FormControl>
+                                      <FormMessage />
+                                  </FormItem>
+                              )}
+                          />
+                          <FormField control={form.control} name={`passengers.${index}.birthDate`} render={({ field }) => (
+                              <FormItem className="flex flex-col"><FormLabel>Data de Nascimento</FormLabel>
+                                  <Popover><PopoverTrigger asChild>
+                                      <FormControl>
+                                          <Button variant={"outline"} className={cn("pl-3 text-left font-normal bg-white", !field.value && "text-muted-foreground")}>
+                                              {field.value ? format(field.value, "dd/MM/yyyy", { locale: ptBR }) : <span>Escolha uma data</span>}
+                                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                          </Button>
+                                      </FormControl>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-0" align="start">
+                                      <Calendar locale={ptBR} mode="single" selected={field.value} onSelect={field.onChange} captionLayout="dropdown-buttons" fromYear={1920} toYear={new Date().getFullYear()} />
+                                  </PopoverContent></Popover>
+                              <FormMessage /></FormItem>
+                          )} />
+                        </div>
                          <Controller
                             control={form.control}
                             name={`passengers.${index}.documents`}
@@ -160,7 +214,7 @@ export function RequestForm({ onSubmit, initialData }: RequestFormProps) {
                   </AccordionItem>
                 ))}
              </Accordion>
-             <Button type="button" variant="outline" onClick={() => appendPassenger({ id: uuidv4(), name: "", cpf: "", documents: [], itinerary: [{id: uuidv4(), origin: "", destination: "", departureDate: new Date(), isRoundTrip: false}] })}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Passageiro</Button>
+             <Button type="button" variant="outline" onClick={() => appendPassenger({ id: uuidv4(), name: "", cpf: "", birthDate: new Date(), documents: [], itinerary: [{id: uuidv4(), origin: "", destination: "", departureDate: new Date(), isRoundTrip: false, ciaAerea: "", voo: "", horarios: ""}] })}><PlusCircle className="mr-2 h-4 w-4" />Adicionar Passageiro</Button>
         </div>
 
         <Button type="submit" className="w-full">
@@ -243,6 +297,17 @@ function ItinerarySubForm({ passengerIndex, form }: { passengerIndex: number, fo
                                 )} />
                             )}
                         </div>
+                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <FormField control={form.control} name={`passengers.${passengerIndex}.itinerary.${index}.ciaAerea`} render={({ field }) => (
+                                <FormItem><FormLabel>Cia Aérea</FormLabel><FormControl><Input placeholder="Ex: LATAM" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                             <FormField control={form.control} name={`passengers.${passengerIndex}.itinerary.${index}.voo`} render={({ field }) => (
+                                <FormItem><FormLabel>Voo</FormLabel><FormControl><Input placeholder="Ex: LA3456" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                             <FormField control={form.control} name={`passengers.${passengerIndex}.itinerary.${index}.horarios`} render={({ field }) => (
+                                <FormItem><FormLabel>Horários</FormLabel><FormControl><Input placeholder="Ex: 08:00 - 10:00" {...field} /></FormControl><FormMessage /></FormItem>
+                            )} />
+                        </div>
                         <div className="flex items-center space-x-2">
                             <Checkbox id={`round-trip-${passengerIndex}-${index}`} checked={form.watch(`passengers.${passengerIndex}.itinerary.${index}.isRoundTrip`)} onCheckedChange={() => handleRoundTrip(index)} />
                             <label htmlFor={`round-trip-${passengerIndex}-${index}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Viagem de ida e volta</label>
@@ -256,7 +321,7 @@ function ItinerarySubForm({ passengerIndex, form }: { passengerIndex: number, fo
                 ))}
             </div>
             <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={() => append({ id: uuidv4(), origin: "", destination: "", departureDate: new Date(), isRoundTrip: false })}>
+                <Button type="button" variant="outline" onClick={() => append({ id: uuidv4(), origin: "", destination: "", departureDate: new Date(), isRoundTrip: false, ciaAerea: "", voo: "", horarios: "" })}>
                     <PlusCircle className="mr-2 h-4 w-4" />Adicionar Trecho
                 </Button>
                 { form.watch(`passengers.${passengerIndex}.itinerary.${fields.length - 1}.isRoundTrip`) &&

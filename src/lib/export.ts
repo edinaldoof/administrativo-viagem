@@ -25,17 +25,14 @@ export const exportToPDF = (element: HTMLElement | null, fileName:string) => {
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
     const ratio = canvasWidth / canvasHeight;
-    const height = pdfWidth / ratio;
+    let height = pdfWidth / ratio;
     
     // Check if content height is larger than page height
     if (height > pdfHeight) {
-        // This simple implementation will just scale to fit, might need multi-page for very long content
-        const newWidth = pdfHeight * ratio;
-        pdf.addImage(imgData, 'PNG', (pdfWidth - newWidth)/2, 0, newWidth, pdfHeight);
-    } else {
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, height);
+        height = pdfHeight; // Scale to fit page height
     }
 
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, height);
     pdf.save(`${fileName.replace(/\s+/g, '_')}.pdf`);
   });
 };
@@ -48,26 +45,33 @@ export const exportToExcel = (request: TravelRequest) => {
         ["Título da Solicitação", request.title],
         ["ID da Solicitação", request.id],
         ["Criado em", new Date(request.createdAt).toLocaleDateString()],
-        ["Centro de Custo", request.billing.costCenter]
+        ["Centro de Custo", request.billing.costCenter],
+        ["Conta do Projeto", request.billing.account || ""],
+        ["Descrição", request.billing.description || ""],
+        ["WEB ID", request.billing.webId || ""]
     ];
     const wsRequest = utils.aoa_to_sheet(requestInfo);
     utils.book_append_sheet(wb, wsRequest, "Info da Solicitação");
 
     // Passengers and Itineraries
     const exportData = [];
-    exportData.push(["Nome Passageiro", "CPF", "Origem", "Destino", "Data Partida", "Ida e Volta?", "Data Retorno", "Documentos"]);
+    exportData.push(["Nome Passageiro", "CPF", "Data Nascimento", "Origem", "Destino", "Data Partida", "Ida e Volta?", "Data Retorno", "Cia Aérea", "Voo", "Horários", "Documentos"]);
 
     for (const passenger of request.passengers) {
-        if (passenger.itinerary.length > 0) {
+        if (passenger.itinerary && passenger.itinerary.length > 0) {
             for (const leg of passenger.itinerary) {
                 exportData.push([
                     passenger.name,
                     passenger.cpf,
+                    new Date(passenger.birthDate).toLocaleDateString(),
                     leg.origin,
                     leg.destination,
                     new Date(leg.departureDate).toLocaleDateString(),
                     leg.isRoundTrip ? "Sim" : "Não",
                     leg.returnDate ? new Date(leg.returnDate).toLocaleDateString() : "N/A",
+                    leg.ciaAerea || "",
+                    leg.voo || "",
+                    leg.horarios || "",
                     passenger.documents.map(d => d.name).join(', ')
                 ]);
             }
@@ -75,11 +79,8 @@ export const exportToExcel = (request: TravelRequest) => {
              exportData.push([
                 passenger.name,
                 passenger.cpf,
-                "N/A",
-                "N/A",
-                "N/A",
-                "N/A",
-                "N/A",
+                new Date(passenger.birthDate).toLocaleDateString(),
+                "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",
                 passenger.documents.map(d => d.name).join(', ')
             ]);
         }

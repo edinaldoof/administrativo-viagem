@@ -15,6 +15,9 @@ export const itinerarySchema = z.object({
   departureDate: z.date({ required_error: "A data de partida é obrigatória." }),
   isRoundTrip: z.boolean().default(false),
   returnDate: z.date().optional(),
+  ciaAerea: z.string().optional(),
+  voo: z.string().optional(),
+  horarios: z.string().optional(),
 }).refine(data => {
     if (data.isRoundTrip && data.returnDate) {
         return data.returnDate > data.departureDate;
@@ -43,6 +46,7 @@ export const passengerSchema = z.object({
   id: z.string(),
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres."),
   cpf: z.string().refine(validateCpf, { message: "CPF inválido." }),
+  birthDate: z.date({ required_error: "A data de nascimento é obrigatória." }),
   documents: z.array(fileSchema).optional().default([]),
   itinerary: z.array(itinerarySchema).min(1, "É necessário pelo menos um trecho no itinerário."),
 });
@@ -52,6 +56,9 @@ export const travelRequestSchema = z.object({
   passengers: z.array(passengerSchema).min(1, "É necessário pelo menos um passageiro."),
   billing: z.object({
     costCenter: z.string().min(1, "O centro de custo é obrigatório."),
+    account: z.string().optional(),
+    description: z.string().optional(),
+    webId: z.string().optional(),
   })
 });
 

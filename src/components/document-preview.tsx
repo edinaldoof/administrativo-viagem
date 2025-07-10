@@ -5,7 +5,7 @@ import React from "react";
 import { type TravelRequest } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { User, Plane, Building, FileText } from "lucide-react";
+import { User, Plane, Building, FileText, Cake } from "lucide-react";
 
 type DocumentPreviewProps = {
   request: TravelRequest | null;
@@ -45,7 +45,10 @@ export const DocumentPreview = React.forwardRef<HTMLDivElement, DocumentPreviewP
               <Card key={passenger.id} className="bg-gray-50 overflow-hidden">
                 <CardHeader className="bg-gray-100">
                   <CardTitle className="text-lg">Passageiro {index + 1}: {passenger.name}</CardTitle>
-                   <p className="text-sm text-muted-foreground"><span className="font-semibold">CPF:</span> {passenger.cpf}</p>
+                   <div className="text-sm text-muted-foreground grid grid-cols-2 gap-x-4">
+                      <p><span className="font-semibold">CPF:</span> {passenger.cpf}</p>
+                      <p><span className="font-semibold">Nascimento:</span> {new Date(passenger.birthDate).toLocaleDateString()}</p>
+                   </div>
                 </CardHeader>
                 <CardContent className="pt-4">
                   
@@ -57,11 +60,14 @@ export const DocumentPreview = React.forwardRef<HTMLDivElement, DocumentPreviewP
                                <CardHeader className="p-3">
                                    <CardTitle className="text-base">Trecho {segIndex + 1}: {segment.origin} para {segment.destination}</CardTitle>
                                </CardHeader>
-                               <CardContent className="p-3 pt-0 text-sm">
+                               <CardContent className="p-3 pt-0 text-sm space-y-1">
                                    <p><span className="font-semibold">Partida:</span> {new Date(segment.departureDate).toLocaleDateString()}</p>
                                    {segment.isRoundTrip && segment.returnDate && (
                                        <p><span className="font-semibold">Retorno:</span> {new Date(segment.returnDate).toLocaleDateString()}</p>
                                    )}
+                                   {segment.ciaAerea && <p><span className="font-semibold">Cia Aérea:</span> {segment.ciaAerea}</p>}
+                                   {segment.voo && <p><span className="font-semibold">Voo:</span> {segment.voo}</p>}
+                                   {segment.horarios && <p><span className="font-semibold">Horários:</span> {segment.horarios}</p>}
                                </CardContent>
                            </Card>
                         ))}
@@ -87,8 +93,11 @@ export const DocumentPreview = React.forwardRef<HTMLDivElement, DocumentPreviewP
         <section>
           <h2 className="text-xl font-headline font-bold mb-4 flex items-center gap-2"><Building />Informações de Faturamento</h2>
           <Card className="bg-gray-50">
-            <CardContent className="pt-6">
+            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                 <p><span className="font-semibold">Centro de Custo:</span> {request.billing.costCenter}</p>
+                {request.billing.account && <p><span className="font-semibold">Conta do Projeto:</span> {request.billing.account}</p>}
+                {request.billing.webId && <p><span className="font-semibold">WEB ID:</span> {request.billing.webId}</p>}
+                {request.billing.description && <p className="col-span-1 md:col-span-2"><span className="font-semibold">Descrição:</span> {request.billing.description}</p>}
             </CardContent>
           </Card>
         </section>

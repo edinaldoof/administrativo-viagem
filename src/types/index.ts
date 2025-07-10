@@ -13,27 +13,25 @@ export type ItinerarySegment = {
   departureDate: Date;
   isRoundTrip: boolean;
   returnDate?: Date;
+  ciaAerea?: string;
+  voo?: string;
+  horarios?: string;
 };
 
 export type Passenger = {
   id: string;
   name: string;
   cpf: string;
+  birthDate: Date;
   documents: DocumentFile[];
-  itinerary: Itinerário[]; // MUDANÇA: Itinerário agora é por passageiro
-};
-
-export type Itinerário = {
-  id: string;
-  origin: string;
-  destination: string;
-  departureDate: Date;
-  isRoundTrip: boolean;
-  returnDate?: Date;
+  itinerary: ItinerarySegment[];
 };
 
 export type Billing = {
   costCenter: string;
+  account?: string;
+  description?: string;
+  webId?: string;
 };
 
 export type TravelRequest = {
