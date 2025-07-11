@@ -1,8 +1,8 @@
 // src/components/Header.js
 import React from 'react';
-import { Plane, FileImage, FileText, FileSpreadsheet } from 'lucide-react';
+import { Plane, FileImage, FileText, FileSpreadsheet, Upload } from 'lucide-react';
 
-const Header = ({ onExportPNG, onExportPDF, onExportExcel, isExportDisabled }) => {
+const Header = ({ onExportPNG, onExportPDF, onExportExcel, onImportPDF, isExportDisabled }) => {
   return (
     <div className="bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-xl">
       <div className="max-w-7xl mx-auto px-6 py-4">
@@ -19,6 +19,13 @@ const Header = ({ onExportPNG, onExportPDF, onExportExcel, isExportDisabled }) =
             </div>
           </div>
           <div className="flex items-center space-x-3">
+            <button
+              onClick={onImportPDF}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+            >
+              <Upload className="w-4 h-4" />
+              <span>Importar PDF</span>
+            </button>
             <button
               onClick={onExportPNG}
               disabled={isExportDisabled}

@@ -1,18 +1,12 @@
-
-'use server';
+// src/ai/flows/extract-info-flow.ts
 /**
  * @fileOverview Flow to extract travel information from a PDF.
- *
- * - extractInfoFromPdf - Extracts structured data from a PDF travel request.
- * - ExtractInfoInput - The input type for the function.
- * - ExtractInfoOutput - The output type for the function.
  */
 
-import { ai } from '../genkit'; // CORRIGIDO: Caminho relativo
+import { ai } from '../genkit';
 import { z } from 'zod';
-import { travelRequestSchema } from '../../lib/schemas'; // CORRIGIDO: Caminho relativo
+import { travelRequestSchema } from '../../lib/schemas';
 
-// Define the input schema for the flow
 const ExtractInfoInputSchema = z.object({
   pdfDataUri: z
     .string()
@@ -22,11 +16,9 @@ const ExtractInfoInputSchema = z.object({
 });
 export type ExtractInfoInput = z.infer<typeof ExtractInfoInputSchema>;
 
-// The output should match the travel form schema
 const ExtractInfoOutputSchema = travelRequestSchema;
 export type ExtractInfoOutput = z.infer<typeof ExtractInfoOutputSchema>;
 
-// Exported function that the app will call
 export async function extractInfoFromPdf(input: ExtractInfoInput): Promise<ExtractInfoOutput> {
   return extractInfoFlow(input);
 }
@@ -35,14 +27,11 @@ const parseDate = (dateString: string | null): Date | undefined => {
     if (!dateString) return undefined;
     const parts = dateString.match(/(\d{2})\/(\d{2})\/(\d{4})/);
     if (parts) {
-      // parts[1] = DD, parts[2] = MM, parts[3] = YYYY
       return new Date(parseInt(parts[3], 10), parseInt(parts[2], 10) - 1, parseInt(parts[1], 10));
     }
     return undefined;
 };
 
-
-// Define the Genkit flow
 const extractInfoFlow = ai.defineFlow(
   {
     name: 'extractInfoFlow',
@@ -54,11 +43,8 @@ const extractInfoFlow = ai.defineFlow(
       prompt: `
         You are an expert-level assistant for extracting data from documents.
         Your task is to analyze the following PDF document and extract the information to fill out a travel request form.
-        
         The document is a "Requisição para Compra de Passagens".
-
         Extract the following information and return it in a JSON format. Pay close attention to the field names and structure.
-
         - "title": The main title of the request, usually found at the top.
         - "billing":
           - "costCenter": The value from the "CENTRO DE CUSTO" field.
@@ -78,7 +64,6 @@ const extractInfoFlow = ai.defineFlow(
             - "returnDate": The "DATA DE RETORNO", if it exists. Format as DD/MM/YYYY.
             - "isRoundTrip": Set to 'true' if a return date is present, otherwise 'false'.
             - "ciaAerea", "voo", "horarios": Try to extract these details from the "OBSERVACOES" or "Sugestao" field. If not found, leave them blank.
-
         Document for analysis: {{media url="${input.pdfDataUri}"}}
       `,
       output: {
