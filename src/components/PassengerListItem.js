@@ -1,51 +1,82 @@
 // src/components/PassengerListItem.js
 import React from 'react';
+import {
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { formatCPF } from '../utils/utils';
 
 const PassengerListItem = ({ passageiro, onEdit, onDuplicate, onRemove }) => {
   if (!passageiro) {
-    return null; // Ou alguma representação de item vazio/carregando
+    return null;
   }
 
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-md border border-gray-100">
-      <div className="flex items-start justify-between mb-2">
-        <div>
+    <AccordionItem value={passageiro.id} className="bg-white rounded-2xl border border-gray-200 px-4 shadow-md transition-all hover:border-blue-300">
+      <AccordionTrigger className="text-left no-underline hover:no-underline py-3">
+        <div className="flex-1">
           <h4 className="font-semibold text-gray-800">{passageiro.nome}</h4>
-          <p className="text-sm text-gray-500">CPF: {passageiro.cpf}</p>
-          <p className="text-sm text-gray-500">Nascimento: {passageiro.dataNascimento}</p>
-          {passageiro.email && <p className="text-sm text-gray-500">Email: {passageiro.email}</p>}
-          {passageiro.phone && <p className="text-sm text-gray-500">Telefone: {passageiro.phone}</p>}
+          <p className="text-sm text-gray-500">CPF: {formatCPF(passageiro.cpf)}</p>
         </div>
-        <div className="flex space-x-1 flex-shrink-0">
-          <button
-            onClick={() => onEdit(passageiro)}
-            className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
-            title="Editar"
-          >
-            Editar
-          </button>
-          <button
-            onClick={() => onDuplicate(passageiro)}
-            className="p-2 hover:bg-green-100 rounded-lg transition-colors"
-            title="Duplicar"
-          >
-            Duplicar
-          </button>
-          <button
-            onClick={() => onRemove(passageiro.id)}
-            className="p-2 hover:bg-red-100 rounded-lg transition-colors"
-            title="Remover"
-          >
-            Remover
-          </button>
+      </AccordionTrigger>
+      <AccordionContent className="pt-2 pb-4">
+        <div className="space-y-3">
+          {/* Dados Pessoais */}
+          <div className="text-sm text-gray-600 space-y-1">
+            <p><strong>Nascimento:</strong> {passageiro.dataNascimento}</p>
+            {passageiro.email && <p><strong>Email:</strong> {passageiro.email}</p>}
+            {passageiro.phone && <p><strong>Telefone:</strong> {passageiro.phone}</p>}
+          </div>
+
+          {/* Itinerários */}
+          <div>
+            <h5 className="text-sm font-semibold text-gray-700 mb-2 border-t pt-3">
+              Itinerários ({passageiro.itinerarios?.length || 0})
+            </h5>
+            <div className="space-y-2 text-sm">
+              {passageiro.itinerarios && passageiro.itinerarios.length > 0 ? (
+                passageiro.itinerarios.map((it, index) => (
+                  <div key={it.id || index} className="p-2 bg-gray-50 rounded-lg">
+                    <span>{it.origem} → {it.destino}</span>
+                    <span className="text-xs text-gray-500 block">
+                      {it.dataSaida ? new Date(it.dataSaida + 'T03:00:00Z').toLocaleDateString('pt-BR') : 'N/A'}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-gray-400 italic">Nenhum itinerário cadastrado.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Botões de Ação */}
+          <div className="flex space-x-2 pt-3 border-t">
+            <button
+              onClick={() => onEdit(passageiro)}
+              className="px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors"
+              title="Editar"
+            >
+              Editar
+            </button>
+            <button
+              onClick={() => onDuplicate(passageiro)}
+              className="px-3 py-1 text-sm bg-green-100 text-green-800 rounded-lg hover:bg-green-200 transition-colors"
+              title="Duplicar"
+            >
+              Duplicar
+            </button>
+            <button
+              onClick={() => onRemove(passageiro.id)}
+              className="px-3 py-1 text-sm bg-red-100 text-red-800 rounded-lg hover:bg-red-200 transition-colors"
+              title="Remover"
+            >
+              Remover
+            </button>
+          </div>
         </div>
-      </div>
-      <div className="text-xs text-gray-400">
-        {passageiro.itinerarios && passageiro.itinerarios.length > 0
-          ? `${passageiro.itinerarios.length} trecho(s)`
-          : "Nenhum trecho adicionado"}
-      </div>
-    </div>
+      </AccordionContent>
+    </AccordionItem>
   );
 };
 
