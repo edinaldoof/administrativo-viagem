@@ -20,7 +20,7 @@ const PassengerForm = ({
     let formattedValue = value;
     if (name === 'cpf') {
       formattedValue = formatCPF(value);
-    } else if (name === 'dataNascimento') {
+    } else if (name === 'dataNascimento' || name === 'dataContato') {
       formattedValue = formatDate(value);
     }
     onPassageiroFieldChange(name, formattedValue);
@@ -118,6 +118,24 @@ const PassengerForm = ({
               placeholder="DD/MM/AAAA" maxLength="10"
             />
             {errors.dataNascimento && <div className="flex items-center space-x-1 mt-1 text-red-500 text-sm"><span>{errors.dataNascimento}</span></div>}
+          </div>
+          <div className="md:col-span-2">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email (Opcional)</label>
+            <input
+              type="email" name="email" id="email" value={currentPassageiro.email}
+              onChange={handlePassageiroInputChange}
+              className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="email@exemplo.com"
+            />
+          </div>
+          <div>
+            <label htmlFor="dataContato" className="block text-sm font-medium text-gray-700 mb-2">Data do Contato (Opcional)</label>
+            <input
+              type="text" name="dataContato" id="dataContato" value={currentPassageiro.dataContato}
+              onChange={handlePassageiroInputChange}
+              className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="DD/MM/AAAA" maxLength="10"
+            />
           </div>
         </div>
 

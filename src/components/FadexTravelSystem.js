@@ -1,3 +1,4 @@
+
 // src/components/FadexTravelSystem.js
 import React, { useState, useRef } from 'react';
 
@@ -180,7 +181,7 @@ const FadexTravelSystem = () => {
   const [faturamento, setFaturamento] = useState({ contaProjeto: '', descricao: '', cc: '', webId: '' });
   const [activeForm, setActiveForm] = useState(null);
   const [editingPassageiro, setEditingPassageiro] = useState(null);
-  const initialPassageiroState = { id: '', nome: '', cpf: '', dataNascimento: '', itinerarios: [], anexos: [] };
+  const initialPassageiroState = { id: '', nome: '', cpf: '', dataNascimento: '', email: '', dataContato: '', itinerarios: [], anexos: [] };
   const [currentPassageiro, setCurrentPassageiro] = useState(initialPassageiroState);
   const initialItinerarioState = { id: '', origem: '', destino: '', dataSaida: '', ciaAerea: '', voo: '', horarios: '' };
   const [currentItinerario, setCurrentItinerario] = useState(initialItinerarioState);
@@ -297,6 +298,8 @@ const FadexTravelSystem = () => {
             // Atualiza passageiro existente com novos itinerários
             const passageiroExistente = updatedPassageiros[existingPassengerIndex];
             passageiroExistente.itinerarios.push(...itinerariosFormatados);
+            if (pIA.email && !passageiroExistente.email) passageiroExistente.email = pIA.email;
+            if (pIA.contactDate && !passageiroExistente.dataContato) passageiroExistente.dataContato = formatDateToDDMMYYYY(pIA.contactDate);
             updatedCount++;
         } else {
             // Adiciona novo passageiro
@@ -305,6 +308,8 @@ const FadexTravelSystem = () => {
                 nome: pIA.name || 'Nome não extraído',
                 cpf: formattedCPF,
                 dataNascimento: formatDateToDDMMYYYY(pIA.birthDate),
+                email: pIA.email || '',
+                dataContato: pIA.contactDate ? formatDateToDDMMYYYY(pIA.contactDate) : '',
                 anexos: [],
                 itinerarios: itinerariosFormatados,
             });

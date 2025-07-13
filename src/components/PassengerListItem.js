@@ -13,6 +13,8 @@ const PassengerListItem = ({ passageiro, onEdit, onDuplicate, onRemove }) => {
           <h4 className="font-semibold text-gray-800">{passageiro.nome}</h4>
           <p className="text-sm text-gray-500">CPF: {passageiro.cpf}</p>
           <p className="text-sm text-gray-500">Nascimento: {passageiro.dataNascimento}</p>
+          {passageiro.email && <p className="text-sm text-gray-500">Email: {passageiro.email}</p>}
+          {passageiro.dataContato && <p className="text-sm text-gray-500">Contato: {passageiro.dataContato}</p>}
         </div>
         <div className="flex space-x-1 flex-shrink-0">
           <button

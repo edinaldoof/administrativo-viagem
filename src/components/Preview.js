@@ -24,6 +24,8 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
               </div>
               <div className="text-gray-600 mb-2">
                 CPF: {passageiro.cpf} | Nascimento: {passageiro.dataNascimento}
+                {passageiro.email && ` | Email: ${passageiro.email}`}
+                {passageiro.dataContato && ` | Contato: ${passageiro.dataContato}`}
               </div>
               {passageiro.itinerarios && passageiro.itinerarios.map((itinerario, iIndex) => (
                 <div key={itinerario.id || iIndex} className="ml-4 mb-1 text-gray-700"> {/* Adicionado iIndex como fallback para key */}

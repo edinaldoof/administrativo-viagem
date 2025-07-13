@@ -37,6 +37,7 @@ export const extractDataFromPdfWithGemini = async (text, preprocessedData = {}) 
         -   **birthDate**: The birth date from "DATA DE NASCIMENTO" in DD/MM/YYYY format.
         -   **email**: The email from "E-MAIL".
         -   **phone**: The phone number from "TELEFONE" or "CELULAR".
+        -   **contactDate**: The contact date from "DATA DO CONTATO" in DD/MM/YYYY format.
         -   **itinerary (Array of objects)**: For each passenger, extract their travel segments from the "DADOS DA VIAGEM" or "DETALHE DO ITEM" sections that are clearly associated with them.
             -   **origin**: The "CIDADE DE ORIGEM" or "ORIGEM".
             -   **destination**: The "CIDADE DE DESTINO" or "DESTINO".
@@ -62,6 +63,7 @@ export const extractDataFromPdfWithGemini = async (text, preprocessedData = {}) 
           "birthDate": "string (DD/MM/YYYY)",
           "email": "string or null",
           "phone": "string or null",
+          "contactDate": "string (DD/MM/YYYY) or null",
           "itinerary": [
             {
               "origin": "string",

@@ -261,7 +261,12 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
       doc.text(`${index + 1}. ${passageiro.nome}`, GRADIENT_WIDTH + PAGE_MARGIN, yPosition); //
       yPosition += doc.internal.getLineHeight() * 0.8;
       doc.setFont(FONTS.DEFAULT, 'normal'); doc.setFontSize(9); doc.setTextColor(COLORS.MEDIUM_TEXT);
-      doc.text(`CPF: ${formatCPF(passageiro.cpf)} | Nascimento: ${passageiro.dataNascimento}`, GRADIENT_WIDTH + PAGE_MARGIN + 5, yPosition); //
+      
+      let infoLine = `CPF: ${formatCPF(passageiro.cpf)} | Nascimento: ${passageiro.dataNascimento}`;
+      if (passageiro.email) infoLine += ` | Email: ${passageiro.email}`;
+      if (passageiro.dataContato) infoLine += ` | Contato: ${passageiro.dataContato}`;
+
+      doc.text(infoLine, GRADIENT_WIDTH + PAGE_MARGIN + 5, yPosition); //
       yPosition += doc.internal.getLineHeight() * 1.5;
 
       if (passageiro.itinerarios && passageiro.itinerarios.length > 0) {
