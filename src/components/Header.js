@@ -1,5 +1,6 @@
 // src/components/Header.js
 import React from 'react';
+import { Moon, Sun } from 'lucide-react';
 
 const Header = ({
   onExportPNG,
@@ -10,7 +11,9 @@ const Header = ({
   showImport,
   setCurrentView,
   currentView,
-  resetRequest
+  resetRequest,
+  toggleTheme,
+  theme
 }) => {
   const handleCreateNew = () => {
     resetRequest();
@@ -18,7 +21,7 @@ const Header = ({
   };
 
   return (
-    <div className="bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-xl">
+    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-white/20 dark:border-slate-700/50 shadow-xl">
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -29,31 +32,35 @@ const Header = ({
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Sistema de Viagens
               </h1>
-              <p className="text-gray-600 font-medium">Administrativo Fadex</p>
+              <p className="text-gray-600 dark:text-gray-400 font-medium">Administrativo Fadex</p>
             </div>
           </div>
           <div className="flex items-center space-x-3">
              {/* Botões de Navegação */}
              <button
               onClick={handleCreateNew}
-              className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${currentView === 'creating' ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+              className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${currentView === 'creating' ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-slate-600'}`}
             >
               Nova Requisição
             </button>
             <button
               onClick={() => setCurrentView('viewingRequests')}
-              className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${currentView === 'viewingRequests' ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+              className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${currentView === 'viewingRequests' ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-slate-600'}`}
             >
               Requisições Salvas
             </button>
              <button
               onClick={() => setCurrentView('viewingPassengers')}
-              className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${currentView === 'viewingPassengers' ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+              className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${currentView === 'viewingPassengers' ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-slate-600'}`}
             >
               Passageiros
             </button>
             
-            <div className="border-l h-8 mx-2"></div>
+            <div className="border-l h-8 mx-2 border-gray-300 dark:border-gray-600"></div>
+            
+            <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700">
+              {theme === 'light' ? <Moon className="h-5 w-5 text-gray-700" /> : <Sun className="h-5 w-5 text-yellow-400" />}
+            </button>
 
             {/* Botões de Ação Contextuais */}
             {currentView === 'creating' && (
@@ -69,21 +76,21 @@ const Header = ({
                 <button
                   onClick={onExportPNG}
                   disabled={isExportDisabled}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
                   <span>PNG</span>
                 </button>
                 <button
                   onClick={onExportPDF}
                   disabled={isExportDisabled}
-                  className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                  className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
                   <span>PDF</span>
                 </button>
                 <button
                   onClick={onExportExcel}
                   disabled={isExportDisabled}
-                  className="flex items-center space-x-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                  className="flex items-center space-x-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
                   <span>Excel</span>
                 </button>

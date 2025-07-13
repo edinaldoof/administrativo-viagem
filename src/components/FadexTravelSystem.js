@@ -154,27 +154,27 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg animate-fade-in">
-      <div className="flex justify-between items-center border-b pb-4 mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Importar Requisição de PDF</h2>
-        <button onClick={onBack} className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Voltar</button>
+    <div className="max-w-4xl mx-auto p-6 bg-white dark:bg-slate-800 shadow-lg rounded-lg animate-fade-in">
+      <div className="flex justify-between items-center border-b dark:border-slate-700 pb-4 mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Importar Requisição de PDF</h2>
+        <button onClick={onBack} className="px-4 py-2 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-slate-500">Voltar</button>
       </div>
       <div
-        className="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center cursor-pointer hover:border-blue-500 bg-gray-50"
+        className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-10 text-center cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 bg-gray-50 dark:bg-slate-700"
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current.click()}
       >
         <input type="file" ref={fileInputRef} onChange={(e) => handleFileSelect(e.target.files[0])} style={{ display: 'none' }} accept=".pdf" />
-        <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
-        <p className="mt-2 text-sm text-gray-600">Arraste e solte o arquivo PDF aqui, ou clique para selecionar.</p>
+        <UploadCloud className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">Arraste e solte o arquivo PDF aqui, ou clique para selecionar.</p>
       </div>
       {file && (
-        <div className="mt-6 p-4 border rounded-lg bg-gray-100">
+        <div className="mt-6 p-4 border dark:border-slate-700 rounded-lg bg-gray-100 dark:bg-slate-700">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <FileText className="h-6 w-6 text-red-500" />
-              <span className="font-medium">{file.name}</span>
+              <span className="font-medium dark:text-gray-200">{file.name}</span>
             </div>
             <button onClick={handleProcessFile} disabled={processingState === 'processing'} className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-300">
               {processingState === 'processing' ? 'Processando...' : 'Processar Arquivo'}
@@ -182,12 +182,12 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
           </div>
            {processingState !== 'idle' && (
              <div className="flex items-center gap-3 mt-4 text-sm">
-                {processingState === 'processing' && <Loader className="animate-spin h-5 w-5 text-blue-600" />}
-                {processingState === 'success' && <CheckCircle className="h-5 w-5 text-green-600" />}
-                {processingState === 'error' && <XCircle className="h-5 w-5 text-red-600" />}
+                {processingState === 'processing' && <Loader className="animate-spin h-5 w-5 text-blue-600 dark:text-blue-400" />}
+                {processingState === 'success' && <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />}
+                {processingState === 'error' && <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />}
                 <span className={`${
-                    processingState === 'processing' ? 'text-blue-600' :
-                    processingState === 'success' ? 'text-green-600' : 'text-red-600'
+                    processingState === 'processing' ? 'text-blue-600 dark:text-blue-400' :
+                    processingState === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                 }`}>{processingMessage}</span>
              </div>
           )}
@@ -211,6 +211,25 @@ const FadexTravelSystem = () => {
   const [successInfo, setSuccessInfo] = useState({ show: false, message: '' });
   const previewRef = useRef(null);
   const [currentView, setCurrentView] = useState('creating'); // creating, viewingRequests, viewingPassengers, import
+  const [theme, setTheme] = useState('light');
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+  };
+
 
   const showSuccessMessageHandler = (message) => { setSuccessInfo({ show: true, message }); };
   const handleSuccessClose = () => { setSuccessInfo({ show: false, message: '' }); };
@@ -455,7 +474,7 @@ const FadexTravelSystem = () => {
                 faturamento={faturamento}
                 onFaturamentoChange={setFaturamento}
               />
-               <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-8 shadow-xl border border-white/20 flex justify-end">
+               <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-3xl p-8 shadow-xl border border-white/20 dark:border-slate-700/50 flex justify-end">
                 <button 
                   onClick={handleSaveRequest}
                   className="px-8 py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg"
@@ -483,7 +502,7 @@ const FadexTravelSystem = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-gray-900">
       <SuccessMessage
         show={successInfo.show}
         message={successInfo.message}
@@ -499,6 +518,8 @@ const FadexTravelSystem = () => {
         setCurrentView={setCurrentView}
         currentView={currentView}
         resetRequest={resetRequestState}
+        toggleTheme={toggleTheme}
+        theme={theme}
       />
 
       <div className="max-w-7xl mx-auto px-6 py-8">

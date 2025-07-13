@@ -16,43 +16,43 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
 
   return (
     // Card principal com sombra e bordas arredondadas
-    <div ref={ref} className="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 font-sans">
+    <div ref={ref} className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-xl border border-gray-100 dark:border-slate-700 font-sans">
       {/* Cabeçalho */}
-      <div className="text-center mb-8 border-b border-gray-200 pb-6">
-        <h2 className="text-2xl font-bold text-gray-800 tracking-tight">Administrativo Fadex</h2>
-        <p className="text-gray-500 mt-1">Solicitação de Passagens Aéreas</p>
-        <p className="text-sm text-gray-400 mt-2">Data de Emissão: {currentDate}</p>
+      <div className="text-center mb-8 border-b border-gray-200 dark:border-slate-700 pb-6">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 tracking-tight">Administrativo Fadex</h2>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">Solicitação de Passagens Aéreas</p>
+        <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Data de Emissão: {currentDate}</p>
       </div>
 
       {/* Seção de Faturamento */}
       {faturamento && (faturamento.contaProjeto || faturamento.descricao || faturamento.cc || faturamento.webId) && (
         <div className="mb-8">
-          <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center">
             Informações de Faturamento
           </h3>
-          <div className="bg-gray-50 rounded-2xl p-6 text-sm grid grid-cols-2 gap-x-8 gap-y-4">
+          <div className="bg-gray-50 dark:bg-slate-700 rounded-2xl p-6 text-sm grid grid-cols-2 gap-x-8 gap-y-4">
             {faturamento.contaProjeto && (
               <div className="col-span-2">
-                <p className="font-medium text-gray-500">Projeto</p>
-                <p className="text-gray-800">{faturamento.contaProjeto}</p>
+                <p className="font-medium text-gray-500 dark:text-gray-400">Projeto</p>
+                <p className="text-gray-800 dark:text-gray-100">{faturamento.contaProjeto}</p>
               </div>
             )}
              {faturamento.descricao && (
               <div className="col-span-2">
-                <p className="font-medium text-gray-500">Descrição</p>
-                <p className="text-gray-800">{faturamento.descricao}</p>
+                <p className="font-medium text-gray-500 dark:text-gray-400">Descrição</p>
+                <p className="text-gray-800 dark:text-gray-100">{faturamento.descricao}</p>
               </div>
             )}
             {faturamento.cc && (
               <div>
-                <p className="font-medium text-gray-500">Conta corrente do projeto</p>
-                <p className="text-gray-800">{faturamento.cc}</p>
+                <p className="font-medium text-gray-500 dark:text-gray-400">Conta corrente do projeto</p>
+                <p className="text-gray-800 dark:text-gray-100">{faturamento.cc}</p>
               </div>
             )}
             {faturamento.webId && (
               <div>
-                <p className="font-medium text-gray-500">WEB ID</p>
-                <p className="text-gray-800">{faturamento.webId}</p>
+                <p className="font-medium text-gray-500 dark:text-gray-400">WEB ID</p>
+                <p className="text-gray-800 dark:text-gray-100">{faturamento.webId}</p>
               </div>
             )}
           </div>
@@ -62,7 +62,7 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
       {/* Seção de Passageiros */}
       {passageiros && passageiros.length > 0 ? (
         <div>
-          <h3 className="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center">
              Passageiros e Itinerários
           </h3>
           <div className="space-y-6">
@@ -74,21 +74,21 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
                 }, 0);
 
               return (
-              <div key={passageiro.id || pIndex} className="bg-white border border-gray-200 rounded-2xl p-6 overflow-hidden">
+              <div key={passageiro.id || pIndex} className="bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl p-6 overflow-hidden">
                 {/* Dados do Passageiro */}
-                <div className="pb-4 border-b border-gray-100 mb-4 flex justify-between items-start">
+                <div className="pb-4 border-b border-gray-100 dark:border-slate-600 mb-4 flex justify-between items-start">
                   <div>
-                    <p className="font-bold text-gray-800 text-base">{passageiro.nome}</p>
-                    <div className="flex space-x-4 text-xs text-gray-500 mt-1">
+                    <p className="font-bold text-gray-800 dark:text-gray-100 text-base">{passageiro.nome}</p>
+                    <div className="flex space-x-4 text-xs text-gray-500 dark:text-gray-400 mt-1">
                       <span>CPF: {passageiro.cpf}</span>
                       <span>Nasc: {passageiro.dataNascimento}</span>
                     </div>
-                    {passageiro.email && <p className="text-xs text-gray-500 mt-1">Email: {passageiro.email}</p>}
-                    {passageiro.phone && <p className="text-xs text-gray-500 mt-1">Telefone: {passageiro.phone}</p>}
+                    {passageiro.email && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Email: {passageiro.email}</p>}
+                    {passageiro.phone && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Telefone: {passageiro.phone}</p>}
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-gray-500">Total Passageiro</p>
-                    <p className="font-bold text-lg text-green-600">{formatCurrency(totalPassageiro)}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Total Passageiro</p>
+                    <p className="font-bold text-lg text-green-600 dark:text-green-400">{formatCurrency(totalPassageiro)}</p>
                   </div>
                 </div>
 
@@ -100,16 +100,16 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
                       return (
                       <div key={itinerario.id || iIndex} className="text-sm">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-3 text-gray-700 font-medium">
+                            <div className="flex items-center space-x-3 text-gray-700 dark:text-gray-200 font-medium">
                                <span>{itinerario.origem}</span>
-                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-1-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"></path></svg>
+                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500 dark:text-blue-400"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-1-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"></path></svg>
                                <span>{itinerario.destino}</span>
                             </div>
-                             <div className="font-medium text-gray-800">
+                             <div className="font-medium text-gray-800 dark:text-gray-100">
                                 {formatCurrency(totalItinerario)}
                              </div>
                         </div>
-                        <div className="text-xs text-gray-500 pl-1 mt-1 flex justify-between">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 pl-1 mt-1 flex justify-between">
                           <div>
                             <span>{itinerario.dataSaida ? new Date(itinerario.dataSaida + 'T03:00:00Z').toLocaleDateString('pt-BR') : 'N/A'}</span>
                             {itinerario.ciaAerea && <span className="mx-1">|</span>}
@@ -132,9 +132,9 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
             )})}
           </div>
 
-          <div className="mt-8 pt-6 border-t-2 border-gray-200 flex justify-end items-center">
-            <span className="text-lg font-semibold text-gray-600 mr-4">Total Geral:</span>
-            <span className="text-3xl font-bold text-blue-600">{formatCurrency(totalGeral)}</span>
+          <div className="mt-8 pt-6 border-t-2 border-gray-200 dark:border-slate-600 flex justify-end items-center">
+            <span className="text-lg font-semibold text-gray-600 dark:text-gray-300 mr-4">Total Geral:</span>
+            <span className="text-3xl font-bold text-blue-600 dark:text-blue-400">{formatCurrency(totalGeral)}</span>
           </div>
 
         </div>
@@ -143,7 +143,7 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
       {/* Fallback para quando não há dados */}
       {(!passageiros || passageiros.length === 0) &&
        (!faturamento || (!faturamento.contaProjeto && !faturamento.descricao && !faturamento.cc && !faturamento.webId)) && (
-        <div className="text-center py-16 text-gray-500">
+        <div className="text-center py-16 text-gray-500 dark:text-gray-400">
           <p>Adicione passageiros e informações de faturamento para visualizar a solicitação.</p>
         </div>
       )}
