@@ -1,19 +1,12 @@
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "./components/theme-provider";
-import AppLayout from "./components/app-layout";
 import { Toaster } from "./components/ui/toaster";
-import { SidebarProvider } from "./components/ui/sidebar";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  variable: "--font-space-grotesk",
 });
 
 export const metadata = {
@@ -29,7 +22,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
-        {/* Adicionando as fontes do Google Fonts */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -44,21 +36,16 @@ export default function RootLayout({ children }) {
       <body
         className={cn(
           "font-body antialiased",
-          inter.variable,
-          spaceGrotesk.variable
+          inter.variable
         )}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
+          enableSystem={false}
           disableTransitionOnChange
         >
-          <SidebarProvider>
-            <AppLayout>
-              {children}
-            </AppLayout>
-          </SidebarProvider>
+          {children}
           <Toaster />
         </ThemeProvider>
       </body>
