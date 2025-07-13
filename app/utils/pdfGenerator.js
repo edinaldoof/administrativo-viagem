@@ -1,7 +1,7 @@
 // src/utils/pdfGenerator.js
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
-import { formatDateToDDMMYYYY } from './utils';
+import { formatDateToDDMMYYYY } from '@/utils/utils.js';
 
 export const generateSolicitacaoPDF = (passageiros, faturamento) => {
   const doc = new jsPDF();
