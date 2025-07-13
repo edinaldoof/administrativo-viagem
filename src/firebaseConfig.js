@@ -2,23 +2,22 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
-// TODO: Replace the following with your app's Firebase project configuration
-// For more information on how to get this, see the docs:
-// https://firebase.google.com/docs/web/setup#available-libraries
-
+// TODO: Cole aqui a configuração do seu projeto Firebase.
+// Você pode encontrar esses dados no Console do Firebase, nas configurações do seu projeto,
+// ao adicionar um aplicativo Web.
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "COLE_SUA_API_KEY_AQUI",
+  authDomain: "SEU_PROJETO.firebaseapp.com",
+  projectId: "SEU_ID_DE_PROJETO",
+  storageBucket: "SEU_PROJETO.appspot.com",
+  messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+  appId: "SEU_APP_ID"
 };
 
-// Initialize Firebase
+// Inicializa o Firebase com a configuração fornecida.
 const app = initializeApp(firebaseConfig);
 
-// Initialize Cloud Firestore and get a reference to the service
+// Inicializa o Cloud Firestore e obtém uma referência ao serviço.
 const db = getFirestore(app);
 
 export { db };
