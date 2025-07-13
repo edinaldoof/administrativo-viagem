@@ -1,43 +1,46 @@
 // src/components/ConfirmationScreen.js
 import React, { useState } from 'react';
 
-// Um componente reutilizável para cada linha de dado que permite feedback
-const FeedbackField = ({ fieldKey, fieldValue, onFeedbackChange }) => {
-  const [correctedValue, setCorrectedValue] = useState(fieldValue || '');
-  const [imageFile, setImageFile] = useState(null);
-  const fileInputId = `feedback-file-${fieldKey}-${Math.random()}`;
-
-  const handleValueChange = (e) => {
-    setCorrectedValue(e.target.value);
-    onFeedbackChange(fieldKey, { value: e.target.value, image: imageFile });
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      onFeedbackChange(fieldKey, { value: correctedValue, image: file });
-    }
-  };
-
-  const triggerFileSelect = () => {
-    document.getElementById(fileInputId).click();
-  };
+// Componente para a caixa de diálogo de feedback
+const FeedbackDialog = ({ fieldKey, fieldValue, onSave, onCancel }) => {
+  const [justification, setJustification] = useState('');
 
   return (
-    <div className="flex items-center gap-3 p-2 border-b border-gray-100 hover:bg-gray-50">
-      <strong className="w-1/4 text-sm text-gray-600 truncate">{fieldKey}:</strong>
-      <input
-        type="text"
-        value={correctedValue}
-        onChange={handleValueChange}
-        className="flex-grow p-1 border border-gray-300 rounded-md text-sm"
-        placeholder="Valor extraído"
-      />
-      <button onClick={triggerFileSelect} title="Anexar imagem de correção" className="p-2 text-gray-500 hover:text-blue-600">
-        <input type="file" id={fileInputId} onChange={handleImageChange} className="hidden" accept="image/*" />
-        {imageFile ? <span className="text-green-600">IMG</span> : <span>Anexo</span>}
-      </button>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+        <h3 className="text-lg font-bold text-gray-800">Ajustar Extração</h3>
+        <p className="text-sm text-gray-600 mt-1">
+          Campo: <span className="font-semibold">{fieldKey}</span>
+        </p>
+        <p className="text-sm text-gray-500 mt-1">
+          Valor Extraído: <span className="font-mono bg-gray-100 p-1 rounded text-xs">{fieldValue || 'N/A'}</span>
+        </p>
+        <div className="mt-4">
+          <label htmlFor="justification" className="block text-sm font-medium text-gray-700 mb-2">
+            Por que este dado está errado ou o que deveria ser extraído?
+          </label>
+          <textarea
+            id="justification"
+            value={justification}
+            onChange={(e) => setJustification(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            placeholder="Ex: O número do projeto é sempre o código antes do primeiro hífen."
+            rows="4"
+          />
+        </div>
+        <div className="flex justify-end gap-3 mt-4">
+          <button onClick={onCancel} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
+            Cancelar
+          </button>
+          <button
+            onClick={() => onSave(justification)}
+            disabled={!justification.trim()}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300"
+          >
+            Salvar Justificativa
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
@@ -46,42 +49,67 @@ const FeedbackField = ({ fieldKey, fieldValue, onFeedbackChange }) => {
 const ConfirmationScreen = ({ extractedData, onConfirm, onCancel, onSendFeedback }) => {
   if (!extractedData) return null;
 
-  const [feedback, setFeedback] = useState({});
-  const [generalFeedbackText, setGeneralFeedbackText] = useState('');
+  const [feedbackDialog, setFeedbackDialog] = useState(null); // { key, value }
+  const [justifications, setJustifications] = useState([]);
   const { title, billing, passengers } = extractedData;
 
-  const handleFieldFeedback = (fieldKey, newFeedback) => {
-    setFeedback(prev => ({ ...prev, [fieldKey]: newFeedback }));
+  const handleOpenFeedbackDialog = (key, value) => {
+    setFeedbackDialog({ key, value });
   };
 
-  const handleConfirmAndSubmit = () => {
-    // A lógica de `onConfirm` agora só precisa dos dados originais
-    onConfirm(extractedData);
+  const handleSaveJustification = (justification) => {
+    const newJustification = `Para o campo '${feedbackDialog.key}', o valor '${feedbackDialog.value}' estava incorreto. A regra correta é: ${justification}`;
+    const updatedJustifications = [...justifications, newJustification];
+    setJustifications(updatedJustifications);
+    setFeedbackDialog(null);
   };
   
   const handleCancelAndSubmitFeedback = () => {
-    // Combina o feedback de campo estruturado com o texto geral
-    const fullFeedback = {
-      structured: feedback,
-      general: generalFeedbackText
-    };
-    onSendFeedback(fullFeedback);
-    onCancel();
+    // Envia todas as justificativas coletadas
+    if (justifications.length > 0) {
+      onSendFeedback(justifications.join('\n'));
+    }
+    onCancel(); // Fecha a tela de confirmação
   };
+
+  const renderField = (fieldKey, fieldValue) => (
+     <div className="flex justify-between items-center p-2 border-b border-gray-100 hover:bg-gray-50">
+       <div>
+          <span className="text-sm font-medium text-gray-600">{fieldKey}:</span>
+          <p className="text-md text-gray-800">{fieldValue || <span className="text-gray-400 italic">Não extraído</span>}</p>
+       </div>
+       <button
+          onClick={() => handleOpenFeedbackDialog(fieldKey, fieldValue)}
+          className="px-3 py-1 text-xs font-semibold text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200"
+        >
+          Ajustar
+       </button>
+     </div>
+  );
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg animate-fade-in">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Confirme e Corrija os Dados</h2>
+      {feedbackDialog && (
+        <FeedbackDialog
+          fieldKey={feedbackDialog.key}
+          fieldValue={feedbackDialog.value}
+          onSave={handleSaveJustification}
+          onCancel={() => setFeedbackDialog(null)}
+        />
+      )}
+      
+      <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Confirme os Dados e Ensine a IA</h2>
+      <p className="text-sm text-gray-600 mb-6">Revise os dados extraídos. Se algo estiver errado, clique em "Ajustar" para ensinar a IA a extrair corretamente no futuro.</p>
       
       {/* Seção de Faturamento */}
       <div className="mb-6">
         <h3 className="text-xl font-semibold text-gray-700 mb-3">Informações Globais</h3>
         <div className="space-y-2">
-          <FeedbackField fieldKey="Título" fieldValue={title} onFeedbackChange={(k, f) => handleFieldFeedback('title', f)} />
-          <FeedbackField fieldKey="Conta do Projeto" fieldValue={billing?.account} onFeedbackChange={(k, f) => handleFieldFeedback('billing.account', f)} />
-          <FeedbackField fieldKey="Centro de Custo" fieldValue={billing?.costCenter} onFeedbackChange={(k, f) => handleFieldFeedback('billing.costCenter', f)} />
-          <FeedbackField fieldKey="Web ID" fieldValue={billing?.webId} onFeedbackChange={(k, f) => handleFieldFeedback('billing.webId', f)} />
-          <FeedbackField fieldKey="Justificativa" fieldValue={billing?.description} onFeedbackChange={(k, f) => handleFieldFeedback('billing.description', f)} />
+          {renderField("Título", title)}
+          {renderField("Conta do Projeto", billing?.account)}
+          {renderField("Centro de Custo", billing?.costCenter)}
+          {renderField("Web ID", billing?.webId)}
+          {renderField("Justificativa", billing?.description)}
         </div>
       </div>
       
@@ -91,44 +119,41 @@ const ConfirmationScreen = ({ extractedData, onConfirm, onCancel, onSendFeedback
         <div className="space-y-6">
           {(passengers || []).map((passenger, pIndex) => (
             <div key={pIndex} className="p-4 border rounded-lg bg-white shadow-sm">
-              <h4 className="font-bold text-lg text-blue-700 mb-3">Passageiro #{pIndex + 1}</h4>
+              <h4 className="font-bold text-lg text-blue-700 mb-3">Passageiro #{pIndex + 1}: {passenger.name || 'Nome não extraído'}</h4>
               <div className="space-y-2">
-                 <FeedbackField fieldKey={`Nome P.${pIndex + 1}`} fieldValue={passenger.name} onFeedbackChange={(k, f) => handleFieldFeedback(`passengers[${pIndex}].name`, f)} />
-                 <FeedbackField fieldKey={`CPF P.${pIndex + 1}`} fieldValue={passenger.cpf} onFeedbackChange={(k, f) => handleFieldFeedback(`passengers[${pIndex}].cpf`, f)} />
-                 <FeedbackField fieldKey={`Nascimento P.${pIndex + 1}`} fieldValue={passenger.birthDate} onFeedbackChange={(k, f) => handleFieldFeedback(`passengers[${pIndex}].birthDate`, f)} />
-                 <FeedbackField fieldKey={`Email P.${pIndex + 1}`} fieldValue={passenger.email} onFeedbackChange={(k, f) => handleFieldFeedback(`passengers[${pIndex}].email`, f)} />
-                 <FeedbackField fieldKey={`Telefone P.${pIndex + 1}`} fieldValue={passenger.phone} onFeedbackChange={(k, f) => handleFieldFeedback(`passengers[${pIndex}].phone`, f)} />
+                 {renderField(`Nome P.${pIndex + 1}`, passenger.name)}
+                 {renderField(`CPF P.${pIndex + 1}`, passenger.cpf)}
+                 {renderField(`Nascimento P.${pIndex + 1}`, passenger.birthDate)}
+                 {renderField(`Email P.${pIndex + 1}`, passenger.email)}
+                 {renderField(`Telefone P.${pIndex + 1}`, passenger.phone)}
               </div>
-              {/* O feedback para itinerários pode ser complexo, por enquanto mantemos como feedback geral */}
             </div>
           ))}
         </div>
       </div>
 
-      {/* Seção de Feedback Geral */}
-      <div className="mt-8 pt-4 border-t">
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">Feedback Geral (Opcional)</h3>
-          <p className="text-sm text-gray-600 mb-3">
-            Use este campo para observações gerais que não se aplicam a um campo específico, como "Os itinerários do João estão faltando".
-          </p>
-          <textarea
-            value={generalFeedbackText}
-            onChange={(e) => setGeneralFeedbackText(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors"
-            placeholder="Descreva erros gerais ou informações que faltaram."
-            rows="3"
-          />
-      </div>
+      {justifications.length > 0 && (
+        <div className="mt-8 pt-4 border-t">
+          <h3 className="text-lg font-semibold text-green-700">Feedback Salvo para Envio:</h3>
+          <ul className="list-disc list-inside mt-2 text-sm text-gray-700 space-y-1">
+            {justifications.map((item, index) => <li key={index}>{item}</li>)}
+          </ul>
+        </div>
+      )}
 
-      <div className="flex justify-between items-center gap-4 mt-6">
-        <button onClick={handleCancelAndSubmitFeedback} className="px-6 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors">
+      <div className="flex justify-between items-center gap-4 mt-6 pt-4 border-t">
+        <button 
+          onClick={handleCancelAndSubmitFeedback} 
+          className="px-6 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors disabled:bg-orange-300"
+          disabled={justifications.length === 0}
+        >
           Enviar Feedback e Cancelar
         </button>
         <div className="flex gap-4">
           <button onClick={onCancel} className="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors">
             Cancelar Sem Feedback
           </button>
-          <button onClick={handleConfirmAndSubmit} className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors" disabled={!passengers || passengers.length === 0}>
+          <button onClick={() => onConfirm(extractedData)} className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors" disabled={!passengers || passengers.length === 0}>
             Confirmar e Usar Dados
           </button>
         </div>

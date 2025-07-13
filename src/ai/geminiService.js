@@ -5,34 +5,23 @@ import { getRecentFeedback } from '../services/feedbackService';
 
 const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
 
+/**
+ * Gera a seção do prompt dedicada ao histórico de feedback do usuário.
+ * @param {Array<object>} feedbackHistory - Array de feedbacks salvos.
+ * @returns {string} - A seção do prompt formatada.
+ */
 const generateFeedbackPrompt = (feedbackHistory) => {
   if (feedbackHistory.length === 0) return '';
 
   let promptSection = `
-**Crucial User Feedback from Previous Extractions (Use this to improve accuracy):**
+**Crucial User Feedback & Business Rules from Previous Corrections (Use this to improve accuracy):**
 ---`;
 
   feedbackHistory.forEach(item => {
-    // Feedback geral em texto
-    if (item.general && item.general.trim()) {
+    // Agora o feedback é apenas texto.
+    if (item.justification && item.justification.trim()) {
       promptSection += `
-- General Note: "${item.general.trim()}"`;
-    }
-    // Feedback estruturado por campo
-    if (item.structured) {
-      Object.entries(item.structured).forEach(([field, correction]) => {
-        if (correction.value || correction.imageUrl) {
-          promptSection += `
-- For the field '${field}':`;
-          if (correction.value) {
-            promptSection += ` The user corrected the value to "${correction.value}".`;
-          }
-          if (correction.imageUrl) {
-            // A sintaxe {{media url=...}} é um placeholder que a IA entende
-            promptSection += ` The user provided this image as the correct source: {{media url=${correction.imageUrl}}}`;
-          }
-        }
-      });
+- Rule/Correction provided by user: "${item.justification.trim()}"`;
     }
     promptSection += `
 ---`;
@@ -55,12 +44,13 @@ export const extractDataFromPdfWithGemini = async (text) => {
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   // Busca o histórico de feedbacks para aprimorar a IA
-  const storedFeedback = await getRecentFeedback(5);
+  const storedFeedback = await getRecentFeedback(10); // Aumentado para 10 para mais contexto
   const feedbackPrompt = generateFeedbackPrompt(storedFeedback);
 
   const prompt = `
     You are a highly specialized data extraction assistant for travel requests.
     Your task is to meticulously analyze the provided PDF document text and return a single, well-structured JSON object.
+    You must learn from the user's past corrections.
 
     ${feedbackPrompt}
 
@@ -123,7 +113,7 @@ export const extractDataFromPdfWithGemini = async (text) => {
 
     **Crucial Instructions:**
     - Be precise. If a field is not present, return null or an empty string.
-    - If you are using feedback to make a correction, be sure to apply it.
+    - If you are using feedback to make a correction, be sure to apply it. The user's rules are more important than your initial analysis. For example, if the user states "The project number is always the first part of the title", you must follow that rule.
 
     **Document for analysis:**
     ---

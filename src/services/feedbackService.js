@@ -1,49 +1,17 @@
 // src/services/feedbackService.js
 import { db } from '../firebaseConfig';
 import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-
-const storage = getStorage();
 
 /**
- * Faz upload de uma imagem para o Firebase Storage e retorna a URL.
- * @param {File} imageFile - O arquivo de imagem a ser enviado.
- * @returns {Promise<string>} - A URL de download da imagem.
- */
-const uploadImageAndGetURL = async (imageFile) => {
-  if (!imageFile) return null;
-  const filePath = `feedback-images/${Date.now()}-${imageFile.name}`;
-  const storageRef = ref(storage, filePath);
-  await uploadBytes(storageRef, imageFile);
-  return getDownloadURL(storageRef);
-};
-
-/**
- * Salva o feedback do usuário no Firestore, incluindo o upload de imagens se houver.
- * @param {object} feedbackData - O objeto de feedback, contendo `structured` e `general`.
+ * Salva a justificativa de feedback do usuário no Firestore.
+ * @param {string} justification - A justificativa textual fornecida pelo usuário.
  * @returns {Promise<void>}
  */
-export const saveFeedback = async (feedbackData) => {
+export const saveFeedback = async (justification) => {
   try {
-    const processedStructuredFeedback = {};
-
-    // Faz upload das imagens do feedback estruturado
-    if (feedbackData.structured) {
-      for (const [key, value] of Object.entries(feedbackData.structured)) {
-        let imageUrl = null;
-        if (value.image instanceof File) {
-          imageUrl = await uploadImageAndGetURL(value.image);
-        }
-        processedStructuredFeedback[key] = {
-          value: value.value || '',
-          imageUrl: imageUrl
-        };
-      }
-    }
-
+    // A coleção agora armazena apenas a justificativa e um timestamp.
     await addDoc(collection(db, "feedback"), {
-      general: feedbackData.general || '',
-      structured: processedStructuredFeedback,
+      justification: justification,
       createdAt: serverTimestamp()
     });
   } catch (e) {
@@ -51,7 +19,6 @@ export const saveFeedback = async (feedbackData) => {
     throw new Error("Could not save feedback to the database.");
   }
 };
-
 
 /**
  * Busca os feedbacks mais recentes do Firestore.

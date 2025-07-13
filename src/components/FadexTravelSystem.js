@@ -107,7 +107,6 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
       if (!textContent) throw new Error('Falha ao extrair texto.');
       
       setProcessingMessage('Analisando com a IA Gemini...');
-      // Agora a IA pode não precisar de feedback direto, pois ele é pego do DB
       const result = await extractDataFromPdfWithGemini(textContent); 
       setExtractedData(result);
       setProcessingState('success');
@@ -119,14 +118,13 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
     }
   };
   
-  const handleCancelAndStoreFeedback = async (feedbackData) => {
-    if (feedbackData && (Object.keys(feedbackData.structured).length > 0 || feedbackData.general.trim())) {
+  const handleCancelAndStoreFeedback = async (justification) => {
+    if (justification && justification.trim()) {
       try {
-        await saveFeedback(feedbackData);
+        await saveFeedback(justification);
         showSuccessMessage('Obrigado! Seu feedback foi salvo e ajudará a melhorar futuras extrações.');
       } catch (error) {
         console.error("Erro ao salvar feedback:", error);
-        // Poderia mostrar uma mensagem de erro específica para o salvamento do feedback
       }
     }
     setExtractedData(null);
