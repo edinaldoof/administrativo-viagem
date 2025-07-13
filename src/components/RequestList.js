@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { getAllRequests, getRequestsByWebId } from '../services/requestService';
 import { Search, Loader } from 'lucide-react';
 
-const RequestList = () => {
+const RequestList = ({ onViewDetails }) => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -75,7 +75,12 @@ const RequestList = () => {
                   </div>
                   <div className="text-right">
                     <p className="font-semibold">{req.passengersData?.length || 0} Passageiro(s)</p>
-                     <button className="text-sm text-blue-500 hover:underline mt-2">Ver Detalhes</button>
+                     <button 
+                        onClick={() => onViewDetails(req)} 
+                        className="text-sm text-blue-500 hover:underline mt-2"
+                     >
+                        Ver Detalhes
+                     </button>
                   </div>
                 </div>
                 <div className="mt-3 pt-3 border-t">

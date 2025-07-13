@@ -401,10 +401,24 @@ const FadexTravelSystem = () => {
     setCurrentView('creating');
   };
 
+  const handleViewRequestDetails = (request) => {
+    // Carrega o estado da requisição selecionada para a tela principal
+    setFaturamento({
+      contaProjeto: request.contaProjeto || '',
+      descricao: request.descricao || '',
+      cc: request.cc || '',
+      webId: request.webId || '',
+    });
+    setPassageiros(request.passengersData || []);
+    // Volta para a tela de criação/edição
+    setCurrentView('creating');
+    showSuccessMessageHandler(`Requisição ${request.webId} carregada.`);
+  };
+
   const renderContent = () => {
     switch (currentView) {
       case 'viewingRequests':
-        return <RequestList />;
+        return <RequestList onViewDetails={handleViewRequestDetails} />;
       case 'viewingPassengers':
         return <PassengerRegistry />;
       case 'import':
