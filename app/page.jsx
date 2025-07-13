@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "./components/ui/card";
 import { FileUp, PencilRuler } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
