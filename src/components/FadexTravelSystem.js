@@ -11,9 +11,8 @@ import PassengerList from './PassengerList';
 import Preview from './Preview';
 
 // --- NOVOS COMPONENTES ADICIONADOS ---
-import ConfirmationScreen from './ConfirmationScreen';
+import AIProcessorScreen from './AIProcessorScreen'; // Substituído o modal por uma tela
 import HelpChatbot from './HelpChatbot';
-import AIProcessorModal from './AIProcessorModal';
 // -------------------------------------
 
 // --- Importações movidas para um arquivo central de utilitários ---
@@ -30,15 +29,12 @@ import { exportDataToExcel } from '../utils/excelExporter.js';
 import { exportPreviewToPNG } from '../utils/pngExporter.js';
 
 // --- Imports para a nova tela de importação ---
-import { extractDataFromPdfWithGemini } from '../ai/geminiService';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs';
 
-// ALTERAÇÃO: Corrigido o caminho do worker do pdf.js para usar a URL correta
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.js`;
-// ---------------------------------------------
 
 const FadexTravelSystem = () => {
-  // --- SEUS ESTADOS EXISTENTES (SEM ALTERAÇÃO) ---
+  // --- SEUS ESTADOS EXISTENTES (COM ALTERAÇÃO) ---
   const [passageiros, setPassageiros] = useState([]);
   const [faturamento, setFaturamento] = useState({
     contaProjeto: '',
@@ -56,9 +52,9 @@ const FadexTravelSystem = () => {
   const [successInfo, setSuccessInfo] = useState({ show: false, message: '' });
   const previewRef = useRef(null);
   
-  // --- ESTADO PARA CONTROLE DE VISUALIZAÇÃO (ALTERAÇÃO) ---
-  const [isImportModalOpen, setImportModalOpen] = useState(false);
-  // --------------------------------------------------------
+  // --- NOVO ESTADO PARA CONTROLE DE VISUALIZAÇÃO ---
+  const [currentView, setCurrentView] = useState('main'); // 'main' ou 'import'
+  // --------------------------------------------------
 
   // --- SUAS FUNÇÕES DE LÓGICA (COM PEQUENAS ALTERAÇÕES) ---
   const showSuccessMessageHandler = (message) => { setSuccessInfo({ show: true, message }); };
@@ -126,26 +122,29 @@ const FadexTravelSystem = () => {
   const handleExportPDF = async () => { try { await generateSolicitacaoPDF(passageiros, faturamento); showSuccessMessageHandler('PDF exportado com sucesso!'); } catch (error) { alert(`Erro ao gerar PDF: ${error.message}`); } };
   const handleExportExcel = () => { try { exportDataToExcel(passageiros, faturamento, `solicitacao-fadex-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}`); showSuccessMessageHandler('Excel exportado com sucesso!'); } catch (error) { alert(error.message); } };
 
-  // --- FLUXO DE IMPORTAÇÃO ATUALIZADO (ALTERAÇÃO) ---
-
+  // --- FLUXO DE IMPORTAÇÃO ATUALIZADO ---
   const handleConfirmImport = (dataFromAI) => {
     if (dataFromAI) {
       // Mapeia passageiros a partir dos dados da IA
-      const novosPassageiros = (dataFromAI.passengers || []).map(p => ({
+      const novosPassageiros = (dataFromAI.dados_beneficiario ? [{
+        name: dataFromAI.dados_beneficiario.nome,
+        cpf: dataFromAI.dados_beneficiario.cpf,
+        birthDate: dataFromAI.dados_beneficiario.data_nascimento,
+      }] : []).map(p => ({
         id: generateId(),
         nome: p.name || 'Nome não extraído',
         cpf: p.cpf || '',
-        dataNascimento: p.birthDate ? new Date(p.birthDate).toLocaleDateString('pt-BR') : '',
+        dataNascimento: p.birthDate || '',
         anexos: [],
-        itinerarios: (p.itinerary || []).map(i => ({
+        itinerarios: dataFromAI.dados_viagem ? [{
           id: generateId(),
-          origem: i.origin || '',
-          destino: i.destination || '',
-          dataSaida: i.departureDate ? new Date(i.departureDate).toISOString().split('T')[0] : '',
-          ciaAerea: i.ciaAerea || '',
-          voo: i.voo || '',
-          horarios: i.horarios || '',
-        })),
+          origem: dataFromAI.dados_viagem.cidade_origem || '',
+          destino: dataFromAI.dados_viagem.cidade_destino || '',
+          dataSaida: dataFromAI.dados_viagem.data_saida || '',
+          ciaAerea: '',
+          voo: '',
+          horarios: '',
+        }] : [],
       }));
 
       // Filtra para evitar duplicatas por CPF, se o CPF existir
@@ -156,19 +155,60 @@ const FadexTravelSystem = () => {
       setPassageiros(prev => [...prev, ...passageirosFiltrados]);
 
       // Preenche o faturamento
-      if (dataFromAI.billing) {
+      if (dataFromAI.centro_custo) {
         setFaturamento({
-          contaProjeto: dataFromAI.billing.account || '',
-          descricao: dataFromAI.billing.description || '',
-          cc: dataFromAI.billing.costCenter || '',
-          webId: dataFromAI.billing.webId || ''
+          contaProjeto: faturamento.contaProjeto,
+          descricao: dataFromAI.observacao || '',
+          cc: dataFromAI.centro_custo || '',
+          webId: faturamento.webId
         });
       }
       
       showSuccessMessageHandler(`${passageirosFiltrados.length} passageiro(s) e dados de faturamento importados!`);
     }
-    setImportModalOpen(false); // Fecha o modal
+    setCurrentView('main'); // Volta para a tela principal
   };
+
+  const renderMainView = () => (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="lg:col-span-2 space-y-8">
+        {activeForm !== 'passageiro' && (
+          <AddPassengerButton onClick={handleOpenPassengerForm} />
+        )}
+        {activeForm === 'passageiro' && (
+          <PassengerForm
+            currentPassageiro={currentPassageiro}
+            onPassageiroFieldChange={handlePassageiroFieldChange}
+            currentItinerario={currentItinerario}
+            onItinerarioFieldChange={handleItinerarioFieldChange}
+            onAddItinerario={handleAddItinerarioToPassageiro}
+            onRemoveItinerario={handleRemoveItinerarioFromPassageiroForm}
+            onSavePassageiro={handleSavePassageiro}
+            onCancel={handleCancelPassengerForm}
+            errors={errors}
+            isEditing={!!editingPassageiro}
+          />
+        )}
+        <BillingForm
+          faturamento={faturamento}
+          onFaturamentoChange={setFaturamento}
+        />
+      </div>
+      <div className="space-y-6">
+        <PassengerList
+          passageiros={passageiros}
+          onEditPassageiro={handleEditPassageiro}
+          onDuplicatePassageiro={handleDuplicatePassageiro}
+          onRemovePassageiro={handleRemovePassageiroFromList}
+        />
+        <Preview
+          ref={previewRef}
+          passageiros={passageiros}
+          faturamento={faturamento}
+        />
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
@@ -181,56 +221,19 @@ const FadexTravelSystem = () => {
         onExportPNG={handleExportPNG}
         onExportPDF={handleExportPDF}
         onExportExcel={handleExportExcel}
-        onImportPDF={() => setImportModalOpen(true)}
+        onImportPDF={() => setCurrentView('import')}
         isExportDisabled={passageiros.length === 0}
+        showImport={currentView === 'main'} // Só mostra o botão na tela principal
       />
       
       <div className="max-w-7xl mx-auto px-6 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8">
-              {activeForm !== 'passageiro' && (
-                <AddPassengerButton onClick={handleOpenPassengerForm} />
-              )}
-              {activeForm === 'passageiro' && (
-                <PassengerForm
-                  currentPassageiro={currentPassageiro}
-                  onPassageiroFieldChange={handlePassageiroFieldChange}
-                  currentItinerario={currentItinerario}
-                  onItinerarioFieldChange={handleItinerarioFieldChange}
-                  onAddItinerario={handleAddItinerarioToPassageiro}
-                  onRemoveItinerario={handleRemoveItinerarioFromPassageiroForm}
-                  onSavePassageiro={handleSavePassageiro}
-                  onCancel={handleCancelPassengerForm}
-                  errors={errors}
-                  isEditing={!!editingPassageiro}
-                />
-              )}
-              <BillingForm
-                faturamento={faturamento}
-                onFaturamentoChange={setFaturamento}
-              />
-            </div>
-            <div className="space-y-6">
-              <PassengerList
-                passageiros={passageiros}
-                onEditPassageiro={handleEditPassageiro}
-                onDuplicatePassageiro={handleDuplicatePassageiro}
-                onRemovePassageiro={handleRemovePassageiroFromList}
-              />
-              <Preview
-                ref={previewRef}
-                passageiros={passageiros}
-                faturamento={faturamento}
-              />
-            </div>
-          </div>
+        {currentView === 'main' ? renderMainView() : (
+          <AIProcessorScreen
+            onConfirm={handleConfirmImport}
+            onCancel={() => setCurrentView('main')}
+          />
+        )}
       </div>
-
-      <AIProcessorModal
-        isOpen={isImportModalOpen}
-        onClose={() => setImportModalOpen(false)}
-        onConfirm={handleConfirmImport}
-      />
       
       <HelpChatbot />
     </div>

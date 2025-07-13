@@ -1,7 +1,7 @@
 // src/components/Header.js
 import React from 'react';
 
-const Header = ({ onExportPNG, onExportPDF, onExportExcel, onImportPDF, isExportDisabled }) => {
+const Header = ({ onExportPNG, onExportPDF, onExportExcel, onImportPDF, isExportDisabled, showImport }) => {
   return (
     <div className="bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-xl">
       <div className="max-w-7xl mx-auto px-6 py-4">
@@ -18,12 +18,14 @@ const Header = ({ onExportPNG, onExportPDF, onExportExcel, onImportPDF, isExport
             </div>
           </div>
           <div className="flex items-center space-x-3">
-            <button
-              onClick={onImportPDF}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
-            >
-              <span>Importar PDF</span>
-            </button>
+            {showImport && (
+              <button
+                onClick={onImportPDF}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <span>Importar PDF</span>
+              </button>
+            )}
             <button
               onClick={onExportPNG}
               disabled={isExportDisabled}

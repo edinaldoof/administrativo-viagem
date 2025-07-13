@@ -88,8 +88,11 @@ export const extractDataFromPdfWithGemini = async (text, preprocessedData = {}) 
   } catch (error) {
     console.error('Erro ao processar com a API Gemini:', error);
     // Log detalhado para futuros problemas
-    if (error.message.includes('Base64')) {
-        console.error("Detalhe do Erro: A requisição para a API foi formatada incorretamente. O conteúdo de texto estava sendo enviado como 'inlineData' em vez de uma parte de 'text'.");
+    if (error.message.includes('API key not valid')) {
+        throw new Error("Erro de Configuração: A chave da API é inválida. Por favor, contate o administrador do sistema.");
+    }
+    if (error instanceof SyntaxError) {
+        throw new Error("A IA retornou uma resposta em um formato inesperado. Por favor, tente novamente ou com outro arquivo.");
     }
     throw new Error('Falha ao extrair dados do PDF com a IA.');
   }
