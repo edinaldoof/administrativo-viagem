@@ -4,6 +4,8 @@ import React from 'react';
 const BillingForm = ({ faturamento, onFaturamentoChange }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // Utilizando a forma funcional do setState para garantir que estamos usando o estado mais recente.
+    // Isso é mais seguro e evita problemas de estado "stale".
     onFaturamentoChange(prev => ({ ...prev, [name]: value }));
   };
 

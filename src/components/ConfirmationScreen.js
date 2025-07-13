@@ -65,7 +65,11 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
       const newData = JSON.parse(JSON.stringify(prev));
       let current = newData;
       for (let i = 0; i < keys.length - 1; i++) {
-        current = current[keys[i]] = current[keys[i]] || {};
+        // Evita erro se um objeto aninhado (como billing) não existir
+        if (current[keys[i]] === undefined || current[keys[i]] === null) {
+            current[keys[i]] = {};
+        }
+        current = current[keys[i]];
       }
       current[keys[keys.length - 1]] = value;
       return newData;
@@ -137,8 +141,8 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
     let value = editedData;
     let originalValue = originalData;
     try {
-        for(const key of keys) { value = value[key]; }
-        for(const key of keys) { originalValue = originalValue[key]; }
+        keys.forEach(key => { value = value?.[key]; });
+        keys.forEach(key => { originalValue = originalValue?.[key]; });
     } catch (e) { value = ''; originalValue = ''; }
 
     const isEdited = value !== originalValue;
