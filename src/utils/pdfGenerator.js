@@ -1,6 +1,6 @@
 // src/utils/pdfGenerator.js
 import { jsPDF } from 'jspdf';
-import { formatCPF } from './utils'; //
+import { formatCPF, formatCurrency } from './utils'; //
 
 const COLORS = {
   PRIMARY: '#c4ff00',
@@ -12,6 +12,7 @@ const COLORS = {
   FOOTER_BACKGROUND: '#2c2c2c',
   FOOTER_TEXT: '#e0e0e0',
   BLACK: '#000000',
+  GREEN: '#28a745',
 }; //
 
 const FONTS = {
@@ -249,6 +250,8 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   doc.text(`Data da Emissão: ${new Date().toLocaleDateString('pt-BR')}`, (doc.internal.pageSize.getWidth() + GRADIENT_WIDTH) / 2, yPosition, { align: 'center' }); //
   yPosition += doc.internal.getLineHeight() * 1.5;
 
+  let totalGeral = 0;
+
   if (passageiros && passageiros.length > 0) {
     if(checkAndAddPage(30)) yPosition += 10;
     yPosition = addSectionTitle(doc, 'Passageiros e Itinerários', yPosition); //
@@ -268,6 +271,8 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
 
       doc.text(infoLine, GRADIENT_WIDTH + PAGE_MARGIN + 5, yPosition); //
       yPosition += doc.internal.getLineHeight() * 1.5;
+      
+      let totalPassageiro = 0;
 
       if (passageiro.itinerarios && passageiro.itinerarios.length > 0) {
         passageiro.itinerarios.forEach((itinerario) => {
@@ -286,36 +291,36 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
             doc.setFont(FONTS.DEFAULT, 'normal'); doc.setFontSize(FONT_SIZE_TRECHO_PT); doc.setTextColor(COLORS.DARK_TEXT);
             const currentLineHeight = doc.internal.getLineHeight();
             const textBaseY = yPosition;
-            // Y para o centro visual dos ícones e da linha tracejada
-            // Ajuste o fator 0.3 -> 0.4 ou 0.5 para descer mais, ou 0.2 para subir, conforme necessário
             const iconVisualCenterY = textBaseY - currentLineHeight * 0.4;
-            const iconDrawHeight = 3; // mm - Altura total para os ícones desenhados
-            const arrowSize = iconDrawHeight * 0.9; // Tamanho da seta (comprimento da base do triângulo)
+            const iconDrawHeight = 3; 
+            const arrowSize = iconDrawHeight * 0.9; 
 
             let currentX = MARGIN_LEFT_ITINERARIO_BASE;
-            const spaceBetweenElements = 2; // mm
+            const spaceBetweenElements = 2; 
 
-            // 1. Desenhar Pino de Localização
-            const pinDrawWidth = iconDrawHeight * 0.7; // Largura efetiva do pino
+            const pinDrawWidth = iconDrawHeight * 0.7; 
             drawPinIcon(doc, currentX + pinDrawWidth / 2, iconVisualCenterY, iconDrawHeight, ICON_DRAW_COLOR);
             currentX += pinDrawWidth + spaceBetweenElements / 2;
 
-            // 2. Texto Origem
             const origemText = itinerario.origem || 'N/Informada';
             doc.text(origemText, currentX, textBaseY);
             currentX += doc.getTextWidth(origemText) + spaceBetweenElements;
 
-            // 3. Calcular posições do lado direito (Destino e Seta)
+            const totalTrecho = (parseFloat(itinerario.quantidade) || 0) * (parseFloat(itinerario.valorUnitario) || 0);
+            totalPassageiro += totalTrecho;
+
+            const custoText = formatCurrency(totalTrecho);
+            const custoTextWidth = doc.getTextWidth(custoText);
+
+            const pageContentEndX = doc.internal.pageSize.getWidth() - PAGE_MARGIN - GRADIENT_WIDTH;
+            const custoTextX = pageContentEndX - custoTextWidth;
+            
             const destinoText = itinerario.destino || 'N/Informado';
             const destinoTextWidth = doc.getTextWidth(destinoText);
+            const destinoTextX = custoTextX - destinoTextWidth - spaceBetweenElements;
             
-            const pageContentEndX = doc.internal.pageSize.getWidth() - PAGE_MARGIN - GRADIENT_WIDTH;
-            const destinoTextX = pageContentEndX - destinoTextWidth;
-            // A ponta da seta estará antes do texto do destino
             const arrowTipX = destinoTextX - spaceBetweenElements;
-            
-            // 4. Linha Tracejada (do currentX até antes da base da seta)
-            const arrowBaseX = arrowTipX - arrowSize; // X onde a base da seta começa
+            const arrowBaseX = arrowTipX - arrowSize;
             const lineTracejadaEndX = arrowBaseX - spaceBetweenElements / 2;
             
             if (lineTracejadaEndX > currentX) { 
@@ -326,18 +331,16 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
                 doc.setLineDashPattern([], 0); 
             }
 
-            // 5. Desenhar Seta (representando o avião)
             drawRightArrowIcon(doc, arrowTipX, iconVisualCenterY, arrowSize, ICON_DRAW_COLOR);
-
-            // 6. Texto Destino
             doc.text(destinoText, destinoTextX, textBaseY);
+            doc.setFont(FONTS.DEFAULT, 'bold');
+            doc.text(custoText, custoTextX, textBaseY);
+
             yPosition += currentLineHeight;
             
-            // Detalhes do trecho
             doc.setFontSize(FONT_SIZE_DETALHES_PT);
             const currentLineHeightDetalhes = doc.internal.getLineHeight();
             doc.setTextColor(COLORS.MEDIUM_TEXT);
-            // Indentação dos detalhes alinhada com o início do texto da origem (após o pino)
             const indentDetalhes = MARGIN_LEFT_ITINERARIO_BASE + pinDrawWidth + spaceBetweenElements / 2;
             const availableWidthForDetalhes = doc.internal.pageSize.getWidth() - indentDetalhes - PAGE_MARGIN - GRADIENT_WIDTH;
             let detalhes = [];
@@ -346,6 +349,8 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
             if (itinerario.ciaAerea) detalhes.push(`Cia: ${itinerario.ciaAerea}`); //
             if (itinerario.voo) detalhes.push(`Voo: ${itinerario.voo}`); //
             if (itinerario.horarios) detalhes.push(`Horário: ${itinerario.horarios}`); //
+            if (itinerario.valorUnitario > 0) detalhes.push(`Valor: ${itinerario.quantidade} x ${formatCurrency(itinerario.valorUnitario)}`);
+
 
             if (detalhes.length > 0) {
                 const detalhesString = detalhes.join('  |  ');
@@ -360,7 +365,13 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
          doc.text("  • Nenhum itinerário cadastrado.", MARGIN_LEFT_ITINERARIO_BASE, yPosition); //
          yPosition += doc.internal.getLineHeight();
       }
-      yPosition += doc.internal.getLineHeight() * 0.8;
+      doc.setDrawColor(COLORS.LIGHT_GRAY_BORDER); doc.setLineWidth(0.3);
+      doc.line(GRADIENT_WIDTH + PAGE_MARGIN, yPosition, doc.internal.pageSize.getWidth() - PAGE_MARGIN, yPosition); //
+      yPosition += 1;
+      doc.setFont(FONTS.DEFAULT, 'bold'); doc.setFontSize(9); doc.setTextColor(COLORS.GREEN);
+      doc.text(`Total Passageiro: ${formatCurrency(totalPassageiro)}`, doc.internal.pageSize.getWidth() - PAGE_MARGIN, yPosition, { align: 'right' }); //
+      yPosition += doc.internal.getLineHeight();
+      totalGeral += totalPassageiro;
     });
   }
 
@@ -395,6 +406,16 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
       doc.setFont(FONTS.DEFAULT, 'normal'); doc.text(faturamento.webId, fieldIndent + 15, yPosition); //
       yPosition += 6;
     }
+  }
+
+  if (totalGeral > 0) {
+      if(checkAndAddPage(20)) yPosition = pageHeight - contentMarginBottomForPageBreak - 20;
+      yPosition += 5;
+      doc.setDrawColor(COLORS.BLACK); doc.setLineWidth(0.5);
+      doc.line(GRADIENT_WIDTH + PAGE_MARGIN, yPosition, doc.internal.pageSize.getWidth() - PAGE_MARGIN, yPosition);
+      yPosition += 7;
+      doc.setFont(FONTS.DEFAULT, 'bold'); doc.setFontSize(14); doc.setTextColor(COLORS.BLACK);
+      doc.text(`Total Geral da Requisição: ${formatCurrency(totalGeral)}`, doc.internal.pageSize.getWidth() - PAGE_MARGIN, yPosition, {align: 'right'})
   }
 
   // Seção de Anexos (mantida como antes)

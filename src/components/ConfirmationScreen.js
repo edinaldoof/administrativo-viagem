@@ -122,13 +122,15 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
                 originalValue.forEach((origPassenger, index) => {
                     const editedPassenger = editedValue?.[index];
                     if (editedPassenger) {
-                        compareAndGenerateFeedback(origPassenger, editedPassenger, `passengers.${index}`);
+                        compareAndGenerateFeedback(origPassenger, editedPassenger, `passengers[${index}]`);
                     }
                 });
-            } else if (originalValue !== editedValue) {
+            } else if (JSON.stringify(originalValue) !== JSON.stringify(editedValue)) {
                 // Para todos os outros campos simples
-                 const autoJustification = `Feedback Automático: O campo '${currentPath}' foi alterado de '${originalValue || 'vazio'}' para '${editedValue || 'vazio'}'.`;
-                allFeedbackLines.push(autoJustification);
+                 if (typeof originalValue !== 'object' && typeof editedValue !== 'object') {
+                    const autoJustification = `Feedback Automático: O campo '${currentPath}' foi alterado de '${originalValue || 'vazio'}' para '${editedValue || 'vazio'}'.`;
+                    allFeedbackLines.push(autoJustification);
+                 }
             }
         });
     };
@@ -147,10 +149,15 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
         friendlyLabels[`passengers.${i}.birthDate`] = `Nascimento P.${i + 1}`;
         friendlyLabels[`passengers.${i}.email`] = `Email P.${i + 1}`;
         friendlyLabels[`passengers.${i}.phone`] = `Telefone P.${i + 1}`;
+        (p.itinerary || []).forEach((it, itIndex) => {
+            friendlyLabels[`passengers.${i}.itinerary.${itIndex}.quantity`] = `Qtd Trecho ${itIndex+1} P.${i+1}`;
+            friendlyLabels[`passengers.${i}.itinerary.${itIndex}.unitPrice`] = `Valor Trecho ${itIndex+1} P.${i+1}`;
+        });
     });
     
     // Gerar feedback automático com rótulos amigáveis
     const compareAndGenerateFeedbackWithLabels = (original, edited, path = '') => {
+        if (!original || !edited) return;
         Object.keys(original).forEach(key => {
             const currentPath = path ? `${path}.${key}` : key;
             const label = friendlyLabels[currentPath] || currentPath;
@@ -161,10 +168,10 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
 
             if (typeof originalValue === 'object' && originalValue !== null && !Array.isArray(originalValue)) {
                 compareAndGenerateFeedbackWithLabels(originalValue, editedValue, currentPath);
-            } else if(Array.isArray(originalValue) && key === 'passengers') {
-                 originalValue.forEach((origPassenger, index) => {
+            } else if(Array.isArray(originalValue)) {
+                 originalValue.forEach((origItem, index) => {
                     if (editedValue && editedValue[index]) {
-                        compareAndGenerateFeedbackWithLabels(origPassenger, editedValue[index], `passengers.${index}`);
+                        compareAndGenerateFeedbackWithLabels(origItem, editedValue[index], `${currentPath}.${index}`);
                     }
                 });
             } else if (JSON.stringify(originalValue) !== JSON.stringify(editedValue)) {
@@ -191,7 +198,7 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
   };
 
 
-  const renderField = (label, path) => {
+  const renderField = (label, path, type = "text") => {
     const keys = path.split('.');
     let value = editedData;
     let originalValue = originalData;
@@ -207,7 +214,7 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
        <label htmlFor={path} className="block text-sm font-medium text-gray-600">{label}</label>
        <div className="flex items-center gap-2 mt-1">
          <input
-            type="text"
+            type={type}
             id={path}
             value={value || ''}
             onChange={(e) => handleInputChange(path, e.target.value)}
@@ -263,6 +270,19 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
                  {renderField(`Nascimento P.${pIndex + 1}`, `passengers.${pIndex}.birthDate`)}
                  {renderField(`Email P.${pIndex + 1}`, `passengers.${pIndex}.email`)}
                  {renderField(`Telefone P.${pIndex + 1}`, `passengers.${pIndex}.phone`)}
+              </div>
+              
+              <div className="mt-4 pt-3 border-t">
+                 <h5 className="font-semibold text-md text-gray-600 mb-2">Itinerário(s)</h5>
+                 {(passenger.itinerary || []).map((it, itIndex) => (
+                   <div key={itIndex} className="p-3 bg-gray-50 rounded-lg mb-2">
+                      <p className="font-medium">{it.origin || 'N/A'} → {it.destination || 'N/A'}</p>
+                      <div className="grid grid-cols-2 gap-x-4">
+                        {renderField(`Qtd Trecho ${itIndex+1} P.${pIndex+1}`, `passengers.${pIndex}.itinerary.${itIndex}.quantity`, "number")}
+                        {renderField(`Valor Trecho ${itIndex+1} P.${pIndex+1}`, `passengers.${pIndex}.itinerary.${itIndex}.unitPrice`, "number")}
+                      </div>
+                   </div>
+                 ))}
               </div>
             </div>
           ))}

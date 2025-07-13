@@ -205,7 +205,7 @@ const FadexTravelSystem = () => {
   const [editingPassageiro, setEditingPassageiro] = useState(null);
   const initialPassageiroState = { id: '', nome: '', cpf: '', dataNascimento: '', email: '', phone: '', itinerarios: [], anexos: [] };
   const [currentPassageiro, setCurrentPassageiro] = useState(initialPassageiroState);
-  const initialItinerarioState = { id: '', origem: '', destino: '', dataSaida: '', ciaAerea: '', voo: '', horarios: '' };
+  const initialItinerarioState = { id: '', origem: '', destino: '', dataSaida: '', ciaAerea: '', voo: '', horarios: '', quantidade: 1, valorUnitario: 0 };
   const [currentItinerario, setCurrentItinerario] = useState(initialItinerarioState);
   const [errors, setErrors] = useState({});
   const [successInfo, setSuccessInfo] = useState({ show: false, message: '' });
@@ -355,18 +355,18 @@ const FadexTravelSystem = () => {
             ciaAerea: it.ciaAerea || '',
             voo: it.voo || '',
             horarios: it.horarios || '',
+            quantidade: it.quantity || 1,
+            valorUnitario: it.unitPrice || 0,
         }));
 
         const primeiroItinerario = pIA.itinerary?.[0];
         if (primeiroItinerario?.returnDate) {
             itinerariosFormatados.push({
+                ...initialItinerarioState,
                 id: generateId(),
                 origem: primeiroItinerario.destination || '',
                 destino: primeiroItinerario.origin || '',
                 dataSaida: formatDateToYYYYMMDD(primeiroItinerario.returnDate),
-                ciaAerea: '',
-                voo: '',
-                horarios: '',
             });
         }
         

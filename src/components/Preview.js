@@ -1,8 +1,18 @@
 // src/components/Preview.js
 import React from 'react';
+import { formatCurrency } from '../utils/utils';
 
 const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
   const currentDate = new Date().toLocaleDateString('pt-BR');
+
+  const totalGeral = passageiros.reduce((totalReq, passageiro) => {
+    const totalPassageiro = (passageiro.itinerarios || []).reduce((totalIt, it) => {
+      const q = parseFloat(it.quantidade) || 0;
+      const v = parseFloat(it.valorUnitario) || 0;
+      return totalIt + (q * v);
+    }, 0);
+    return totalReq + totalPassageiro;
+  }, 0);
 
   return (
     // Card principal com sombra e bordas arredondadas
@@ -56,45 +66,77 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
              Passageiros e Itinerários
           </h3>
           <div className="space-y-6">
-            {passageiros.map((passageiro, pIndex) => (
+            {passageiros.map((passageiro, pIndex) => {
+               const totalPassageiro = (passageiro.itinerarios || []).reduce((total, it) => {
+                  const q = parseFloat(it.quantidade) || 0;
+                  const v = parseFloat(it.valorUnitario) || 0;
+                  return total + (q * v);
+                }, 0);
+
+              return (
               <div key={passageiro.id || pIndex} className="bg-white border border-gray-200 rounded-2xl p-6 overflow-hidden">
                 {/* Dados do Passageiro */}
-                <div className="pb-4 border-b border-gray-100 mb-4">
-                  <p className="font-bold text-gray-800 text-base">{passageiro.nome}</p>
-                  <div className="flex space-x-4 text-xs text-gray-500 mt-1">
-                    <span>CPF: {passageiro.cpf}</span>
-                    <span>Nasc: {passageiro.dataNascimento}</span>
+                <div className="pb-4 border-b border-gray-100 mb-4 flex justify-between items-start">
+                  <div>
+                    <p className="font-bold text-gray-800 text-base">{passageiro.nome}</p>
+                    <div className="flex space-x-4 text-xs text-gray-500 mt-1">
+                      <span>CPF: {passageiro.cpf}</span>
+                      <span>Nasc: {passageiro.dataNascimento}</span>
+                    </div>
+                    {passageiro.email && <p className="text-xs text-gray-500 mt-1">Email: {passageiro.email}</p>}
+                    {passageiro.phone && <p className="text-xs text-gray-500 mt-1">Telefone: {passageiro.phone}</p>}
                   </div>
-                   {passageiro.email && <p className="text-xs text-gray-500 mt-1">Email: {passageiro.email}</p>}
-                   {passageiro.phone && <p className="text-xs text-gray-500 mt-1">Telefone: {passageiro.phone}</p>}
+                  <div className="text-right">
+                    <p className="text-xs text-gray-500">Total Passageiro</p>
+                    <p className="font-bold text-lg text-green-600">{formatCurrency(totalPassageiro)}</p>
+                  </div>
                 </div>
 
                 {/* Itinerários */}
                 <div className="space-y-4">
                   {passageiro.itinerarios && passageiro.itinerarios.length > 0 ? (
-                    passageiro.itinerarios.map((itinerario, iIndex) => (
+                    passageiro.itinerarios.map((itinerario, iIndex) => {
+                      const totalItinerario = (parseFloat(itinerario.quantidade) || 0) * (parseFloat(itinerario.valorUnitario) || 0);
+                      return (
                       <div key={itinerario.id || iIndex} className="text-sm">
-                        <div className="flex items-center space-x-3 text-gray-700 font-medium">
-                          <span>{itinerario.origem}</span>
-                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-1-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"></path></svg>
-                          <span>{itinerario.destino}</span>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3 text-gray-700 font-medium">
+                               <span>{itinerario.origem}</span>
+                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-500"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-1-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"></path></svg>
+                               <span>{itinerario.destino}</span>
+                            </div>
+                             <div className="font-medium text-gray-800">
+                                {formatCurrency(totalItinerario)}
+                             </div>
                         </div>
-                        <div className="text-xs text-gray-500 pl-1 mt-1">
-                          <span>{itinerario.dataSaida ? new Date(itinerario.dataSaida + 'T03:00:00Z').toLocaleDateString('pt-BR') : 'N/A'}</span>
-                          {itinerario.ciaAerea && <span className="mx-1">|</span>}
-                          {itinerario.ciaAerea && <span>{itinerario.ciaAerea} {itinerario.voo}</span>}
-                          {itinerario.horarios && <span className="mx-1">|</span>}
-                          {itinerario.horarios && <span>({itinerario.horarios})</span>}
+                        <div className="text-xs text-gray-500 pl-1 mt-1 flex justify-between">
+                          <div>
+                            <span>{itinerario.dataSaida ? new Date(itinerario.dataSaida + 'T03:00:00Z').toLocaleDateString('pt-BR') : 'N/A'}</span>
+                            {itinerario.ciaAerea && <span className="mx-1">|</span>}
+                            {itinerario.ciaAerea && <span>{itinerario.ciaAerea} {itinerario.voo}</span>}
+                            {itinerario.horarios && <span className="mx-1">|</span>}
+                            {itinerario.horarios && <span>({itinerario.horarios})</span>}
+                          </div>
+                          <div>
+                            {itinerario.quantidade} x {formatCurrency(itinerario.valorUnitario)}
+                          </div>
                         </div>
                       </div>
-                    ))
+                      )
+                    })
                   ) : (
                     <p className="text-sm text-gray-400 italic">Nenhum itinerário cadastrado.</p>
                   )}
                 </div>
               </div>
-            ))}
+            )})}
           </div>
+
+          <div className="mt-8 pt-6 border-t-2 border-gray-200 flex justify-end items-center">
+            <span className="text-lg font-semibold text-gray-600 mr-4">Total Geral:</span>
+            <span className="text-3xl font-bold text-blue-600">{formatCurrency(totalGeral)}</span>
+          </div>
+
         </div>
       ) : null}
 

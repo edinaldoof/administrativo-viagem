@@ -1,5 +1,5 @@
 // src/utils/excelExporter.js
-import { formatCPF } from './utils'; // Ajuste o caminho se o seu utils.js estiver em outro local
+import { formatCPF, formatCurrency } from './utils'; // Ajuste o caminho se o seu utils.js estiver em outro local
 
 /**
  * Exporta os dados dos passageiros e faturamento para um arquivo Excel (XLSX) ou CSV.
@@ -21,7 +21,7 @@ export const exportDataToExcel = (passageiros, faturamento, fileName = 'solicita
             dadosExcel.push(['ADMINISTRATIVO FADEX - SOLICITAÇÃO DE PASSAGENS AÉREAS']);
             dadosExcel.push([`Data da Emissão: ${new Date().toLocaleDateString('pt-BR')}`]);
             dadosExcel.push([]); // Linha em branco
-            dadosExcel.push(['Nome Completo', 'CPF', 'Data de Nascimento', 'Email', 'Data Contato', 'Origem', 'Destino', 'Data de Saída', 'Cia Aérea', 'Nº Voo', 'Horários Estimados', 'Anexos do Passageiro']);
+            dadosExcel.push(['Nome Completo', 'CPF', 'Data de Nascimento', 'Email', 'Data Contato', 'Origem', 'Destino', 'Data de Saída', 'Cia Aérea', 'Nº Voo', 'Horários Estimados', 'Anexos do Passageiro', 'Valor Unitário', 'Quantidade', 'Total Trecho']);
 
             passageiros.forEach(passageiro => {
                 const anexosNomes = (passageiro.anexos && passageiro.anexos.length > 0)
@@ -31,6 +31,10 @@ export const exportDataToExcel = (passageiros, faturamento, fileName = 'solicita
                 if (passageiro.itinerarios && passageiro.itinerarios.length > 0) {
                     passageiro.itinerarios.forEach((itinerario, index) => {
                         const dataSaidaFormatada = itinerario.dataSaida ? new Date(itinerario.dataSaida + 'T00:00:00-03:00').toLocaleDateString('pt-BR') : 'N/A';
+                        const valorUnitario = parseFloat(itinerario.valorUnitario) || 0;
+                        const quantidade = parseInt(itinerario.quantidade) || 1;
+                        const totalTrecho = valorUnitario * quantidade;
+
                         dadosExcel.push([
                             index === 0 ? passageiro.nome : '',
                             index === 0 ? formatCPF(passageiro.cpf) : '',
@@ -43,7 +47,10 @@ export const exportDataToExcel = (passageiros, faturamento, fileName = 'solicita
                             itinerario.ciaAerea || '',
                             itinerario.voo || '',
                             itinerario.horarios || '',
-                            index === 0 ? anexosNomes : ''
+                            index === 0 ? anexosNomes : '',
+                            { t: 'n', v: valorUnitario, z: '"R$"#,##0.00' }, // Formato moeda
+                            quantidade,
+                            { t: 'n', v: totalTrecho, z: '"R$"#,##0.00' } // Formato moeda
                         ]);
                     });
                 } else {
@@ -55,7 +62,8 @@ export const exportDataToExcel = (passageiros, faturamento, fileName = 'solicita
                         passageiro.email,
                         passageiro.contactDate,
                         '-', '-', '-', '-', '-', '-', // Colunas de itinerário vazias
-                        anexosNomes
+                        anexosNomes,
+                         '', '', '' // Colunas de custo vazias
                     ]);
                 }
             });
@@ -73,7 +81,8 @@ export const exportDataToExcel = (passageiros, faturamento, fileName = 'solicita
             // Definir larguras das colunas (opcional, mas melhora a visualização)
             ws['!cols'] = [
                 { wch: 30 }, { wch: 15 }, { wch: 18 }, { wch: 25 }, { wch: 15 },
-                { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 10 }, { wch: 20 }, { wch: 30 }
+                { wch: 20 }, { wch: 20 }, { wch: 15 }, { wch: 15 }, { wch: 10 }, { wch: 20 }, { wch: 30 },
+                { wch: 15 }, { wch: 12 }, { wch: 15 } // Colunas de custo
             ];
 
             const wb = XLSX.utils.book_new();
@@ -87,7 +96,7 @@ export const exportDataToExcel = (passageiros, faturamento, fileName = 'solicita
             // csvContent += "\uFEFF"; 
             csvContent += "ADMINISTRATIVO FADEX - SOLICITAÇÃO DE PASSAGENS AÉREAS\n";
             csvContent += `Data da Emissão:,"${new Date().toLocaleDateString('pt-BR')}"\n\n`;
-            csvContent += "Nome Completo,CPF,Data de Nascimento,Email,Data Contato,Origem,Destino,Data de Saída,Cia Aérea,Nº Voo,Horários Estimados,Anexos do Passageiro\n";
+            csvContent += "Nome Completo,CPF,Data de Nascimento,Email,Data Contato,Origem,Destino,Data de Saída,Cia Aérea,Nº Voo,Horários Estimados,Anexos do Passageiro,Valor Unitario,Quantidade,Total Trecho\n";
 
             const escapeCSV = (field) => field ? `"${String(field).replace(/"/g, '""')}"` : '';
 
@@ -98,10 +107,14 @@ export const exportDataToExcel = (passageiros, faturamento, fileName = 'solicita
                 if (passageiro.itinerarios && passageiro.itinerarios.length > 0) {
                     passageiro.itinerarios.forEach((itinerario, index) => {
                         const dataSaidaFormatada = itinerario.dataSaida ? new Date(itinerario.dataSaida + 'T00:00:00-03:00').toLocaleDateString('pt-BR') : 'N/A';
-                        csvContent += `${index === 0 ? escapeCSV(passageiro.nome) : ''},${index === 0 ? escapeCSV(formatCPF(passageiro.cpf)) : ''},${index === 0 ? escapeCSV(passageiro.dataNascimento) : ''},${index === 0 ? escapeCSV(passageiro.email) : ''},${index === 0 ? escapeCSV(passageiro.contactDate) : ''},${escapeCSV(itinerario.origem)},${escapeCSV(itinerario.destino)},${escapeCSV(dataSaidaFormatada)},${escapeCSV(itinerario.ciaAerea)},${escapeCSV(itinerario.voo)},${escapeCSV(itinerario.horarios)},${index === 0 ? escapeCSV(anexosNomes) : ''}\n`;
+                        const valorUnitario = parseFloat(itinerario.valorUnitario) || 0;
+                        const quantidade = parseInt(itinerario.quantidade) || 1;
+                        const totalTrecho = valorUnitario * quantidade;
+
+                        csvContent += `${index === 0 ? escapeCSV(passageiro.nome) : ''},${index === 0 ? escapeCSV(formatCPF(passageiro.cpf)) : ''},${index === 0 ? escapeCSV(passageiro.dataNascimento) : ''},${index === 0 ? escapeCSV(passageiro.email) : ''},${index === 0 ? escapeCSV(passageiro.contactDate) : ''},${escapeCSV(itinerario.origem)},${escapeCSV(itinerario.destino)},${escapeCSV(dataSaidaFormatada)},${escapeCSV(itinerario.ciaAerea)},${escapeCSV(itinerario.voo)},${escapeCSV(itinerario.horarios)},${index === 0 ? escapeCSV(anexosNomes) : ''},${escapeCSV(formatCurrency(valorUnitario))},${escapeCSV(quantidade)},${escapeCSV(formatCurrency(totalTrecho))}\n`;
                     });
                 } else {
-                    csvContent += `${escapeCSV(passageiro.nome)},${escapeCSV(formatCPF(passageiro.cpf))},${escapeCSV(passageiro.dataNascimento)},${escapeCSV(passageiro.email)},${escapeCSV(passageiro.contactDate)},"","","","","","","",${escapeCSV(anexosNomes)}\n`;
+                    csvContent += `${escapeCSV(passageiro.nome)},${escapeCSV(formatCPF(passageiro.cpf))},${escapeCSV(passageiro.dataNascimento)},${escapeCSV(passageiro.email)},${escapeCSV(passageiro.contactDate)},"","","","","","","",${escapeCSV(anexosNomes)},"","",""\n`;
                 }
             });
 

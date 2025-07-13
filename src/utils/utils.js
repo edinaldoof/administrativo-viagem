@@ -37,11 +37,12 @@ export const formatPhone = (value) => {
 
 
 export const formatCurrency = (value) => {
-  if (isNaN(parseFloat(value))) return '';
+  const numberValue = parseFloat(value);
+  if (isNaN(numberValue)) return '';
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL'
-  }).format(value);
+  }).format(numberValue);
 };
 
 export const formatDateTime = (dateString) => {

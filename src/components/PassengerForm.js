@@ -1,6 +1,6 @@
 // src/components/PassengerForm.js
-import React, { useState } from 'react';
-import { formatCPF, formatDate, formatPhone } from '../utils/utils';
+import React, { useState, useMemo } from 'react';
+import { formatCPF, formatDate, formatPhone, formatCurrency } from '../utils/utils';
 
 const PassengerForm = ({
   currentPassageiro,
@@ -72,6 +72,12 @@ const PassengerForm = ({
       }
     }
   };
+
+  const totalTrecho = useMemo(() => {
+    const quantidade = parseFloat(currentItinerario.quantidade) || 0;
+    const valorUnitario = parseFloat(currentItinerario.valorUnitario) || 0;
+    return quantidade * valorUnitario;
+  }, [currentItinerario.quantidade, currentItinerario.valorUnitario]);
 
   return (
     <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-8 shadow-xl border border-white/20">
@@ -164,6 +170,23 @@ const PassengerForm = ({
               <input type="text" name="voo" value={currentItinerario.voo} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Número do Voo"/>
               <input type="text" name="horarios" value={currentItinerario.horarios} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Horários (Ex: 08:00 - 10:00)"/>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+               <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Valor Unitário</label>
+                  <input type="number" name="valorUnitario" value={currentItinerario.valorUnitario} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 rounded-lg w-full" placeholder="0.00"/>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Quantidade</label>
+                  <input type="number" name="quantidade" value={currentItinerario.quantidade} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 rounded-lg w-full" placeholder="1"/>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Total do Trecho</label>
+                  <div className="p-3 bg-gray-100 rounded-lg w-full text-gray-800 font-medium">
+                    {formatCurrency(totalTrecho)}
+                  </div>
+                </div>
+            </div>
             
             <div className="col-span-1 md:col-span-2 lg:grid-cols-3 mt-2 mb-3">
               <label htmlFor="incluirVolta" className="flex items-center space-x-2 cursor-pointer">
@@ -216,6 +239,7 @@ const PassengerForm = ({
                   <span className="font-medium text-blue-600">#{index + 1}</span>
                   <span>{itinerario.origem} → {itinerario.destino}</span>
                   <span className="text-gray-500">{itinerario.dataSaida ? new Date(itinerario.dataSaida + 'T00:00:00-03:00').toLocaleDateString('pt-BR') : 'N/A'}</span>
+                   <span className="text-gray-500 font-semibold">{formatCurrency((itinerario.quantidade || 1) * (itinerario.valorUnitario || 0))}</span>
                   {itinerario.ciaAerea && <span className="text-gray-500">{itinerario.ciaAerea}</span>}
                   {itinerario.voo && <span className="text-gray-500">Voo {itinerario.voo}</span>}
                   {itinerario.horarios && <span className="text-gray-500">{itinerario.horarios}</span>}

@@ -5,12 +5,18 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "./ui/accordion";
-import { formatCPF } from '../utils/utils';
+import { formatCPF, formatCurrency } from '../utils/utils';
 
 const PassengerListItem = ({ passageiro, onEdit, onDuplicate, onRemove }) => {
   if (!passageiro) {
     return null;
   }
+
+  const totalCustoPassageiro = (passageiro.itinerarios || []).reduce((acc, it) => {
+    const quantidade = parseFloat(it.quantidade) || 0;
+    const valorUnitario = parseFloat(it.valorUnitario) || 0;
+    return acc + (quantidade * valorUnitario);
+  }, 0);
 
   return (
     <AccordionItem value={passageiro.id} className="bg-white rounded-2xl border border-gray-200 px-4 shadow-md transition-all hover:border-blue-300">
@@ -18,6 +24,9 @@ const PassengerListItem = ({ passageiro, onEdit, onDuplicate, onRemove }) => {
         <div className="flex-1">
           <h4 className="font-semibold text-gray-800">{passageiro.nome}</h4>
           <p className="text-sm text-gray-500">CPF: {formatCPF(passageiro.cpf)}</p>
+        </div>
+        <div className="text-right">
+          <span className="font-semibold text-gray-700">{formatCurrency(totalCustoPassageiro)}</span>
         </div>
       </AccordionTrigger>
       <AccordionContent className="pt-2 pb-4">
@@ -37,11 +46,16 @@ const PassengerListItem = ({ passageiro, onEdit, onDuplicate, onRemove }) => {
             <div className="space-y-2 text-sm">
               {passageiro.itinerarios && passageiro.itinerarios.length > 0 ? (
                 passageiro.itinerarios.map((it, index) => (
-                  <div key={it.id || index} className="p-2 bg-gray-50 rounded-lg">
-                    <span>{it.origem} → {it.destino}</span>
-                    <span className="text-xs text-gray-500 block">
-                      {it.dataSaida ? new Date(it.dataSaida + 'T03:00:00Z').toLocaleDateString('pt-BR') : 'N/A'}
-                    </span>
+                  <div key={it.id || index} className="p-2 bg-gray-50 rounded-lg flex justify-between">
+                    <div>
+                      <span>{it.origem} → {it.destino}</span>
+                      <span className="text-xs text-gray-500 block">
+                        {it.dataSaida ? new Date(it.dataSaida + 'T03:00:00Z').toLocaleDateString('pt-BR') : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="font-medium text-gray-700">
+                        {formatCurrency((it.quantidade || 1) * (it.valorUnitario || 0))}
+                    </div>
                   </div>
                 ))
               ) : (

@@ -77,6 +77,8 @@ export const extractDataFromPdfWithGemini = async (text) => {
             -   **isRoundTrip**: Set to 'true' if a return date exists, otherwise 'false'.
             -   **ciaAerea**, **voo**, **horarios**: Extract these from "DETALHE DO ITEM" or "OBSERVAÇÕES".
             -   **baggage**: Check the "BAGAGENS" field. If it contains "COM BAGAGENS", set to "Com Bagagem". If "SEM BAGAGENS", set to "Sem Bagagem".
+            -   **quantity**: Extract the value from "QUANTIDADE". It's a number.
+            -   **unitPrice**: Extract the value from "VALOR UNITARIO". It should be a number (e.g., 1234.56).
 
     **Expected JSON Output Format:**
     {
@@ -104,7 +106,9 @@ export const extractDataFromPdfWithGemini = async (text) => {
               "ciaAerea": "string or null",
               "voo": "string or null",
               "horarios": "string or null",
-              "baggage": "string or null"
+              "baggage": "string or null",
+              "quantity": "number or null",
+              "unitPrice": "number or null"
             }
           ]
         }
