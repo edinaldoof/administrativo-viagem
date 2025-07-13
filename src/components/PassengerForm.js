@@ -1,6 +1,6 @@
 // src/components/PassengerForm.js
 import React, { useState } from 'react';
-import { formatCPF, formatDate } from '../utils/utils';
+import { formatCPF, formatDate, formatPhone } from '../utils/utils';
 
 const PassengerForm = ({
   currentPassageiro,
@@ -20,8 +20,10 @@ const PassengerForm = ({
     let formattedValue = value;
     if (name === 'cpf') {
       formattedValue = formatCPF(value);
-    } else if (name === 'dataNascimento' || name === 'contactDate') {
+    } else if (name === 'dataNascimento') {
       formattedValue = formatDate(value);
+    } else if (name === 'phone') {
+      formattedValue = formatPhone(value);
     }
     onPassageiroFieldChange(name, formattedValue);
   };
@@ -129,12 +131,12 @@ const PassengerForm = ({
             />
           </div>
           <div>
-            <label htmlFor="contactDate" className="block text-sm font-medium text-gray-700 mb-2">Data do Contato (Opcional)</label>
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">Telefone (Opcional)</label>
             <input
-              type="text" name="contactDate" id="contactDate" value={currentPassageiro.contactDate}
+              type="text" name="phone" id="phone" value={currentPassageiro.phone}
               onChange={handlePassageiroInputChange}
               className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-              placeholder="DD/MM/AAAA" maxLength="10"
+              placeholder="(00) 0 0000-0000" maxLength="16"
             />
           </div>
         </div>

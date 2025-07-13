@@ -66,7 +66,7 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
                     <span>Nasc: {passageiro.dataNascimento}</span>
                   </div>
                    {passageiro.email && <p className="text-xs text-gray-500 mt-1">Email: {passageiro.email}</p>}
-                   {passageiro.contactDate && <p className="text-xs text-gray-500 mt-1">Contato: {passageiro.contactDate}</p>}
+                   {passageiro.phone && <p className="text-xs text-gray-500 mt-1">Telefone: {passageiro.phone}</p>}
                 </div>
 
                 {/* Itinerários */}

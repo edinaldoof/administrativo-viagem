@@ -200,7 +200,7 @@ const FadexTravelSystem = () => {
   const [faturamento, setFaturamento] = useState({ contaProjeto: '', descricao: '', cc: '', webId: '' });
   const [activeForm, setActiveForm] = useState(null);
   const [editingPassageiro, setEditingPassageiro] = useState(null);
-  const initialPassageiroState = { id: '', nome: '', cpf: '', dataNascimento: '', email: '', contactDate: '', itinerarios: [], anexos: [] };
+  const initialPassageiroState = { id: '', nome: '', cpf: '', dataNascimento: '', email: '', phone: '', itinerarios: [], anexos: [] };
   const [currentPassageiro, setCurrentPassageiro] = useState(initialPassageiroState);
   const initialItinerarioState = { id: '', origem: '', destino: '', dataSaida: '', ciaAerea: '', voo: '', horarios: '' };
   const [currentItinerario, setCurrentItinerario] = useState(initialItinerarioState);
@@ -339,7 +339,6 @@ const FadexTravelSystem = () => {
             passageiroExistente.itinerarios.push(...itinerariosFormatados);
             if (pIA.email && !passageiroExistente.email) passageiroExistente.email = pIA.email;
             if (pIA.phone && !passageiroExistente.phone) passageiroExistente.phone = formatPhone(pIA.phone);
-            if (pIA.contactDate && !passageiroExistente.contactDate) passageiroExistente.contactDate = formatDateToDDMMYYYY(pIA.contactDate);
             updatedCount++;
         } else {
             updatedPassageiros.push({
@@ -349,7 +348,6 @@ const FadexTravelSystem = () => {
                 dataNascimento: formatDateToDDMMYYYY(pIA.birthDate),
                 email: pIA.email || '',
                 phone: formatPhone(pIA.phone || ''),
-                contactDate: pIA.contactDate ? formatDateToDDMMYYYY(pIA.contactDate) : '',
                 anexos: [],
                 itinerarios: itinerariosFormatados,
             });
