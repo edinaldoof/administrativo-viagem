@@ -326,16 +326,10 @@ const FadexTravelSystem = () => {
       return;
     }
 
-    let codigoExtraido = '';
-    const titulo = dataFromAI.title || '';
-    if (titulo.includes(' - ')) {
-        codigoExtraido = titulo.split(' - ')[0].trim();
-    }
-
     setFaturamento(prevFaturamento => ({
       ...prevFaturamento,
-      contaProjeto: codigoExtraido || dataFromAI.billing?.account || prevFaturamento.contaProjeto,
-      cc: codigoExtraido || dataFromAI.billing?.costCenter || prevFaturamento.cc,
+      contaProjeto: dataFromAI.billing?.account || prevFaturamento.contaProjeto,
+      cc: dataFromAI.billing?.costCenter || prevFaturamento.cc,
       descricao: dataFromAI.billing?.description || prevFaturamento.descricao,
       webId: dataFromAI.billing?.webId || prevFaturamento.webId,
     }));
