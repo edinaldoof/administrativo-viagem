@@ -16,6 +16,7 @@ import HelpChatbot from './HelpChatbot';
 import {
   generateId,
   formatCPF,
+  formatPhone,
   validarCPF,
   validarDataNascimento,
   validarDataViagem
@@ -337,6 +338,7 @@ const FadexTravelSystem = () => {
             const passageiroExistente = updatedPassageiros[existingPassengerIndex];
             passageiroExistente.itinerarios.push(...itinerariosFormatados);
             if (pIA.email && !passageiroExistente.email) passageiroExistente.email = pIA.email;
+            if (pIA.phone && !passageiroExistente.phone) passageiroExistente.phone = formatPhone(pIA.phone);
             if (pIA.contactDate && !passageiroExistente.dataContato) passageiroExistente.dataContato = formatDateToDDMMYYYY(pIA.contactDate);
             updatedCount++;
         } else {
@@ -346,6 +348,7 @@ const FadexTravelSystem = () => {
                 cpf: formattedCPF,
                 dataNascimento: formatDateToDDMMYYYY(pIA.birthDate),
                 email: pIA.email || '',
+                phone: formatPhone(pIA.phone || ''),
                 dataContato: pIA.contactDate ? formatDateToDDMMYYYY(pIA.contactDate) : '',
                 anexos: [],
                 itinerarios: itinerariosFormatados,
