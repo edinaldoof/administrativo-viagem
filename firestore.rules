@@ -3,11 +3,21 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow public read and write access to all collections.
-    // This is suitable for development and prototyping but should be
-    // secured with authentication rules for production.
-    match /{document=**} {
+
+    // Allow read and write access to the 'requests' collection
+    match /requests/{requestId} {
       allow read, write: if true;
     }
+
+    // Allow read and write access to the 'passengers' collection
+    match /passengers/{passengerId} {
+      allow read, write: if true;
+    }
+
+    // Allow read and write access to the 'feedback' collection
+    match /feedback/{feedbackId} {
+      allow read, write: if true;
+    }
+
   }
 }
