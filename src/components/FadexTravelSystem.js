@@ -124,7 +124,7 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
     }
   };
   
-  const handleFeedbackAndCancel = async (justification) => {
+  const handleSendFeedback = async (justification) => {
     if (justification && justification.trim()) {
       try {
         await saveFeedback(justification);
@@ -133,10 +133,6 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
         console.error("Erro ao salvar feedback:", error);
       }
     }
-    setExtractedData(null);
-    setProcessingState('idle');
-    setFile(null);
-    onBack(); // Volta para a tela principal
   };
 
   const handleCancel = () => {
@@ -151,8 +147,8 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
       <ConfirmationScreen
         originalData={extractedData}
         onConfirm={onImportConfirmed}
-        onCancel={handleCancel} // Apenas fecha a tela de confirmação
-        onSendFeedback={handleFeedbackAndCancel} // Envia feedback e depois fecha
+        onCancel={handleCancel}
+        onSendFeedback={handleSendFeedback}
       />
     );
   }
@@ -306,7 +302,6 @@ const FadexTravelSystem = () => {
         ...faturamento,
         passengerIds: passengerRefs, // Armazenando IDs
         passengersData: passageiros, // Armazenando cópia dos dados para o histórico
-        createdAt: new Date(),
       };
 
       await saveRequest(requestData);
