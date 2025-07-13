@@ -31,13 +31,13 @@ export const extractDataFromPdfWithGemini = async (text, preprocessedData = {}) 
         -   **billing.webId**: Extract only the number from "Número da Solicitação: WEB:".
         -   **billing.description**: Get the full content from the "JUSTIFICATIVA/FINALIDADE" field.
 
-    2.  **Passengers (Array of objects):** Scour the entire document for all passenger sections. Each passenger is usually identified by a "DADOS DO BENEFICIÁRIO" section. Create one object in the array for each passenger found.
+    2.  **Passengers (Array of objects):** Scour the entire document for all passenger sections. Each "DADOS GERAIS DO ITEM" section usually represents a request for one passenger. You must create a new object in the 'passengers' array for each distinct beneficiary found. A beneficiary is identified by a "DADOS DO BENEFICIÁRIO" section.
         -   **name**: The full name from "CPF E NOME".
         -   **cpf**: The CPF from "CPF E NOME".
         -   **birthDate**: The birth date from "DATA DE NASCIMENTO" in DD/MM/YYYY format.
         -   **email**: The email from "E-MAIL".
         -   **phone**: The phone number from "TELEFONE" or "CELULAR".
-        -   **itinerary (Array of objects)**: For each passenger, extract their travel segments from the "DADOS DA VIAGEM" or "DETALHE DO ITEM" sections associated with them.
+        -   **itinerary (Array of objects)**: For each passenger, extract their travel segments from the "DADOS DA VIAGEM" or "DETALHE DO ITEM" sections that are clearly associated with them.
             -   **origin**: The "CIDADE DE ORIGEM" or "ORIGEM".
             -   **destination**: The "CIDADE DE DESTINO" or "DESTINO".
             -   **departureDate**: The "DATA DE SAÍDA" or "IDA" date in DD/MM/YYYY format.
@@ -81,8 +81,8 @@ export const extractDataFromPdfWithGemini = async (text, preprocessedData = {}) 
 
     **Crucial Instructions:**
     - A single document can have many pages and multiple passengers. You MUST iterate through all pages to find every beneficiary.
-    - The details for a single passenger can be spread across multiple pages.
-    - Be precise. Do not invent data. If a field is not present in the document, return null or an empty string for that field.
+    - Associate each "DADOS DA VIAGEM" block to the "DADOS DO BENEFICIÁRIO" block that it follows.
+    - Be precise. Do not invent data. If a field is not present, return null or an empty string for that field.
 
     **Document for analysis:**
     ---

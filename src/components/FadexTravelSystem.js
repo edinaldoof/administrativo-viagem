@@ -256,13 +256,17 @@ const FadexTravelSystem = () => {
 
   const handleConfirmImport = (dataFromAI) => {
     if (!dataFromAI || !dataFromAI.passengers || dataFromAI.passengers.length === 0) {
-      showSuccessMessageHandler('Nenhum passageiro encontrado para importar.');
-      setCurrentView('main');
-      return;
+        showSuccessMessageHandler('Nenhum passageiro encontrado para importar.');
+        setCurrentView('main');
+        return;
     }
-  
-    const novosPassageiros = dataFromAI.passengers.map(p => {
-        const itinerariosFormatados = (p.itinerary || []).map(it => ({
+
+    let updatedPassageiros = [...passageiros];
+    let addedCount = 0;
+    let updatedCount = 0;
+
+    dataFromAI.passengers.forEach(pIA => {
+        const itinerariosFormatados = (pIA.itinerary || []).map(it => ({
             id: generateId(),
             origem: it.origin || '',
             destino: it.destination || '',
@@ -271,9 +275,10 @@ const FadexTravelSystem = () => {
             voo: it.voo || '',
             horarios: it.horarios || '',
         }));
-  
-        const primeiroItinerario = p.itinerary?.[0];
-        if (primeiroItinerario?.returnDate && primeiroItinerario.returnDate !== primeiroItinerario.departureDate) {
+
+        // Adiciona o trecho de volta se existir
+        const primeiroItinerario = pIA.itinerary?.[0];
+        if (primeiroItinerario?.returnDate) {
             itinerariosFormatados.push({
                 id: generateId(),
                 origem: primeiroItinerario.destination || '',
@@ -284,25 +289,32 @@ const FadexTravelSystem = () => {
                 horarios: '',
             });
         }
-  
-        return {
-            id: generateId(),
-            nome: p.name || 'Nome não extraído',
-            cpf: formatCPF(p.cpf || ''),
-            dataNascimento: formatDateToDDMMYYYY(p.birthDate),
-            anexos: [],
-            itinerarios: itinerariosFormatados,
-        };
+        
+        const formattedCPF = formatCPF(pIA.cpf || '');
+        const existingPassengerIndex = updatedPassageiros.findIndex(p => p.cpf === formattedCPF && formattedCPF);
+
+        if (existingPassengerIndex > -1) {
+            // Atualiza passageiro existente com novos itinerários
+            const passageiroExistente = updatedPassageiros[existingPassengerIndex];
+            passageiroExistente.itinerarios.push(...itinerariosFormatados);
+            updatedCount++;
+        } else {
+            // Adiciona novo passageiro
+            updatedPassageiros.push({
+                id: generateId(),
+                nome: pIA.name || 'Nome não extraído',
+                cpf: formattedCPF,
+                dataNascimento: formatDateToDDMMYYYY(pIA.birthDate),
+                anexos: [],
+                itinerarios: itinerariosFormatados,
+            });
+            addedCount++;
+        }
     });
-  
-    const passageirosFiltrados = novosPassageiros.filter(
-        pIA => pIA.cpf && !passageiros.some(pExistente => pExistente.cpf === pIA.cpf)
-    );
-  
-    if (passageirosFiltrados.length > 0) {
-        setPassageiros(prev => [...prev, ...passageirosFiltrados]);
-    }
-  
+
+    setPassageiros(updatedPassageiros);
+
+    // Preenche o faturamento se ainda não estiver preenchido
     if (!faturamento.contaProjeto && !faturamento.webId && dataFromAI.billing) {
         setFaturamento({
             contaProjeto: dataFromAI.billing.account || '',
@@ -311,14 +323,8 @@ const FadexTravelSystem = () => {
             webId: dataFromAI.billing.webId || '',
         });
     }
-  
-    const numAdicionados = passageirosFiltrados.length;
-    const numIgnorados = novosPassageiros.length - numAdicionados;
-    let message = `${numAdicionados} passageiro(s) importado(s) com sucesso.`;
-    if (numIgnorados > 0) {
-        message += ` ${numIgnorados} já estava(m) na lista e foi(ram) ignorado(s).`;
-    }
-  
+
+    let message = `${addedCount} passageiro(s) adicionado(s) e ${updatedCount} atualizado(s) com sucesso.`;
     showSuccessMessageHandler(message);
     setCurrentView('main');
   };
