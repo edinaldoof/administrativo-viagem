@@ -1,41 +1,40 @@
 {
-  "name": "nextn",
-  "version": "0.1.0",
+  "name": "viagens-fadex-react",
+  "version": "1.0.0",
   "private": true,
+  "homepage": ".",
   "scripts": {
-    "dev": "next dev",
-    "genkit:dev": "genkit start --node-path . -- src/ai/dev.js",
-    "genkit:watch": "genkit start --node-path . --watch src/ai/dev.js",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "dev": "react-scripts start",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
   "dependencies": {
-    "@genkit-ai/googleai": "^1.13.0",
-    "@genkit-ai/next": "^1.13.0",
-    "@radix-ui/react-avatar": "^1.1.0",
-    "@radix-ui/react-slot": "^1.1.0",
-    "@radix-ui/react-toast": "^1.2.1",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.1.1",
-    "genkit": "^1.13.0",
+    "@google/generative-ai": "^0.24.1",
+    "firebase": "^11.10.0",
     "html2canvas": "^1.4.1",
-    "jspdf": "^2.5.1",
-    "jspdf-autotable": "^3.8.2",
-    "lucide-react": "^0.417.0",
-    "next": "15.3.3",
-    "next-themes": "^0.3.0",
-    "prop-types": "^15.8.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "tailwind-merge": "^2.4.0",
-    "tailwindcss-animate": "^1.0.7",
-    "xlsx": "^0.18.5",
-    "zod": "^3.23.8"
+    "jspdf": "^2.5.2",
+    "lucide-react": "^0.263.1",
+    "pdfjs-dist": "^5.3.93",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "genkit-cli": "^1.13.0",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1"
+    "serve": "^14.2.1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
