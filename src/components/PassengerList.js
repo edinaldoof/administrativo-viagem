@@ -1,7 +1,7 @@
 // src/components/PassengerList.js
 import React from 'react';
 import PassengerListItem from './PassengerListItem';
-import { Accordion } from '@/components/ui/accordion';
+import { Accordion } from './ui/accordion';
 
 const PassengerList = ({ passageiros, onEditPassageiro, onDuplicatePassageiro, onRemovePassageiro }) => {
   return (

@@ -4,7 +4,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "./ui/accordion";
 import { formatCPF } from '../utils/utils';
 
 const PassengerListItem = ({ passageiro, onEdit, onDuplicate, onRemove }) => {
