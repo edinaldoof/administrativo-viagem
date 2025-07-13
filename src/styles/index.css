@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Reset and base styles */
 * {
     margin: 0;
@@ -11,20 +15,10 @@
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #f8fafc; /* Tailwind gray-50 */
   }
   
   button {
-    border: none;
-    background: none;
     cursor: pointer;
-    outline: none;
-  }
-  
-  input, textarea {
-    outline: none;
-    border: none;
-    background: none;
   }
   
   /* Custom Scrollbar Styles (optional, but good for consistency) */
@@ -44,11 +38,6 @@
   
   ::-webkit-scrollbar-thumb:hover {
     background: #94a3b8; /* Tailwind slate-400 */
-  }
-  
-  /* Smooth transitions for elements (optional) */
-  * {
-    transition: all 0.2s ease-in-out;
   }
 
   .modal-overlay {
