@@ -2,22 +2,21 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
-// TODO: Cole aqui a configuração do seu projeto Firebase.
-// Você pode encontrar esses dados no Console do Firebase, nas configurações do seu projeto,
-// ao adicionar um aplicativo Web.
+// Your web app's Firebase configuration provided by the user.
 const firebaseConfig = {
-  apiKey: "COLE_SUA_API_KEY_AQUI",
-  authDomain: "SEU_PROJETO.firebaseapp.com",
-  projectId: "SEU_ID_DE_PROJETO",
-  storageBucket: "SEU_PROJETO.appspot.com",
-  messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-  appId: "SEU_APP_ID"
+  apiKey: "AIzaSyDIHmjJhip1LnNErDwArCdSmi6bi4dqSZo",
+  authDomain: "fadex-viagens-ia.firebaseapp.com",
+  projectId: "fadex-viagens-ia",
+  storageBucket: "fadex-viagens-ia.appspot.com",
+  messagingSenderId: "937561556447",
+  appId: "1:937561556447:web:88f7844f32d4a46d3e706a",
+  measurementId: "G-4G7KHYJV6J"
 };
 
-// Inicializa o Firebase com a configuração fornecida.
+// Initialize Firebase with the provided configuration.
 const app = initializeApp(firebaseConfig);
 
-// Inicializa o Cloud Firestore e obtém uma referência ao serviço.
+// Initialize Cloud Firestore and get a reference to the service.
 const db = getFirestore(app);
 
 export { db };
