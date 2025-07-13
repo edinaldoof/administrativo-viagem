@@ -245,7 +245,7 @@ const PassengerForm = ({
                         id="passenger-attachment-upload"
                         type="file"
                         multiple
-                        accept=".png,.jpg,.jpeg,.pdf,.doc,.docx"
+                        accept=".png,.jpg,.jpeg,.pdf,.doc,.doc,.docx"
                         onChange={handleFileChangeForPassenger}
                         className="sr-only"
                     />

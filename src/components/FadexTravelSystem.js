@@ -26,24 +26,23 @@ import { exportPreviewToPNG } from '../utils/pngExporter.js';
 
 // Utilitários de IA e PDF
 import { extractDataFromPdfWithGemini } from '../ai/geminiService';
-import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs';
+import { UploadCloud, FileText, CheckCircle, XCircle, Loader } from 'lucide-react';
+import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).toString();
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.mjs`;
 
 // Funções de formatação de data
-const formatDateToYYYYMMDD = (dateStr) => {
-    if (!dateStr) return '';
-    if (typeof dateStr === 'string' && dateStr.includes('/')) {
-        const [day, month, year] = dateStr.split('/');
-        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+const formatDateToYYYYMMDD = (date) => {
+    if (!date) return '';
+    if (typeof date === 'string' && date.includes('/')) {
+        const [day, month, year] = date.split('/');
+        return `${year}-${month}-${day}`;
     }
-    if (dateStr instanceof Date && !isNaN(dateStr)) {
-      const year = dateStr.getFullYear();
-      const month = String(dateStr.getMonth() + 1).padStart(2, '0');
-      const day = String(dateStr.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-    return dateStr; // Retorna o valor original se não for um formato esperado
+    if (!(date instanceof Date) || isNaN(date)) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 };
 
 const formatDateToDDMMYYYY = (date) => {
@@ -52,20 +51,18 @@ const formatDateToDDMMYYYY = (date) => {
         const [year, month, day] = date.split('-');
         return `${day}/${month}/${year}`;
     }
-    if (date instanceof Date && !isNaN(date)) {
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-    }
-    return date;
+    if (!(date instanceof Date) || isNaN(date)) return '';
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
 };
 
 
 // Componente da Tela de Importação
 const ImportScreen = ({ onImportConfirmed, onBack }) => {
   const [file, setFile] = useState(null);
-  const [processingState, setProcessingState] = useState('idle'); // idle, processing, success, error
+  const [processingState, setProcessingState] = useState('idle');
   const [processingMessage, setProcessingMessage] = useState('');
   const [extractedData, setExtractedData] = useState(null);
   const fileInputRef = useRef(null);
@@ -98,20 +95,16 @@ const ImportScreen = ({ onImportConfirmed, onBack }) => {
 
   const handleProcessFile = async () => {
     if (!file) return;
-
     setProcessingState('processing');
     try {
       setProcessingMessage('Extraindo texto do PDF...');
       const textContent = await extractTextFromPdf(file);
       if (!textContent) throw new Error('Falha ao extrair texto.');
-
       setProcessingMessage('Analisando com a IA Gemini...');
       const result = await extractDataFromPdfWithGemini(textContent);
-
       setExtractedData(result);
       setProcessingState('success');
       setProcessingMessage('Dados extraídos com sucesso! Verifique e confirme.');
-
     } catch (err) {
       console.error("Erro no processamento do arquivo:", err);
       setProcessingState('error');
@@ -135,7 +128,6 @@ const ImportScreen = ({ onImportConfirmed, onBack }) => {
         <h2 className="text-2xl font-bold text-gray-800">Importar Requisição de PDF</h2>
         <button onClick={onBack} className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Voltar</button>
       </div>
-
       <div
         className="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center cursor-pointer hover:border-blue-500 bg-gray-50"
         onDragOver={handleDragOver}
@@ -143,25 +135,25 @@ const ImportScreen = ({ onImportConfirmed, onBack }) => {
         onClick={() => fileInputRef.current.click()}
       >
         <input type="file" ref={fileInputRef} onChange={(e) => handleFileSelect(e.target.files[0])} style={{ display: 'none' }} accept=".pdf" />
+        <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
         <p className="mt-2 text-sm text-gray-600">Arraste e solte o arquivo PDF aqui, ou clique para selecionar.</p>
       </div>
-
       {file && (
         <div className="mt-6 p-4 border rounded-lg bg-gray-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
+              <FileText className="h-6 w-6 text-red-500" />
               <span className="font-medium">{file.name}</span>
             </div>
             <button onClick={handleProcessFile} disabled={processingState === 'processing'} className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-300">
               {processingState === 'processing' ? 'Processando...' : 'Processar Arquivo'}
             </button>
           </div>
-
            {processingState !== 'idle' && (
              <div className="flex items-center gap-3 mt-4 text-sm">
-                {processingState === 'processing' && <span className="text-blue-600">Processando...</span>}
-                {processingState === 'success' && <span className="text-green-600">Sucesso!</span>}
-                {processingState === 'error' && <span className="text-red-600">Erro!</span>}
+                {processingState === 'processing' && <Loader className="animate-spin h-5 w-5 text-blue-600" />}
+                {processingState === 'success' && <CheckCircle className="h-5 w-5 text-green-600" />}
+                {processingState === 'error' && <XCircle className="h-5 w-5 text-red-600" />}
                 <span className={`${
                     processingState === 'processing' ? 'text-blue-600' :
                     processingState === 'success' ? 'text-green-600' : 'text-red-600'
@@ -261,7 +253,6 @@ const FadexTravelSystem = () => {
       return;
     }
 
-    // Extrai o código tanto da conta quanto do CC a partir do título.
     let codigoExtraido = '';
     const titulo = dataFromAI.title || '';
     if (titulo.includes(' - ')) {

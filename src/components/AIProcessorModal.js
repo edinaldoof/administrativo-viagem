@@ -1,179 +1,298 @@
-// src/components/AIProcessorModal.js
-import React, { useState, useRef } from 'react';
-import { extractDataFromPdfWithGemini } from '../ai/geminiService';
-import { formatCPF } from '../utils/utils';
+// src/components/PassengerForm.js
+import React, { useState } from 'react';
+import { formatCPF, formatDate } from '../utils/utils';
 
-const AIProcessorModal = ({ isOpen, onClose, onConfirm }) => {
-  const [file, setFile] = useState(null);
-  const [fileDataUri, setFileDataUri] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [processedData, setProcessedData] = useState(null);
-  const [error, setError] = useState('');
-  const fileInputRef = useRef(null);
+const PassengerForm = ({
+  currentPassageiro,
+  onPassageiroFieldChange,
+  currentItinerario,
+  onItinerarioFieldChange,
+  onAddItinerario,
+  onRemoveItinerario,
+  onSavePassageiro,
+  onCancel,
+  errors,
+  isEditing,
+}) => {
 
-  const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-    if (selectedFile && selectedFile.type === 'application/pdf') {
-      setFile(selectedFile);
-      setProcessedData(null);
-      setError('');
-      
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setFileDataUri(e.target.result);
-      };
-      reader.readAsDataURL(selectedFile);
-    } else {
-      alert('Por favor, selecione um arquivo PDF.');
+  const handlePassageiroInputChange = (e) => {
+    const { name, value } = e.target;
+    let formattedValue = value;
+    if (name === 'cpf') {
+      formattedValue = formatCPF(value);
+    } else if (name === 'dataNascimento' || name === 'dataContato') {
+      formattedValue = formatDate(value);
     }
+    onPassageiroFieldChange(name, formattedValue);
   };
 
-  const handleProcessClick = async () => {
-    if (!file || !fileDataUri) {
-      alert('Por favor, selecione um arquivo PDF para processar.');
-      return;
+  const handleItinerarioInputChange = (e) => {
+    const { name, value } = e.target;
+    onItinerarioFieldChange(name, value);
+  };
+
+  const handleFileChangeForPassenger = (event) => {
+    const newFiles = Array.from(event.target.files);
+    const currentAnexos = currentPassageiro.anexos || [];
+    const uniqueNewFiles = newFiles.filter(
+      (file) => !currentAnexos.some((existingFile) => existingFile.name === file.name && existingFile.size === file.size)
+    );
+    onPassageiroFieldChange('anexos', [...currentAnexos, ...uniqueNewFiles]);
+    event.target.value = null;
+  };
+
+  const handleRemoveFileForPassenger = (fileNameToRemove) => {
+    const currentAnexos = currentPassageiro.anexos || [];
+    onPassageiroFieldChange('anexos', currentAnexos.filter(file => file.name !== fileNameToRemove));
+  };
+
+  const getFileIcon = (fileType) => {
+    if (fileType.startsWith('image/')) {
+      return <span>IMG</span>;
     }
+    if (fileType === 'application/pdf') {
+      return <span>PDF</span>;
+    }
+    return <span>FILE</span>;
+  };
 
-    setIsProcessing(true);
-    setError('');
-    setProcessedData(null);
+  const [incluirVolta, setIncluirVolta] = useState(false);
+  const [dataVolta, setDataVolta] = useState(''); // Novo estado para a data de volta
 
-    try {
-      const result = await extractDataFromPdfWithGemini(fileDataUri);
-      setProcessedData(result);
-    } catch (e) {
-      console.error("Erro ao processar com a IA:", e);
-      
-      // Lógica de feedback de erro aprimorada
-      if (e.message && e.message.includes("API key not valid")) {
-          setError("Erro de Configuração: A chave da API é inválida. Por favor, contate o administrador do sistema.");
-      } else if (e instanceof SyntaxError) {
-          // Acontece quando a IA retorna um JSON mal formatado
-          setError("A IA retornou uma resposta em um formato inesperado. Por favor, tente novamente ou com outro arquivo.");
-      } else {
-          setError(`Falha ao extrair dados. Verifique se o arquivo não está corrompido e tente novamente.`);
+  const handleIncluirVoltaChange = (e) => {
+    const isChecked = e.target.checked;
+    setIncluirVolta(isChecked);
+    if (!isChecked) {
+      setDataVolta(''); // Limpa a data de volta se desmarcar
+      if (errors.dataVolta) {
+        // Idealmente, o componente pai (FadexTravelSystem) limparia esse erro específico.
+        // Por agora, a lógica de limpeza de erros no FadexTravelSystem ao submeter/validar cuidará disso.
       }
-
-    } finally {
-      setIsProcessing(false);
     }
   };
-
-  const handleConfirmClick = () => {
-    onConfirm(processedData);
-    handleClose();
-  };
-
-  const handleClose = () => {
-    setFile(null);
-    setFileDataUri('');
-    setProcessedData(null);
-    setIsProcessing(false);
-    setError('');
-    onClose();
-  };
-
-  if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 scale-100 p-8">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-            Processamento de PDF com IA
-          </h2>
-          <button onClick={handleClose} className="p-2 hover:bg-gray-200 rounded-full">
-            <span>X</span>
-          </button>
+    <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-8 shadow-xl border border-white/20">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-gray-800 flex items-center space-x-3">
+          <span>{isEditing ? 'Editar Passageiro' : 'Novo Passageiro'}</span>
+        </h2>
+        <button
+          onClick={onCancel}
+          className="p-2 hover:bg-red-100 rounded-xl transition-colors"
+          title="Fechar Formulário"
+        >
+          <span>X</span>
+        </button>
+      </div>
+
+      <div className="space-y-6">
+        {/* Campos do Passageiro (nome, cpf, dataNascimento) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label htmlFor="nome" className="block text-sm font-medium text-gray-700 mb-2">Nome Completo *</label>
+            <input
+              type="text" name="nome" id="nome" value={currentPassageiro.nome}
+              onChange={handlePassageiroInputChange}
+              className={`w-full p-4 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.nome ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+              placeholder="Digite o nome completo"
+            />
+            {errors.nome && <div className="flex items-center space-x-1 mt-1 text-red-500 text-sm"><span>{errors.nome}</span></div>}
+          </div>
+          <div>
+            <label htmlFor="cpf" className="block text-sm font-medium text-gray-700 mb-2">CPF *</label>
+            <input
+              type="text" name="cpf" id="cpf" value={currentPassageiro.cpf}
+              onChange={handlePassageiroInputChange}
+              className={`w-full p-4 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.cpf ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+              placeholder="000.000.000-00" maxLength="14"
+            />
+            {errors.cpf && <div className="flex items-center space-x-1 mt-1 text-red-500 text-sm"><span>{errors.cpf}</span></div>}
+          </div>
+          <div>
+            <label htmlFor="dataNascimento" className="block text-sm font-medium text-gray-700 mb-2">Data de Nascimento *</label>
+            <input
+              type="text" name="dataNascimento" id="dataNascimento" value={currentPassageiro.dataNascimento}
+              onChange={handlePassageiroInputChange}
+              className={`w-full p-4 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.dataNascimento ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+              placeholder="DD/MM/AAAA" maxLength="10"
+            />
+            {errors.dataNascimento && <div className="flex items-center space-x-1 mt-1 text-red-500 text-sm"><span>{errors.dataNascimento}</span></div>}
+          </div>
+          <div className="md:col-span-2">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email (Opcional)</label>
+            <input
+              type="email" name="email" id="email" value={currentPassageiro.email}
+              onChange={handlePassageiroInputChange}
+              className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="email@exemplo.com"
+            />
+          </div>
+          <div>
+            <label htmlFor="dataContato" className="block text-sm font-medium text-gray-700 mb-2">Data do Contato (Opcional)</label>
+            <input
+              type="text" name="dataContato" id="dataContato" value={currentPassageiro.dataContato}
+              onChange={handlePassageiroInputChange}
+              className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="DD/MM/AAAA" maxLength="10"
+            />
+          </div>
         </div>
 
-        <div className="space-y-6">
-          <div 
-            className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-colors"
-            onClick={() => fileInputRef.current.click()}
-          >
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              style={{ display: 'none' }}
-              accept="application/pdf"
-            />
-            <p className="font-semibold text-gray-700">
-              {file ? `Arquivo selecionado: ${file.name}` : 'Clique para selecionar um PDF'}
-            </p>
-            <p className="text-sm text-gray-500">Arraste e solte ou clique para fazer o upload</p>
-          </div>
+        {/* Seção de Itinerários */}
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
+            <span>Itinerários *</span>
+          </h3>
+          <div className="bg-white rounded-xl p-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+              <div>
+                <input type="text" name="origem" value={currentItinerario.origem} onChange={handleItinerarioInputChange} className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.origem ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} placeholder="Origem *"/>
+                {errors.origem && <span className="text-red-500 text-xs block mt-1">{errors.origem}</span>}
+              </div>
+              <div>
+                <input type="text" name="destino" value={currentItinerario.destino} onChange={handleItinerarioInputChange} className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.destino ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} placeholder="Destino *"/>
+                {errors.destino && <span className="text-red-500 text-xs block mt-1">{errors.destino}</span>}
+              </div>
+              <div>
+                <input type="date" name="dataSaida" value={currentItinerario.dataSaida} onChange={handleItinerarioInputChange} className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.dataSaida ? 'border-red-500 bg-red-50' : 'border-gray-300'} text-gray-700`}/>
+                {errors.dataSaida && <span className="text-red-500 text-xs block mt-1">{errors.dataSaida}</span>}
+              </div>
+              <input type="text" name="ciaAerea" value={currentItinerario.ciaAerea} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Cia Aérea"/>
+              <input type="text" name="voo" value={currentItinerario.voo} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Número do Voo"/>
+              <input type="text" name="horarios" value={currentItinerario.horarios} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Horários (Ex: 08:00 - 10:00)"/>
+            </div>
+            
+            <div className="col-span-1 md:col-span-2 lg:grid-cols-3 mt-2 mb-3">
+              <label htmlFor="incluirVolta" className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  id="incluirVolta"
+                  name="incluirVolta"
+                  checked={incluirVolta}
+                  onChange={handleIncluirVoltaChange}
+                  className="rounded text-blue-600 focus:ring-blue-500 h-4 w-4 border-gray-300"
+                />
+                <span className="text-sm font-medium text-gray-700">Haverá volta? (duplicar invertendo origem/destino)</span>
+              </label>
+            </div>
 
-          {file && !processedData && !isProcessing && (
-            <div className="text-center">
-              <button
-                onClick={handleProcessClick}
-                disabled={!fileDataUri}
-                className="w-full bg-purple-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-purple-700 transition-all duration-300 shadow-lg flex items-center justify-center gap-2 disabled:bg-purple-300"
-              >
-                {'Processar com IA'}
+            {/* Campo Data da Volta - Condicional */}
+            {incluirVolta && (
+              <div className="mt-4 mb-4 md:w-1/3"> {/* Ajuste o md:w-1/3 para alinhar se necessário, ou use grid */}
+                <label htmlFor="dataVolta" className="block text-sm font-medium text-gray-700 mb-1">Data da Volta *</label>
+                <input
+                  type="date"
+                  name="dataVolta"
+                  id="dataVolta"
+                  value={dataVolta}
+                  onChange={(e) => setDataVolta(e.target.value)}
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.dataVolta ? 'border-red-500 bg-red-50' : 'border-gray-300'} text-gray-700`}
+                />
+                {errors.dataVolta && <span className="text-red-500 text-xs block mt-1">{errors.dataVolta}</span>}
+              </div>
+            )}
+            
+            <button 
+              onClick={() => {
+                onAddItinerario(incluirVolta, dataVolta); // Passa o estado de incluirVolta e a dataVolta
+                // Reseta os controles locais do formulário para a próxima adição de trecho
+                setIncluirVolta(false);
+                setDataVolta('');
+              }}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
+            >
+              <span>Adicionar Trecho</span>
+            </button>
+          </div>
+          
+          {/* Lista de Itinerários Adicionados */}
+          {currentPassageiro.itinerarios && currentPassageiro.itinerarios.map((itinerario, index) => (
+            <div key={itinerario.id || index} className="bg-white rounded-xl p-4 mb-2 flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-4 text-sm flex-wrap">
+                  <span className="font-medium text-blue-600">#{index + 1}</span>
+                  <span>{itinerario.origem} → {itinerario.destino}</span>
+                  <span className="text-gray-500">{itinerario.dataSaida ? new Date(itinerario.dataSaida + 'T00:00:00-03:00').toLocaleDateString('pt-BR') : 'N/A'}</span>
+                  {itinerario.ciaAerea && <span className="text-gray-500">{itinerario.ciaAerea}</span>}
+                  {itinerario.voo && <span className="text-gray-500">Voo {itinerario.voo}</span>}
+                  {itinerario.horarios && <span className="text-gray-500">{itinerario.horarios}</span>}
+                </div>
+              </div>
+              <button onClick={() => onRemoveItinerario(itinerario.id)} className="p-2 hover:bg-red-100 rounded-lg transition-colors" title="Remover Trecho">
+                <span>X</span>
               </button>
             </div>
-          )}
+          ))}
+          {errors.itinerarios && <div className="flex items-center space-x-1 mt-2 text-red-500 text-sm"><span>{errors.itinerarios}</span></div>}
+        </div>
 
-          {isProcessing && (
-             <div className="text-center flex flex-col items-center justify-center p-4">
-                <p className="mt-3 text-gray-600 font-medium">Analisando o documento... A IA está trabalhando.</p>
-              </div>
-          )}
-          
-          {error && (
-            <div className="bg-red-50 border-l-4 border-red-400 text-red-800 rounded-lg p-4 text-sm flex items-center space-x-3">
-                <div>
-                    <p className="font-bold">Ocorreu um erro:</p>
-                    <p>{error}</p>
-                </div>
+        {/* Seção de Anexos do Passageiro */}
+        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
+                <span>Anexos do Passageiro</span>
+            </h3>
+            <div>
+                <label
+                    htmlFor="passenger-attachment-upload"
+                    className="w-full flex items-center justify-center px-4 py-6 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-colors"
+                >
+                    <div className="text-center">
+                        <p className="text-sm text-gray-600">Adicionar anexos para este passageiro</p>
+                        <p className="text-xs text-gray-500">Anexe a Imagem</p>
+                    </div>
+                    <input
+                        id="passenger-attachment-upload"
+                        type="file"
+                        multiple
+                        accept=".png,.jpg,.jpeg,.pdf,.doc,.doc,.docx"
+                        onChange={handleFileChangeForPassenger}
+                        className="sr-only"
+                    />
+                </label>
             </div>
-          )}
 
-          {processedData && (
-            <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200 animate-fade-in">
-              <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">Dados Extraídos</h3>
-              
-              <div className="space-y-4">
-                {processedData.passengers?.length > 0 && (
-                    <div>
-                      <h4 className="font-semibold text-gray-700 flex items-center gap-2 mb-2">Passageiros</h4>
-                      <ul className="space-y-1 bg-white p-3 rounded-lg text-sm">
-                        {processedData.passengers.map((p, index) => (
-                           <li key={p.cpf || index}>{p.name} - {formatCPF(p.cpf)}</li>
+            {currentPassageiro.anexos && currentPassageiro.anexos.length > 0 && (
+                <div className="mt-4">
+                    <ul className="space-y-2">
+                        {currentPassageiro.anexos.map((file, index) => (
+                            <li
+                                key={`${file.name}-${index}`}
+                                className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
+                            >
+                                <div className="flex items-center space-x-2 overflow-hidden">
+                                    {getFileIcon(file.type)}
+                                    <span className="text-sm text-gray-700 truncate" title={file.name}>
+                                        {file.name}
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                        ({(file.size / 1024).toFixed(2)} KB)
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={() => handleRemoveFileForPassenger(file.name)}
+                                    className="p-1 hover:bg-red-100 rounded-md transition-colors"
+                                    title="Remover anexo"
+                                >
+                                    <span>X</span>
+                                </button>
+                            </li>
                         ))}
-                      </ul>
-                    </div>
-                )}
-                
-                {processedData.billing && (
-                    <div>
-                      <h4 className="font-semibold text-gray-700 flex items-center gap-2 mb-2">Faturamento</h4>
-                      <div className="text-sm bg-white p-3 rounded-lg grid grid-cols-2 gap-2">
-                        <p><strong>Projeto:</strong> {processedData.billing.account || 'N/A'}</p>
-                        <p><strong>CC:</strong> {processedData.billing.costCenter || 'N/A'}</p>
-                        <p className="col-span-2"><strong>Descrição:</strong> {processedData.billing.description || 'N/A'}</p>
-                      </div>
-                    </div>
-                )}
-              </div>
+                    </ul>
+                </div>
+            )}
+        </div>
 
-              <div className="mt-6 flex justify-end gap-4">
-                 <button onClick={handleClose} className="px-6 py-2 text-gray-700 font-medium rounded-lg hover:bg-gray-100">
-                  Cancelar
-                </button>
-                <button onClick={handleConfirmClick} className="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 shadow-md">
-                  Adicionar Dados ao Formulário
-                </button>
-              </div>
-            </div>
-          )}
+        {/* Botões de Ação do Formulário */}
+        <div className="flex justify-end space-x-4">
+          <button onClick={onCancel} className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors">Cancelar</button>
+          <button onClick={onSavePassageiro} className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl font-medium transition-all duration-200 shadow-lg">
+            <span>{isEditing ? 'Salvar Alterações' : 'Salvar Passageiro'}</span>
+          </button>
         </div>
       </div>
     </div>
   );
 };
 
-export default AIProcessorModal;
+export default PassengerForm;
