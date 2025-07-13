@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 
 const ConfirmationScreen = ({ extractedData, onConfirm, onCancel }) => {
