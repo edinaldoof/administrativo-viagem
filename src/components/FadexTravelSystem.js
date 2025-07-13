@@ -70,7 +70,6 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
   const [processingState, setProcessingState] = useState('idle');
   const [processingMessage, setProcessingMessage] = useState('');
   const [extractedData, setExtractedData] = useState(null);
-  const [feedback, setFeedback] = useState('');
   const fileInputRef = useRef(null);
 
   const handleFileSelect = (selectedFile) => {
@@ -106,11 +105,13 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
       setProcessingMessage('Extraindo texto do PDF...');
       const textContent = await extractTextFromPdf(file);
       if (!textContent) throw new Error('Falha ao extrair texto.');
+      
       setProcessingMessage('Analisando com a IA Gemini...');
-      const result = await extractDataFromPdfWithGemini(textContent, feedback); // Passa o feedback para a IA
+      // Agora a IA pode não precisar de feedback direto, pois ele é pego do DB
+      const result = await extractDataFromPdfWithGemini(textContent); 
       setExtractedData(result);
       setProcessingState('success');
-      setProcessingMessage('Dados extraídos com sucesso! Verifique e confirme.');
+      setProcessingMessage('Dados extraídos com sucesso! Verifique, corrija e confirme.');
     } catch (err) {
       console.error("Erro no processamento do arquivo:", err);
       setProcessingState('error');
@@ -118,20 +119,25 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
     }
   };
   
-  const handleCancelAndStoreFeedback = async (userFeedback) => {
-    if (userFeedback && userFeedback.trim()) {
+  const handleCancelAndStoreFeedback = async (feedbackData) => {
+    if (feedbackData && (Object.keys(feedbackData.structured).length > 0 || feedbackData.general.trim())) {
       try {
-        await saveFeedback(userFeedback);
+        await saveFeedback(feedbackData);
         showSuccessMessage('Obrigado! Seu feedback foi salvo e ajudará a melhorar futuras extrações.');
       } catch (error) {
         console.error("Erro ao salvar feedback:", error);
-        showSuccessMessage('Não foi possível salvar seu feedback. Verifique a conexão com o banco de dados.');
+        // Poderia mostrar uma mensagem de erro específica para o salvamento do feedback
       }
     }
     setExtractedData(null);
     setProcessingState('idle');
     setFile(null);
-    setFeedback('');
+  };
+
+  const handleCancel = () => {
+    setExtractedData(null);
+    setProcessingState('idle');
+    setFile(null);
   };
 
   if (extractedData) {
@@ -139,7 +145,7 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
       <ConfirmationScreen
         extractedData={extractedData}
         onConfirm={onImportConfirmed}
-        onCancel={() => { setExtractedData(null); setProcessingState('idle'); setFile(null); }}
+        onCancel={handleCancel}
         onSendFeedback={handleCancelAndStoreFeedback}
       />
     );

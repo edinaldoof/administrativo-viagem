@@ -1,16 +1,49 @@
 // src/services/feedbackService.js
 import { db } from '../firebaseConfig';
 import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
+const storage = getStorage();
 
 /**
- * Salva o feedback do usuário no Firestore.
- * @param {string} feedbackText - O texto do feedback fornecido pelo usuário.
+ * Faz upload de uma imagem para o Firebase Storage e retorna a URL.
+ * @param {File} imageFile - O arquivo de imagem a ser enviado.
+ * @returns {Promise<string>} - A URL de download da imagem.
+ */
+const uploadImageAndGetURL = async (imageFile) => {
+  if (!imageFile) return null;
+  const filePath = `feedback-images/${Date.now()}-${imageFile.name}`;
+  const storageRef = ref(storage, filePath);
+  await uploadBytes(storageRef, imageFile);
+  return getDownloadURL(storageRef);
+};
+
+/**
+ * Salva o feedback do usuário no Firestore, incluindo o upload de imagens se houver.
+ * @param {object} feedbackData - O objeto de feedback, contendo `structured` e `general`.
  * @returns {Promise<void>}
  */
-export const saveFeedback = async (feedbackText) => {
+export const saveFeedback = async (feedbackData) => {
   try {
+    const processedStructuredFeedback = {};
+
+    // Faz upload das imagens do feedback estruturado
+    if (feedbackData.structured) {
+      for (const [key, value] of Object.entries(feedbackData.structured)) {
+        let imageUrl = null;
+        if (value.image instanceof File) {
+          imageUrl = await uploadImageAndGetURL(value.image);
+        }
+        processedStructuredFeedback[key] = {
+          value: value.value || '',
+          imageUrl: imageUrl
+        };
+      }
+    }
+
     await addDoc(collection(db, "feedback"), {
-      text: feedbackText,
+      general: feedbackData.general || '',
+      structured: processedStructuredFeedback,
       createdAt: serverTimestamp()
     });
   } catch (e) {
@@ -18,6 +51,7 @@ export const saveFeedback = async (feedbackText) => {
     throw new Error("Could not save feedback to the database.");
   }
 };
+
 
 /**
  * Busca os feedbacks mais recentes do Firestore.
