@@ -13,12 +13,12 @@ import Preview from './Preview';
 // --- NOVOS COMPONENTES ADICIONADOS ---
 import ConfirmationScreen from './ConfirmationScreen';
 import HelpChatbot from './HelpChatbot';
+import AIProcessorModal from './AIProcessorModal';
 // -------------------------------------
 
-// Suas funções de utilidade (sem alteração)
+// --- Importações movidas para um arquivo central de utilitários ---
 import {
   generateId,
-  formatCPF,
   validarCPF,
   validarDataNascimento,
   validarDataViagem
@@ -30,155 +30,12 @@ import { exportDataToExcel } from '../utils/excelExporter.js';
 import { exportPreviewToPNG } from '../utils/pngExporter.js';
 
 // --- Imports para a nova tela de importação ---
-import { extractDataFromPdfWithGemini } from '../ai/geminiService'; 
+import { extractDataFromPdfWithGemini } from '../ai/geminiService';
 import { preprocessText } from '../utils/preprocessor';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 // ALTERAÇÃO: Corrigido o caminho do worker do pdf.js para usar a URL correta e o formato de módulo (.mjs)
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.mjs`;
 // ---------------------------------------------
-
-
-// Suas funções de formatação de data (sem alteração)
-const formatDateToYYYYMMDD = (date) => {
-  if (!(date instanceof Date) || isNaN(date)) return '';
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
-
-const formatDateToDDMMYYYY = (date) => {
-  if (!(date instanceof Date) || isNaN(date)) return '';
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${day}/${month}/${year}`;
-};
-
-
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// +++ NOVO COMPONENTE: TELA DE IMPORTAÇÃO DEDICADA (ACRÉSCIMO) ++++++++++++++++
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-const ImportScreen = ({ onImportConfirmed, onBack }) => {
-  const [file, setFile] = useState(null);
-  const [processingState, setProcessingState] = useState('idle'); // idle, processing, success, error
-  const [processingMessage, setProcessingMessage] = useState('');
-  const [extractedData, setExtractedData] = useState(null);
-  const fileInputRef = useRef(null);
-
-  const handleFileSelect = (selectedFile) => {
-    if (selectedFile && selectedFile.type === 'application/pdf') {
-      setFile(selectedFile);
-      setExtractedData(null);
-      setProcessingState('idle');
-    }
-  };
-
-  const handleDragOver = (e) => e.preventDefault();
-  const handleDrop = (e) => {
-    e.preventDefault();
-    handleFileSelect(e.dataTransfer.files[0]);
-  };
-
-  const extractTextFromPdf = async (fileObject) => {
-    const arrayBuffer = await fileObject.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-    let fullText = '';
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-      fullText += textContent.items.map(item => item.str).join(' ') + '\n';
-    }
-    return fullText;
-  };
-
-  const handleProcessFile = async () => {
-    if (!file) return;
-
-    setProcessingState('processing');
-    try {
-      setProcessingMessage('Extraindo texto do PDF...');
-      const textContent = await extractTextFromPdf(file);
-      if (!textContent) throw new Error('Falha ao extrair texto.');
-
-      setProcessingMessage('Pré-processando com Regex...');
-      const preprocessedData = preprocessText(textContent);
-
-      setProcessingMessage('Analisando com a IA Gemini...');
-      const result = await extractDataFromPdfWithGemini(textContent, preprocessedData);
-      
-      setExtractedData(result);
-      setProcessingState('success');
-      setProcessingMessage('Dados extraídos com sucesso!');
-
-    } catch (err) {
-      setProcessingState('error');
-      setProcessingMessage(err.message || 'Ocorreu um erro desconhecido.');
-    }
-  };
-
-  if (extractedData) {
-    return (
-      <ConfirmationScreen
-        extractedData={extractedData}
-        onConfirm={onImportConfirmed}
-        onCancel={() => setExtractedData(null)} // Volta para a tela de seleção de arquivo
-      />
-    );
-  }
-
-  return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg animate-fade-in">
-      <div className="flex justify-between items-center border-b pb-4 mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Importar Requisição de PDF</h2>
-        <button onClick={onBack} className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">Voltar</button>
-      </div>
-      
-      <div 
-        className="border-2 border-dashed border-gray-300 rounded-lg p-10 text-center cursor-pointer hover:border-blue-500 bg-gray-50"
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-        onClick={() => fileInputRef.current.click()}
-      >
-        <input type="file" ref={fileInputRef} onChange={(e) => handleFileSelect(e.target.files[0])} style={{ display: 'none' }} accept=".pdf" />
-        <p className="mt-2 text-sm text-gray-600">Arraste e solte o arquivo PDF aqui, ou clique para selecionar.</p>
-      </div>
-
-      {file && (
-        <div className="mt-6 p-4 border rounded-lg bg-gray-100">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="font-medium">{file.name}</span>
-            </div>
-            <button onClick={handleProcessFile} disabled={processingState === 'processing'} className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-300">
-              {processingState === 'processing' ? 'Processando...' : 'Processar Arquivo'}
-            </button>
-          </div>
-
-          {processingState === 'processing' && (
-            <div className="flex items-center gap-2 mt-4 text-blue-600">
-              <span>{processingMessage}</span>
-            </div>
-          )}
-          {processingState === 'success' && (
-            <div className="flex items-center gap-2 mt-4 text-green-600">
-              <span>{processingMessage}</span>
-            </div>
-          )}
-          {processingState === 'error' && (
-            <div className="flex items-center gap-2 mt-4 text-red-600">
-              <span>{processingMessage}</span>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// +++ FIM DO NOVO COMPONENTE ++++++++++++++++++++++++++++++++++++++++++++++++++
-// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
 
 const FadexTravelSystem = () => {
   // --- SEUS ESTADOS EXISTENTES (SEM ALTERAÇÃO) ---
@@ -200,10 +57,10 @@ const FadexTravelSystem = () => {
   const previewRef = useRef(null);
   
   // --- ESTADO PARA CONTROLE DE VISUALIZAÇÃO (ALTERAÇÃO) ---
-  const [currentView, setCurrentView] = useState('main'); // 'main' ou 'import'
+  const [isImportModalOpen, setImportModalOpen] = useState(false);
   // --------------------------------------------------------
 
-  // --- SUAS FUNÇÕES DE LÓGICA (SEM ALTERAÇÃO) ---
+  // --- SUAS FUNÇÕES DE LÓGICA (COM PEQUENAS ALTERAÇÕES) ---
   const showSuccessMessageHandler = (message) => { setSuccessInfo({ show: true, message }); };
   const handleSuccessClose = () => { setSuccessInfo({ show: false, message: '' }); };
   const resetCurrentPassageiro = () => { setCurrentPassageiro(initialPassageiroState); setEditingPassageiro(null); setErrors({}); };
@@ -214,9 +71,54 @@ const FadexTravelSystem = () => {
   const handleItinerarioFieldChange = (fieldName, value) => { setCurrentItinerario(prev => ({ ...prev, [fieldName]: value })); if (errors[fieldName] && (['origem', 'destino', 'dataSaida'].includes(fieldName))) { setErrors(prev => { const newErrors = { ...prev }; delete newErrors[fieldName]; return newErrors; }); } };
   const validateItinerarioFields = () => { const newItinerarioErrors = {}; if (!currentItinerario.origem.trim()) newItinerarioErrors.origem = 'Origem é obrigatória'; if (!currentItinerario.destino.trim()) newItinerarioErrors.destino = 'Destino é obrigatório'; if (!currentItinerario.dataSaida) { newItinerarioErrors.dataSaida = 'Data de saída é obrigatória'; } else if (!validarDataViagem(currentItinerario.dataSaida)) { newItinerarioErrors.dataSaida = 'Data de saída não pode ser no passado'; } return newItinerarioErrors; };
   const validatePassageiroForm = () => { const newFormErrors = {}; if (!currentPassageiro.nome.trim()) newFormErrors.nome = 'Nome é obrigatório'; else if (currentPassageiro.nome.trim().length < 3) newFormErrors.nome = 'Nome deve ter pelo menos 3 caracteres'; if (!currentPassageiro.cpf) newFormErrors.cpf = 'CPF é obrigatório'; else if (!validarCPF(currentPassageiro.cpf)) newFormErrors.cpf = 'CPF inválido'; if (!currentPassageiro.dataNascimento) newFormErrors.dataNascimento = 'Data de nascimento é obrigatória'; else if (!validarDataNascimento(currentPassageiro.dataNascimento)) newFormErrors.dataNascimento = 'Data inválida (deve ter entre 16 e 120 anos)'; if (!currentPassageiro.itinerarios || currentPassageiro.itinerarios.length === 0) { newFormErrors.itinerarios = 'Pelo menos um itinerário é obrigatório'; } setErrors(newFormErrors); return Object.keys(newFormErrors).length === 0; };
-  const handleAddItinerarioToPassageiro = (incluirVoltaFlag, dataVoltaParam) => { /* Sua lógica original completa */ };
+  
+  const handleAddItinerarioToPassageiro = (incluirVoltaFlag, dataVoltaParam) => {
+    const itinerarioErrors = validateItinerarioFields();
+    if (incluirVoltaFlag && !dataVoltaParam) {
+      itinerarioErrors.dataVolta = 'Data da volta é obrigatória';
+    }
+
+    if (Object.keys(itinerarioErrors).length > 0) {
+      setErrors(prev => ({ ...prev, ...itinerarioErrors }));
+      return;
+    }
+
+    const newItinerarios = [...currentPassageiro.itinerarios];
+    const ida = { ...currentItinerario, id: generateId() };
+    newItinerarios.push(ida);
+
+    if (incluirVoltaFlag) {
+      const volta = {
+        ...currentItinerario,
+        id: generateId(),
+        origem: currentItinerario.destino,
+        destino: currentItinerario.origem,
+        dataSaida: dataVoltaParam
+      };
+      newItinerarios.push(volta);
+    }
+    
+    setCurrentPassageiro(prev => ({ ...prev, itinerarios: newItinerarios }));
+    resetCurrentItinerario();
+    showSuccessMessageHandler(`Trecho(s) adicionado(s)!`);
+  };
+
   const handleRemoveItinerarioFromPassageiroForm = (itinerarioId) => { setCurrentPassageiro(prev => ({ ...prev, itinerarios: prev.itinerarios.filter(it => it.id !== itinerarioId) })); showSuccessMessageHandler('Trecho removido!'); };
-  const handleSavePassageiro = () => { /* Sua lógica original completa */ };
+  
+  const handleSavePassageiro = () => {
+    if (validatePassageiroForm()) {
+      if (editingPassageiro) {
+        setPassageiros(prev => prev.map(p => p.id === editingPassageiro.id ? currentPassageiro : p));
+        showSuccessMessageHandler('Passageiro atualizado com sucesso!');
+      } else {
+        setPassageiros(prev => [...prev, { ...currentPassageiro, id: generateId() }]);
+        showSuccessMessageHandler('Passageiro salvo com sucesso!');
+      }
+      setActiveForm(null);
+      resetCurrentPassageiro();
+    }
+  };
+
   const handleEditPassageiro = (passageiroToEdit) => { setCurrentPassageiro({ ...passageiroToEdit }); setEditingPassageiro(passageiroToEdit); setActiveForm('passageiro'); setErrors({}); };
   const handleDuplicatePassageiro = (passageiroToDuplicate) => { setCurrentPassageiro({ ...initialPassageiroState, nome: passageiroToDuplicate.nome, dataNascimento: passageiroToDuplicate.dataNascimento, itinerarios: passageiroToDuplicate.itinerarios.map(it => ({ ...it, id: generateId() })), anexos: passageiroToDuplicate.anexos ? [...passageiroToDuplicate.anexos] : [] }); setEditingPassageiro(null); setActiveForm('passageiro'); setErrors({}); };
   const handleRemovePassageiroFromList = (passageiroId) => { setPassageiros(prevPassageiros => prevPassageiros.filter(p => p.id !== passageiroId)); showSuccessMessageHandler('Passageiro removido da lista!'); };
@@ -226,39 +128,46 @@ const FadexTravelSystem = () => {
 
   // --- FLUXO DE IMPORTAÇÃO ATUALIZADO (ALTERAÇÃO) ---
 
-  // Sua função original, agora apenas muda a visualização
-  const handleImportPDF = () => {
-    setCurrentView('import');
-  };
-  
-  // A tela de confirmação chama esta função para usar os dados
   const handleConfirmImport = (dataFromAI) => {
     if (dataFromAI) {
-      const novosPassageiros = (dataFromAI.itens || []).map(item => ({
+      // Mapeia passageiros a partir dos dados da IA
+      const novosPassageiros = (dataFromAI.passengers || []).map(p => ({
         id: generateId(),
-        nome: item.produto || 'Produto não extraído',
-        cpf: '',
-        dataNascimento: '',
+        nome: p.name || 'Nome não extraído',
+        cpf: p.cpf || '',
+        dataNascimento: p.birthDate ? new Date(p.birthDate).toLocaleDateString('pt-BR') : '',
         anexos: [],
-        itinerarios: []
+        itinerarios: (p.itinerary || []).map(i => ({
+          id: generateId(),
+          origem: i.origin || '',
+          destino: i.destination || '',
+          dataSaida: i.departureDate ? new Date(i.departureDate).toISOString().split('T')[0] : '',
+          ciaAerea: i.ciaAerea || '',
+          voo: i.voo || '',
+          horarios: i.horarios || '',
+        })),
       }));
 
+      // Filtra para evitar duplicatas por CPF, se o CPF existir
       const passageirosFiltrados = novosPassageiros.filter(
-        pIA => !passageiros.some(pExistente => pExistente.nome === pIA.nome)
+        pIA => !(pIA.cpf && passageiros.some(pExistente => pExistente.cpf === pIA.cpf))
       );
 
       setPassageiros(prev => [...prev, ...passageirosFiltrados]);
 
-      setFaturamento({
-        contaProjeto: dataFromAI.requisicao_numero || '',
-        descricao: dataFromAI.observacao || '',
-        cc: dataFromAI.centro_custo || '',
-        webId: ''
-      });
+      // Preenche o faturamento
+      if (dataFromAI.billing) {
+        setFaturamento({
+          contaProjeto: dataFromAI.billing.account || '',
+          descricao: dataFromAI.billing.description || '',
+          cc: dataFromAI.billing.costCenter || '',
+          webId: dataFromAI.billing.webId || ''
+        });
+      }
       
-      showSuccessMessageHandler(`${passageirosFiltrados.length} item(ns) e dados de faturamento importados da requisição Nº ${dataFromAI.requisicao_numero || ''}!`);
+      showSuccessMessageHandler(`${passageirosFiltrados.length} passageiro(s) e dados de faturamento importados!`);
     }
-    setCurrentView('main'); // Volta para a tela principal
+    setImportModalOpen(false); // Fecha o modal
   };
 
   return (
@@ -272,19 +181,11 @@ const FadexTravelSystem = () => {
         onExportPNG={handleExportPNG}
         onExportPDF={handleExportPDF}
         onExportExcel={handleExportExcel}
-        onImportPDF={handleImportPDF}
+        onImportPDF={() => setImportModalOpen(true)}
         isExportDisabled={passageiros.length === 0}
       />
       
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* --- RENDERIZAÇÃO CONDICIONAL (ALTERAÇÃO) --- */}
-        {currentView === 'import' ? (
-          <ImportScreen
-            onImportConfirmed={handleConfirmImport}
-            onBack={() => setCurrentView('main')}
-          />
-        ) : (
-          // Sua tela principal de formulários original
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
               {activeForm !== 'passageiro' && (
@@ -323,10 +224,14 @@ const FadexTravelSystem = () => {
               />
             </div>
           </div>
-        )}
       </div>
 
-      {/* --- COMPONENTE DO CHATBOT (ACRÉSCIMO) --- */}
+      <AIProcessorModal
+        isOpen={isImportModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onConfirm={handleConfirmImport}
+      />
+      
       <HelpChatbot />
     </div>
   );
