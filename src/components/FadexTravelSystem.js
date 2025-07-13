@@ -23,6 +23,7 @@ import {
 import { generateSolicitacaoPDF } from '../utils/pdfGenerator.js';
 import { exportDataToExcel } from '../utils/excelExporter.js';
 import { exportPreviewToPNG } from '../utils/pngExporter.js';
+import { saveFeedback } from '../services/feedbackService';
 
 // Utilitários de IA e PDF
 import { extractDataFromPdfWithGemini } from '../ai/geminiService';
@@ -64,7 +65,7 @@ const formatDateToDDMMYYYY = (date) => {
 
 
 // Componente da Tela de Importação
-const ImportScreen = ({ onImportConfirmed, onBack }) => {
+const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
   const [file, setFile] = useState(null);
   const [processingState, setProcessingState] = useState('idle');
   const [processingMessage, setProcessingMessage] = useState('');
@@ -106,7 +107,7 @@ const ImportScreen = ({ onImportConfirmed, onBack }) => {
       const textContent = await extractTextFromPdf(file);
       if (!textContent) throw new Error('Falha ao extrair texto.');
       setProcessingMessage('Analisando com a IA Gemini...');
-      const result = await extractDataFromPdfWithGemini(textContent, feedback);
+      const result = await extractDataFromPdfWithGemini(textContent, feedback); // Passa o feedback para a IA
       setExtractedData(result);
       setProcessingState('success');
       setProcessingMessage('Dados extraídos com sucesso! Verifique e confirme.');
@@ -117,11 +118,20 @@ const ImportScreen = ({ onImportConfirmed, onBack }) => {
     }
   };
   
-  const handleCancelAndStoreFeedback = (userFeedback) => {
-    setFeedback(userFeedback);
+  const handleCancelAndStoreFeedback = async (userFeedback) => {
+    if (userFeedback && userFeedback.trim()) {
+      try {
+        await saveFeedback(userFeedback);
+        showSuccessMessage('Obrigado! Seu feedback foi salvo e ajudará a melhorar futuras extrações.');
+      } catch (error) {
+        console.error("Erro ao salvar feedback:", error);
+        showSuccessMessage('Não foi possível salvar seu feedback. Verifique a conexão com o banco de dados.');
+      }
+    }
     setExtractedData(null);
     setProcessingState('idle');
     setFile(null);
+    setFeedback('');
   };
 
   if (extractedData) {
@@ -368,6 +378,7 @@ const FadexTravelSystem = () => {
           <ImportScreen
             onImportConfirmed={handleConfirmImport}
             onBack={() => setCurrentView('main')}
+            showSuccessMessage={showSuccessMessageHandler}
           />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

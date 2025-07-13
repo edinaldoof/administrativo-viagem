@@ -1,13 +1,14 @@
 // src/ai/geminiService.js
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { getRecentFeedback } from '../services/feedbackService'; // Importa o serviço de feedback
 
 const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
 
 /**
  * Processa o texto de um PDF usando IA para extrair dados de múltiplos beneficiários.
  * @param {string} text - O conteúdo de texto bruto extraído do PDF.
- * @param {string} [feedback=''] - Feedback opcional do usuário sobre extrações anteriores.
+ * @param {string} [feedback=''] - Feedback opcional do usuário sobre a extração atual.
  * @returns {Promise<object>} - Uma promessa que resolve para o objeto JSON final com a estrutura de múltiplos passageiros.
  */
 export const extractDataFromPdfWithGemini = async (text, feedback = '') => {
@@ -18,14 +19,19 @@ export const extractDataFromPdfWithGemini = async (text, feedback = '') => {
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
+  // Busca o histórico de feedbacks para aprimorar a IA
+  const storedFeedback = await getRecentFeedback(5); // Pega os 5 últimos feedbacks
+  const feedbackHistory = storedFeedback.map(f => `- ${f.text}`).join('\n');
+
   const prompt = `
     You are a highly specialized data extraction assistant for travel requests.
     Your task is to meticulously analyze the provided PDF document, which can contain multiple travel requests for different people across many pages.
     Extract all information and return a single, well-structured JSON object.
 
-    ${feedback ? `**Important User Feedback from Previous Extractions (Use this to improve):**
+    ${feedback || feedbackHistory ? `**Important User Feedback from Previous Extractions (Use this to improve):**
     ---
-    ${feedback}
+    ${feedback ? `Current Extraction Feedback:\n- ${feedback}\n` : ''}
+    ${feedbackHistory ? `Past Feedback History:\n${feedbackHistory}` : ''}
     ---
     ` : ''}
 
