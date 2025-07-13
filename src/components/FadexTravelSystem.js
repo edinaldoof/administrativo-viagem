@@ -29,7 +29,11 @@ import { extractDataFromPdfWithGemini } from '../ai/geminiService';
 import { UploadCloud, FileText, CheckCircle, XCircle, Loader } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.mjs`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.mjs',
+  import.meta.url,
+).toString();
+
 
 // Funções de formatação de data
 const formatDateToYYYYMMDD = (date) => {
