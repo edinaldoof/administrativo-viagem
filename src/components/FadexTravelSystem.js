@@ -1,4 +1,3 @@
-
 // src/components/FadexTravelSystem.js
 import React, { useState, useRef } from 'react';
 
@@ -256,15 +255,33 @@ const FadexTravelSystem = () => {
   };
 
   const handleConfirmImport = (dataFromAI) => {
-    if (!dataFromAI || !dataFromAI.passengers || dataFromAI.passengers.length === 0) {
-        showSuccessMessageHandler('Nenhum passageiro encontrado para importar.');
-        setCurrentView('main');
-        return;
+    if (!dataFromAI) {
+      showSuccessMessageHandler('Nenhuma informação útil pôde ser extraída.');
+      setCurrentView('main');
+      return;
     }
 
-    let contaProjetoExtraida = dataFromAI.billing?.account || '';
-    if (contaProjetoExtraida && contaProjetoExtraida.includes(' - ')) {
-        contaProjetoExtraida = contaProjetoExtraida.split(' - ')[0].trim();
+    // Extrai o código tanto da conta quanto do CC a partir do título.
+    let codigoExtraido = '';
+    const titulo = dataFromAI.title || '';
+    if (titulo.includes(' - ')) {
+        codigoExtraido = titulo.split(' - ')[0].trim();
+    }
+
+    setFaturamento(prevFaturamento => ({
+      ...prevFaturamento,
+      contaProjeto: codigoExtraido || dataFromAI.billing?.account || prevFaturamento.contaProjeto,
+      cc: codigoExtraido || dataFromAI.billing?.costCenter || prevFaturamento.cc,
+      descricao: dataFromAI.billing?.description || prevFaturamento.descricao,
+      webId: dataFromAI.billing?.webId || prevFaturamento.webId,
+    }));
+
+    const passageirosParaAdicionar = dataFromAI.passengers || [];
+
+    if (passageirosParaAdicionar.length === 0) {
+        showSuccessMessageHandler('Dados de faturamento atualizados, mas nenhum passageiro foi encontrado para importar.');
+        setCurrentView('main');
+        return;
     }
 
     let updatedPassageiros = [...passageiros];
@@ -320,14 +337,6 @@ const FadexTravelSystem = () => {
     });
 
     setPassageiros(updatedPassageiros);
-
-    setFaturamento(prevFaturamento => ({
-      ...prevFaturamento,
-      contaProjeto: contaProjetoExtraida || prevFaturamento.contaProjeto,
-      descricao: dataFromAI.billing?.description || prevFaturamento.descricao,
-      cc: dataFromAI.billing?.costCenter || prevFaturamento.cc,
-      webId: dataFromAI.billing?.webId || prevFaturamento.webId,
-    }));
 
     let message = `${addedCount} passageiro(s) adicionado(s) e ${updatedCount} atualizado(s) com sucesso.`;
     showSuccessMessageHandler(message);
