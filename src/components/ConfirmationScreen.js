@@ -106,23 +106,78 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
     let allFeedbackLines = justifications.map(j => `Dica Manual para '${j.fieldKey}': ${j.text}`);
     const manualHintFields = new Set(justifications.map(j => j.fieldKey));
 
-    const compareAndGenerateFeedback = (original, edited, path = '', labelMap = {}) => {
+    const compareAndGenerateFeedback = (original, edited, path = '') => {
         Object.keys(original).forEach(key => {
             const currentPath = path ? `${path}.${key}` : key;
-            const currentLabel = labelMap[key] || currentPath;
-            if (manualHintFields.has(currentLabel)) return;
+            const originalValue = original[key];
+            const editedValue = edited[key];
 
-            if (typeof original[key] === 'object' && original[key] !== null && !Array.isArray(original[key])) {
-                compareAndGenerateFeedback(original[key], edited[key] || {}, currentPath);
-            } else if (original[key] !== edited[key]) {
-                const autoJustification = `Feedback Automático: O campo '${currentLabel}' foi alterado de '${original[key] || 'vazio'}' para '${edited[key] || 'vazio'}'.`;
+            // Ignorar campos que já têm dica manual
+            if (manualHintFields.has(currentPath)) return;
+
+            if (typeof originalValue === 'object' && originalValue !== null && !Array.isArray(originalValue)) {
+                compareAndGenerateFeedback(originalValue, editedValue || {}, currentPath);
+            } else if (Array.isArray(originalValue) && key === 'passengers') {
+                // Lógica específica para comparar passageiros
+                originalValue.forEach((origPassenger, index) => {
+                    const editedPassenger = editedValue?.[index];
+                    if (editedPassenger) {
+                        compareAndGenerateFeedback(origPassenger, editedPassenger, `passengers.${index}`);
+                    }
+                });
+            } else if (originalValue !== editedValue) {
+                // Para todos os outros campos simples
+                 const autoJustification = `Feedback Automático: O campo '${currentPath}' foi alterado de '${originalValue || 'vazio'}' para '${editedValue || 'vazio'}'.`;
                 allFeedbackLines.push(autoJustification);
             }
         });
     };
     
-    // Simplificado para o objeto principal - pode ser expandido com um mapa de labels
-    compareAndGenerateFeedback(originalData, editedData);
+    // Mapeamento de caminhos para rótulos amigáveis
+    const friendlyLabels = {
+        'title': 'Título',
+        'billing.account': 'Conta do Projeto',
+        'billing.costCenter': 'Conta corrente do projeto',
+        'billing.webId': 'Web ID',
+        'billing.description': 'Justificativa',
+    };
+    originalData.passengers.forEach((p, i) => {
+        friendlyLabels[`passengers.${i}.name`] = `Nome P.${i + 1}`;
+        friendlyLabels[`passengers.${i}.cpf`] = `CPF P.${i + 1}`;
+        friendlyLabels[`passengers.${i}.birthDate`] = `Nascimento P.${i + 1}`;
+        friendlyLabels[`passengers.${i}.email`] = `Email P.${i + 1}`;
+        friendlyLabels[`passengers.${i}.phone`] = `Telefone P.${i + 1}`;
+    });
+    
+    // Gerar feedback automático com rótulos amigáveis
+    const compareAndGenerateFeedbackWithLabels = (original, edited, path = '') => {
+        Object.keys(original).forEach(key => {
+            const currentPath = path ? `${path}.${key}` : key;
+            const label = friendlyLabels[currentPath] || currentPath;
+            if (manualHintFields.has(label)) return;
+
+            const originalValue = original[key];
+            const editedValue = edited ? edited[key] : undefined;
+
+            if (typeof originalValue === 'object' && originalValue !== null && !Array.isArray(originalValue)) {
+                compareAndGenerateFeedbackWithLabels(originalValue, editedValue, currentPath);
+            } else if(Array.isArray(originalValue) && key === 'passengers') {
+                 originalValue.forEach((origPassenger, index) => {
+                    if (editedValue && editedValue[index]) {
+                        compareAndGenerateFeedbackWithLabels(origPassenger, editedValue[index], `passengers.${index}`);
+                    }
+                });
+            } else if (JSON.stringify(originalValue) !== JSON.stringify(editedValue)) {
+                if (typeof originalValue !== 'object' && typeof editedValue !== 'object') {
+                    const autoJustification = `Feedback Automático: O campo '${label}' foi alterado de '${originalValue || 'vazio'}' para '${editedValue || 'vazio'}'.`;
+                    allFeedbackLines.push(autoJustification);
+                }
+            }
+        });
+    };
+
+    compareAndGenerateFeedbackWithLabels(originalData, editedData);
+
 
     if (allFeedbackLines.length > 0) {
       onSendFeedback(allFeedbackLines.join('\n\n'));
