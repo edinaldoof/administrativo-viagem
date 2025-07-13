@@ -195,7 +195,7 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
 
       <div className="flex justify-between items-center gap-4 mt-6 pt-4 border-t">
         <button 
-          onClick={onCancel} 
+          onClick={() => processAndSubmit(false)} 
           className="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
         >
           Cancelar Importação
