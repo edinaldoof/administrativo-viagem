@@ -262,6 +262,11 @@ const FadexTravelSystem = () => {
         return;
     }
 
+    let contaProjetoExtraida = dataFromAI.billing?.account || '';
+    if (contaProjetoExtraida && contaProjetoExtraida.includes(' - ')) {
+        contaProjetoExtraida = contaProjetoExtraida.split(' - ')[0].trim();
+    }
+
     let updatedPassageiros = [...passageiros];
     let addedCount = 0;
     let updatedCount = 0;
@@ -277,7 +282,6 @@ const FadexTravelSystem = () => {
             horarios: it.horarios || '',
         }));
 
-        // Adiciona o trecho de volta se existir
         const primeiroItinerario = pIA.itinerary?.[0];
         if (primeiroItinerario?.returnDate) {
             itinerariosFormatados.push({
@@ -295,14 +299,12 @@ const FadexTravelSystem = () => {
         const existingPassengerIndex = updatedPassageiros.findIndex(p => p.cpf === formattedCPF && formattedCPF);
 
         if (existingPassengerIndex > -1) {
-            // Atualiza passageiro existente com novos itinerários
             const passageiroExistente = updatedPassageiros[existingPassengerIndex];
             passageiroExistente.itinerarios.push(...itinerariosFormatados);
             if (pIA.email && !passageiroExistente.email) passageiroExistente.email = pIA.email;
             if (pIA.contactDate && !passageiroExistente.dataContato) passageiroExistente.dataContato = formatDateToDDMMYYYY(pIA.contactDate);
             updatedCount++;
         } else {
-            // Adiciona novo passageiro
             updatedPassageiros.push({
                 id: generateId(),
                 nome: pIA.name || 'Nome não extraído',
@@ -319,15 +321,13 @@ const FadexTravelSystem = () => {
 
     setPassageiros(updatedPassageiros);
 
-    // Preenche o faturamento se ainda não estiver preenchido
-    if (!faturamento.contaProjeto && !faturamento.webId && dataFromAI.billing) {
-        setFaturamento({
-            contaProjeto: dataFromAI.billing.account || '',
-            descricao: dataFromAI.billing.description || '',
-            cc: dataFromAI.billing.costCenter || '',
-            webId: dataFromAI.billing.webId || '',
-        });
-    }
+    setFaturamento(prevFaturamento => ({
+      ...prevFaturamento,
+      contaProjeto: contaProjetoExtraida || prevFaturamento.contaProjeto,
+      descricao: dataFromAI.billing?.description || prevFaturamento.descricao,
+      cc: dataFromAI.billing?.costCenter || prevFaturamento.cc,
+      webId: dataFromAI.billing?.webId || prevFaturamento.webId,
+    }));
 
     let message = `${addedCount} passageiro(s) adicionado(s) e ${updatedCount} atualizado(s) com sucesso.`;
     showSuccessMessageHandler(message);
