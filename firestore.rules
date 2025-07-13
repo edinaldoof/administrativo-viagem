@@ -3,21 +3,11 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Allow read and write access to the 'requests' collection
-    match /requests/{requestId} {
+    // This rule allows anyone with your project's credentials to read, write,
+    // and delete all data in your Firestore database.
+    // It is not recommended for production environments.
+    match /{document=**} {
       allow read, write: if true;
     }
-
-    // Allow read and write access to the 'passengers' collection
-    match /passengers/{passengerId} {
-      allow read, write: if true;
-    }
-
-    // Allow read and write access to the 'feedback' collection
-    match /feedback/{feedbackId} {
-      allow read, write: if true;
-    }
-
   }
 }
