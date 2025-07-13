@@ -31,7 +31,6 @@ import { exportPreviewToPNG } from '../utils/pngExporter.js';
 
 // --- Imports para a nova tela de importação ---
 import { extractDataFromPdfWithGemini } from '../ai/geminiService';
-import { preprocessText } from '../utils/preprocessor';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 // ALTERAÇÃO: Corrigido o caminho do worker do pdf.js para usar a URL correta e o formato de módulo (.mjs)
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.mjs`;
