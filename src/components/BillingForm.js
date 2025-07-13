@@ -1,6 +1,5 @@
 // src/components/BillingForm.js
 import React from 'react';
-import { CreditCard } from 'lucide-react';
 
 const BillingForm = ({ faturamento, onFaturamentoChange }) => {
   const handleChange = (e) => {
@@ -11,7 +10,6 @@ const BillingForm = ({ faturamento, onFaturamentoChange }) => {
   return (
     <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-8 shadow-xl border border-white/20">
       <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center space-x-3">
-        <CreditCard className="w-6 h-6 text-purple-600" />
         <span>Informações de Faturamento</span>
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

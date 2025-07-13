@@ -1,6 +1,5 @@
 // src/components/PassengerListItem.js
 import React from 'react';
-import { Edit3, Copy, Trash2, Users } from 'lucide-react'; // Adicionado Users para o caso de 0 trechos
 
 const PassengerListItem = ({ passageiro, onEdit, onDuplicate, onRemove }) => {
   if (!passageiro) {
@@ -21,21 +20,21 @@ const PassengerListItem = ({ passageiro, onEdit, onDuplicate, onRemove }) => {
             className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
             title="Editar"
           >
-            <Edit3 className="w-4 h-4 text-blue-500" />
+            Editar
           </button>
           <button
             onClick={() => onDuplicate(passageiro)}
             className="p-2 hover:bg-green-100 rounded-lg transition-colors"
             title="Duplicar"
           >
-            <Copy className="w-4 h-4 text-green-500" />
+            Duplicar
           </button>
           <button
             onClick={() => onRemove(passageiro.id)}
             className="p-2 hover:bg-red-100 rounded-lg transition-colors"
             title="Remover"
           >
-            <Trash2 className="w-4 h-4 text-red-500" />
+            Remover
           </button>
         </div>
       </div>

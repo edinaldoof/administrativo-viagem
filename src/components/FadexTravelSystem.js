@@ -9,7 +9,6 @@ import PassengerForm from './PassengerForm';
 import BillingForm from './BillingForm';
 import PassengerList from './PassengerList';
 import Preview from './Preview';
-// import AIProcessorModal from './AIProcessorModal'; // Removido, funcionalidade integrada abaixo
 
 // --- NOVOS COMPONENTES ADICIONADOS ---
 import ConfirmationScreen from './ConfirmationScreen';
@@ -33,7 +32,6 @@ import { exportPreviewToPNG } from '../utils/pngExporter.js';
 // --- Imports para a nova tela de importação ---
 import { extractDataFromPdfWithGemini } from '../ai/geminiService'; 
 import { preprocessText } from '../utils/preprocessor';
-import { UploadCloud, FileText, CheckCircle, XCircle, Loader } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 // ALTERAÇÃO: Corrigido o caminho do worker do pdf.js para usar a URL correta e o formato de módulo (.mjs)
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.mjs`;
@@ -143,7 +141,6 @@ const ImportScreen = ({ onImportConfirmed, onBack }) => {
         onClick={() => fileInputRef.current.click()}
       >
         <input type="file" ref={fileInputRef} onChange={(e) => handleFileSelect(e.target.files[0])} style={{ display: 'none' }} accept=".pdf" />
-        <UploadCloud className="mx-auto h-12 w-12 text-gray-400" />
         <p className="mt-2 text-sm text-gray-600">Arraste e solte o arquivo PDF aqui, ou clique para selecionar.</p>
       </div>
 
@@ -151,7 +148,6 @@ const ImportScreen = ({ onImportConfirmed, onBack }) => {
         <div className="mt-6 p-4 border rounded-lg bg-gray-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <FileText className="h-6 w-6 text-red-500" />
               <span className="font-medium">{file.name}</span>
             </div>
             <button onClick={handleProcessFile} disabled={processingState === 'processing'} className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-300">
@@ -161,19 +157,16 @@ const ImportScreen = ({ onImportConfirmed, onBack }) => {
 
           {processingState === 'processing' && (
             <div className="flex items-center gap-2 mt-4 text-blue-600">
-              <Loader className="animate-spin h-5 w-5" />
               <span>{processingMessage}</span>
             </div>
           )}
           {processingState === 'success' && (
             <div className="flex items-center gap-2 mt-4 text-green-600">
-              <CheckCircle className="h-5 w-5" />
               <span>{processingMessage}</span>
             </div>
           )}
           {processingState === 'error' && (
             <div className="flex items-center gap-2 mt-4 text-red-600">
-              <XCircle className="h-5 w-5" />
               <span>{processingMessage}</span>
             </div>
           )}

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const ConfirmationScreen = ({ extractedData, onConfirm, onCancel }) => {
   const [showOtherInfo, setShowOtherInfo] = useState(false);
@@ -72,7 +71,7 @@ const ConfirmationScreen = ({ extractedData, onConfirm, onCancel }) => {
           className="flex items-center justify-center gap-2 mx-auto px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
         >
           {showOtherInfo ? 'Ocultar' : 'Mostrar'} Outras Informações Encontradas
-          {showOtherInfo ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+          {showOtherInfo ? <span>Up</span> : <span>Down</span>}
         </button>
       </div>
 

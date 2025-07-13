@@ -1,6 +1,5 @@
 // src/components/Header.js
 import React from 'react';
-import { Plane, FileImage, FileText, FileSpreadsheet, Upload } from 'lucide-react';
 
 const Header = ({ onExportPNG, onExportPDF, onExportExcel, onImportPDF, isExportDisabled }) => {
   return (
@@ -9,7 +8,7 @@ const Header = ({ onExportPNG, onExportPDF, onExportExcel, onImportPDF, isExport
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="p-3 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg">
-              <Plane className="w-8 h-8 text-white" />
+              {/* Plane Icon Removed */}
             </div>
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -23,7 +22,6 @@ const Header = ({ onExportPNG, onExportPDF, onExportExcel, onImportPDF, isExport
               onClick={onImportPDF}
               className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
             >
-              <Upload className="w-4 h-4" />
               <span>Importar PDF</span>
             </button>
             <button
@@ -31,7 +29,6 @@ const Header = ({ onExportPNG, onExportPDF, onExportExcel, onImportPDF, isExport
               disabled={isExportDisabled}
               className="flex items-center space-x-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
             >
-              <FileImage className="w-4 h-4" />
               <span>PNG</span>
             </button>
             <button
@@ -39,7 +36,6 @@ const Header = ({ onExportPNG, onExportPDF, onExportExcel, onImportPDF, isExport
               disabled={isExportDisabled}
               className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
             >
-              <FileText className="w-4 h-4" />
               <span>PDF</span>
             </button>
             <button
@@ -47,7 +43,6 @@ const Header = ({ onExportPNG, onExportPDF, onExportExcel, onImportPDF, isExport
               disabled={isExportDisabled}
               className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
             >
-              <FileSpreadsheet className="w-4 h-4" />
               <span>Excel</span>
             </button>
           </div>

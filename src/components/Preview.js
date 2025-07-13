@@ -1,6 +1,5 @@
 // src/components/Preview.js
 import React from 'react';
-import { Building2, Plane } from 'lucide-react';
 
 const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
   const currentDate = new Date().toLocaleDateString('pt-BR');
@@ -9,7 +8,6 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
     <div ref={ref} className="bg-white rounded-3xl p-6 shadow-xl border border-gray-100">
       <div className="text-center mb-6">
         <div className="flex items-center justify-center space-x-3 mb-2">
-          <Building2 className="w-8 h-8 text-blue-600" />
           <h2 className="text-2xl font-bold text-gray-800">Administrativo Fadex</h2>
         </div>
         <p className="text-gray-600">Solicitação de Passagens Aéreas</p>
@@ -55,7 +53,6 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
       {(!passageiros || passageiros.length === 0) && 
        (!faturamento || (!faturamento.contaProjeto && !faturamento.descricao && !faturamento.cc && !faturamento.webId)) && (
         <div className="text-center py-8 text-gray-500">
-          <Plane className="w-12 h-12 mx-auto mb-3 text-gray-300" />
           <p>Adicione passageiros e informações de faturamento para visualizar a solicitação</p>
         </div>
       )}

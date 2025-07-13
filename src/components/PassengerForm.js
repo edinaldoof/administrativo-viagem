@@ -1,6 +1,5 @@
 // src/components/PassengerForm.js
 import React, { useState } from 'react'; //
-import { User, MapPin, Plus, Trash2, Check, AlertCircle, X, Paperclip, Image as ImageIcon, FileText } from 'lucide-react'; //
 import { formatCPF, formatDate } from '../utils/utils'; //
 
 const PassengerForm = ({
@@ -49,12 +48,12 @@ const PassengerForm = ({
 
   const getFileIcon = (fileType) => {
     if (fileType.startsWith('image/')) { //
-      return <ImageIcon className="w-5 h-5 text-blue-500" />; //
+      return <span>IMG</span>; //
     }
     if (fileType === 'application/pdf') { //
-      return <FileText className="w-5 h-5 text-red-500" />; //
+      return <span>PDF</span>; //
     }
-    return <Paperclip className="w-5 h-5 text-gray-500" />; //
+    return <span>FILE</span>; //
   };
 
   const [incluirVolta, setIncluirVolta] = useState(false);
@@ -76,7 +75,6 @@ const PassengerForm = ({
     <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-8 shadow-xl border border-white/20"> {/* */}
       <div className="flex items-center justify-between mb-6"> {/* */}
         <h2 className="text-2xl font-bold text-gray-800 flex items-center space-x-3"> {/* */}
-          <User className="w-6 h-6 text-blue-600" /> {/* */}
           <span>{isEditing ? 'Editar Passageiro' : 'Novo Passageiro'}</span> {/* */}
         </h2>
         <button
@@ -84,7 +82,7 @@ const PassengerForm = ({
           className="p-2 hover:bg-red-100 rounded-xl transition-colors" /* */
           title="Fechar Formulário"
         >
-          <X className="w-5 h-5 text-red-500" /> {/* */}
+          <span>X</span>
         </button>
       </div>
 
@@ -99,7 +97,7 @@ const PassengerForm = ({
               className={`w-full p-4 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.nome ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} /* */
               placeholder="Digite o nome completo"
             />
-            {errors.nome && <div className="flex items-center space-x-1 mt-1 text-red-500 text-sm"><AlertCircle className="w-4 h-4" /><span>{errors.nome}</span></div>} {/* */}
+            {errors.nome && <div className="flex items-center space-x-1 mt-1 text-red-500 text-sm"><span>{errors.nome}</span></div>} {/* */}
           </div>
           <div>
             <label htmlFor="cpf" className="block text-sm font-medium text-gray-700 mb-2">CPF *</label> {/* */}
@@ -109,7 +107,7 @@ const PassengerForm = ({
               className={`w-full p-4 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.cpf ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} /* */
               placeholder="000.000.000-00" maxLength="14"
             />
-            {errors.cpf && <div className="flex items-center space-x-1 mt-1 text-red-500 text-sm"><AlertCircle className="w-4 h-4" /><span>{errors.cpf}</span></div>} {/* */}
+            {errors.cpf && <div className="flex items-center space-x-1 mt-1 text-red-500 text-sm"><span>{errors.cpf}</span></div>} {/* */}
           </div>
           <div>
             <label htmlFor="dataNascimento" className="block text-sm font-medium text-gray-700 mb-2">Data de Nascimento *</label> {/* */}
@@ -119,14 +117,13 @@ const PassengerForm = ({
               className={`w-full p-4 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.dataNascimento ? 'border-red-500 bg-red-50' : 'border-gray-300'}`} /* */
               placeholder="DD/MM/AAAA" maxLength="10"
             />
-            {errors.dataNascimento && <div className="flex items-center space-x-1 mt-1 text-red-500 text-sm"><AlertCircle className="w-4 h-4" /><span>{errors.dataNascimento}</span></div>} {/* */}
+            {errors.dataNascimento && <div className="flex items-center space-x-1 mt-1 text-red-500 text-sm"><span>{errors.dataNascimento}</span></div>} {/* */}
           </div>
         </div>
 
         {/* Seção de Itinerários */}
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6"> {/* */}
           <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2"> {/* */}
-            <MapPin className="w-5 h-5 text-blue-600" /> {/* */}
             <span>Itinerários *</span> {/* */}
           </h3>
           <div className="bg-white rounded-xl p-4 mb-4"> {/* */}
@@ -187,7 +184,6 @@ const PassengerForm = ({
               }}
               className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors" /* */
             >
-              <Plus className="w-4 h-4" /> {/* */}
               <span>Adicionar Trecho</span> {/* */}
             </button>
           </div>
@@ -206,17 +202,16 @@ const PassengerForm = ({
                 </div>
               </div>
               <button onClick={() => onRemoveItinerario(itinerario.id)} className="p-2 hover:bg-red-100 rounded-lg transition-colors" title="Remover Trecho"> {/* */}
-                <Trash2 className="w-4 h-4 text-red-500" /> {/* */}
+                <span>X</span>
               </button>
             </div>
           ))}
-          {errors.itinerarios && <div className="flex items-center space-x-1 mt-2 text-red-500 text-sm"><AlertCircle className="w-4 h-4" /><span>{errors.itinerarios}</span></div>} {/* */}
+          {errors.itinerarios && <div className="flex items-center space-x-1 mt-2 text-red-500 text-sm"><span>{errors.itinerarios}</span></div>} {/* */}
         </div>
 
         {/* Seção de Anexos do Passageiro */}
         <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-6"> {/* */}
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2"> {/* */}
-                <Paperclip className="w-5 h-5 text-purple-600" /> {/* */}
                 <span>Anexos do Passageiro</span> {/* */}
             </h3>
             <div>
@@ -225,7 +220,6 @@ const PassengerForm = ({
                     className="w-full flex items-center justify-center px-4 py-6 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-colors" /* */
                 >
                     <div className="text-center"> {/* */}
-                        <Paperclip className="w-8 h-8 mx-auto text-gray-400 mb-2" /> {/* */}
                         <p className="text-sm text-gray-600">Adicionar anexos para este passageiro</p> {/* */}
                         <p className="text-xs text-gray-500">Anexe a Imagem</p> {/* */}
                     </div>
@@ -262,7 +256,7 @@ const PassengerForm = ({
                                     className="p-1 hover:bg-red-100 rounded-md transition-colors" /* */
                                     title="Remover anexo"
                                 >
-                                    <Trash2 className="w-4 h-4 text-red-500" /> {/* */}
+                                    <span>X</span>
                                 </button>
                             </li>
                         ))}
@@ -275,7 +269,6 @@ const PassengerForm = ({
         <div className="flex justify-end space-x-4"> {/* */}
           <button onClick={onCancel} className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors">Cancelar</button> {/* */}
           <button onClick={onSavePassageiro} className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl font-medium transition-all duration-200 shadow-lg"> {/* */}
-            <Check className="w-4 h-4" /> {/* */}
             <span>{isEditing ? 'Salvar Alterações' : 'Salvar Passageiro'}</span> {/* */}
           </button>
         </div>

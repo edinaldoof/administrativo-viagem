@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { MessageSquare, X, Send } from 'lucide-react';
 // Supondo que você crie um serviço de IA separado para o chat
 import { getChatbotResponse } from '../ai/chatbotService'; 
 
@@ -37,7 +36,7 @@ const HelpChatbot = () => {
     <>
       {/* Ícone flutuante */}
       <button onClick={toggleChat} className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 z-50">
-        <MessageSquare size={24} />
+        Chat
       </button>
 
       {/* Janela do Chat */}
@@ -45,7 +44,7 @@ const HelpChatbot = () => {
         <div className="fixed bottom-24 right-6 w-80 h-96 bg-white rounded-lg shadow-2xl flex flex-col z-50 animate-fade-in-up">
           <header className="bg-blue-600 text-white p-3 flex justify-between items-center rounded-t-lg">
             <h3 className="font-bold">Assistente Fadex</h3>
-            <button onClick={toggleChat}><X size={20} /></button>
+            <button onClick={toggleChat}>X</button>
           </header>
           
           <div className="flex-1 p-4 overflow-y-auto">
@@ -71,7 +70,7 @@ const HelpChatbot = () => {
               disabled={isLoading}
             />
             <button type="submit" className="bg-blue-600 text-white p-2 rounded-full" disabled={isLoading}>
-              <Send size={20} />
+              Enviar
             </button>
           </form>
         </div>
