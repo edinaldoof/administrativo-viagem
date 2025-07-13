@@ -20,7 +20,7 @@ const PassengerForm = ({
     let formattedValue = value;
     if (name === 'cpf') {
       formattedValue = formatCPF(value);
-    } else if (name === 'dataNascimento' || name === 'dataContato') {
+    } else if (name === 'dataNascimento' || name === 'contactDate') {
       formattedValue = formatDate(value);
     }
     onPassageiroFieldChange(name, formattedValue);
@@ -129,9 +129,9 @@ const PassengerForm = ({
             />
           </div>
           <div>
-            <label htmlFor="dataContato" className="block text-sm font-medium text-gray-700 mb-2">Data do Contato (Opcional)</label>
+            <label htmlFor="contactDate" className="block text-sm font-medium text-gray-700 mb-2">Data do Contato (Opcional)</label>
             <input
-              type="text" name="dataContato" id="dataContato" value={currentPassageiro.dataContato}
+              type="text" name="contactDate" id="contactDate" value={currentPassageiro.contactDate}
               onChange={handlePassageiroInputChange}
               className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               placeholder="DD/MM/AAAA" maxLength="10"

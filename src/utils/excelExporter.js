@@ -36,7 +36,7 @@ export const exportDataToExcel = (passageiros, faturamento, fileName = 'solicita
                             index === 0 ? formatCPF(passageiro.cpf) : '',
                             index === 0 ? passageiro.dataNascimento : '',
                             index === 0 ? passageiro.email : '',
-                            index === 0 ? passageiro.dataContato : '',
+                            index === 0 ? passageiro.contactDate : '',
                             itinerario.origem,
                             itinerario.destino,
                             dataSaidaFormatada,
@@ -53,7 +53,7 @@ export const exportDataToExcel = (passageiros, faturamento, fileName = 'solicita
                         formatCPF(passageiro.cpf),
                         passageiro.dataNascimento,
                         passageiro.email,
-                        passageiro.dataContato,
+                        passageiro.contactDate,
                         '-', '-', '-', '-', '-', '-', // Colunas de itinerário vazias
                         anexosNomes
                     ]);
@@ -98,10 +98,10 @@ export const exportDataToExcel = (passageiros, faturamento, fileName = 'solicita
                 if (passageiro.itinerarios && passageiro.itinerarios.length > 0) {
                     passageiro.itinerarios.forEach((itinerario, index) => {
                         const dataSaidaFormatada = itinerario.dataSaida ? new Date(itinerario.dataSaida + 'T00:00:00-03:00').toLocaleDateString('pt-BR') : 'N/A';
-                        csvContent += `${index === 0 ? escapeCSV(passageiro.nome) : ''},${index === 0 ? escapeCSV(formatCPF(passageiro.cpf)) : ''},${index === 0 ? escapeCSV(passageiro.dataNascimento) : ''},${index === 0 ? escapeCSV(passageiro.email) : ''},${index === 0 ? escapeCSV(passageiro.dataContato) : ''},${escapeCSV(itinerario.origem)},${escapeCSV(itinerario.destino)},${escapeCSV(dataSaidaFormatada)},${escapeCSV(itinerario.ciaAerea)},${escapeCSV(itinerario.voo)},${escapeCSV(itinerario.horarios)},${index === 0 ? escapeCSV(anexosNomes) : ''}\n`;
+                        csvContent += `${index === 0 ? escapeCSV(passageiro.nome) : ''},${index === 0 ? escapeCSV(formatCPF(passageiro.cpf)) : ''},${index === 0 ? escapeCSV(passageiro.dataNascimento) : ''},${index === 0 ? escapeCSV(passageiro.email) : ''},${index === 0 ? escapeCSV(passageiro.contactDate) : ''},${escapeCSV(itinerario.origem)},${escapeCSV(itinerario.destino)},${escapeCSV(dataSaidaFormatada)},${escapeCSV(itinerario.ciaAerea)},${escapeCSV(itinerario.voo)},${escapeCSV(itinerario.horarios)},${index === 0 ? escapeCSV(anexosNomes) : ''}\n`;
                     });
                 } else {
-                    csvContent += `${escapeCSV(passageiro.nome)},${escapeCSV(formatCPF(passageiro.cpf))},${escapeCSV(passageiro.dataNascimento)},${escapeCSV(passageiro.email)},${escapeCSV(passageiro.dataContato)},"","","","","","","",${escapeCSV(anexosNomes)}\n`;
+                    csvContent += `${escapeCSV(passageiro.nome)},${escapeCSV(formatCPF(passageiro.cpf))},${escapeCSV(passageiro.dataNascimento)},${escapeCSV(passageiro.email)},${escapeCSV(passageiro.contactDate)},"","","","","","","",${escapeCSV(anexosNomes)}\n`;
                 }
             });
 
