@@ -31,7 +31,7 @@ import { exportPreviewToPNG } from '../utils/pngExporter.js';
 // --- Imports para a nova tela de importação ---
 import * as pdfjsLib from 'pdfjs-dist/build/pdf.mjs';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.js`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).toString();
 
 const FadexTravelSystem = () => {
   // --- SEUS ESTADOS EXISTENTES (COM ALTERAÇÃO) ---

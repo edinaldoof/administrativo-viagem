@@ -5,7 +5,7 @@ import { extractDataFromPdfWithGemini } from '../ai/geminiService';
 import ConfirmationScreen from './ConfirmationScreen';
 
 // Configuração do worker do PDF.js
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.mjs`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).toString();
 
 const AIProcessorScreen = ({ onConfirm, onCancel }) => {
   const [file, setFile] = useState(null);
