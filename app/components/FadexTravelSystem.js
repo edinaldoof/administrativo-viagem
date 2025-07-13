@@ -2,14 +2,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 // Seus componentes existentes
-import Header from './Header';
-import SuccessMessage from './SuccessMessage';
-import AddPassengerButton from './AddPassengerButton';
-import PassengerForm from './PassengerForm';
-import BillingForm from './BillingForm';
-import PassengerList from './PassengerList';
-import Preview from './Preview';
-import AIProcessorModal from './AIProcessorModal';
+import Header from '@/components/Header';
+import SuccessMessage from '@/components/SuccessMessage';
+import AddPassengerButton from '@/components/AddPassengerButton';
+import PassengerForm from '@/components/PassengerForm';
+import BillingForm from '@/components/BillingForm';
+import PassengerList from '@/components/PassengerList';
+import Preview from '@/components/Preview';
+import AIProcessorModal from '@/components/AIProcessorModal';
 
 // Suas funções de utilidade
 import {
@@ -20,12 +20,12 @@ import {
   validarDataViagem,
   formatDateToYYYYMMDD,
   formatDateToDDMMYYYY
-} from '../utils/utils.js';
+} from '@/utils/utils.js';
 
 // Suas funções de exportação
-import { generateSolicitacaoPDF } from '../utils/pdfGenerator.js';
-import { exportDataToExcel } from '../utils/excelExporter.js';
-import { exportPreviewToPNG } from '../utils/pngExporter.js';
+import { generateSolicitacaoPDF } from '@/utils/pdfGenerator.js';
+import { exportDataToExcel } from '@/utils/excelExporter.js';
+import { exportPreviewToPNG } from '@/utils/pngExporter.js';
 
 const FadexTravelSystem = () => {
   const [passageiros, setPassageiros] = useState([]);

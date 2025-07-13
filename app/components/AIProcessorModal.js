@@ -1,8 +1,8 @@
 // src/components/AIProcessorModal.js
 import React, { useState, useRef } from 'react';
 import { UploadCloud, FileText, User, CreditCard, X, Loader, CheckCircle, AlertTriangle } from 'lucide-react';
-import { extractInfoFromPdf } from '../ai/flows/extract-info-flow';
-import { formatCPF } from '../utils/utils';
+import { extractInfoFromPdf } from '@/ai/flows/extract-info-flow.js';
+import { formatCPF } from '@/utils/utils.js';
 
 const AIProcessorModal = ({ isOpen, onClose, onConfirm }) => {
   const [file, setFile] = useState(null);

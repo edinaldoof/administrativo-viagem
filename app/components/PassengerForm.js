@@ -1,7 +1,7 @@
 // src/components/PassengerForm.js
 import React, { useState } from 'react'; //
 import { User, MapPin, Plus, Trash2, Check, AlertCircle, X, Paperclip, Image as ImageIcon, FileText } from 'lucide-react'; //
-import { formatCPF, formatDate, formatDateToYYYYMMDD } from '../utils/utils';
+import { formatCPF, formatDate, formatDateToYYYYMMDD } from '@/utils/utils.js';
 
 const PassengerForm = ({
   currentPassageiro,

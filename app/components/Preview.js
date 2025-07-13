@@ -1,7 +1,7 @@
 // src/components/Preview.js
 import React from 'react';
 import { Building2, Plane } from 'lucide-react';
-import { formatDateToYYYYMMDD } from '../utils/utils';
+import { formatDateToYYYYMMDD } from '@/utils/utils.js';
 
 const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
   const currentDate = new Date().toLocaleDateString('pt-BR');
