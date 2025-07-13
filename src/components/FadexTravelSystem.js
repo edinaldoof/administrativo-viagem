@@ -69,6 +69,7 @@ const ImportScreen = ({ onImportConfirmed, onBack }) => {
   const [processingState, setProcessingState] = useState('idle');
   const [processingMessage, setProcessingMessage] = useState('');
   const [extractedData, setExtractedData] = useState(null);
+  const [feedback, setFeedback] = useState('');
   const fileInputRef = useRef(null);
 
   const handleFileSelect = (selectedFile) => {
@@ -105,7 +106,7 @@ const ImportScreen = ({ onImportConfirmed, onBack }) => {
       const textContent = await extractTextFromPdf(file);
       if (!textContent) throw new Error('Falha ao extrair texto.');
       setProcessingMessage('Analisando com a IA Gemini...');
-      const result = await extractDataFromPdfWithGemini(textContent);
+      const result = await extractDataFromPdfWithGemini(textContent, feedback);
       setExtractedData(result);
       setProcessingState('success');
       setProcessingMessage('Dados extraídos com sucesso! Verifique e confirme.');
@@ -115,6 +116,13 @@ const ImportScreen = ({ onImportConfirmed, onBack }) => {
       setProcessingMessage(err.message || 'Ocorreu um erro desconhecido.');
     }
   };
+  
+  const handleCancelAndStoreFeedback = (userFeedback) => {
+    setFeedback(userFeedback);
+    setExtractedData(null);
+    setProcessingState('idle');
+    setFile(null);
+  };
 
   if (extractedData) {
     return (
@@ -122,6 +130,7 @@ const ImportScreen = ({ onImportConfirmed, onBack }) => {
         extractedData={extractedData}
         onConfirm={onImportConfirmed}
         onCancel={() => { setExtractedData(null); setProcessingState('idle'); setFile(null); }}
+        onSendFeedback={handleCancelAndStoreFeedback}
       />
     );
   }

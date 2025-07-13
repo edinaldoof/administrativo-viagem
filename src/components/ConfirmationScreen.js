@@ -1,10 +1,17 @@
-
 import React, { useState } from 'react';
 
-const ConfirmationScreen = ({ extractedData, onConfirm, onCancel }) => {
+const ConfirmationScreen = ({ extractedData, onConfirm, onCancel, onSendFeedback }) => {
   if (!extractedData) return null;
 
+  const [feedback, setFeedback] = useState('');
   const { title, billing, passengers } = extractedData;
+
+  const handleFeedbackAndCancel = () => {
+    if (feedback.trim()) {
+      onSendFeedback(feedback);
+    }
+    onCancel();
+  };
 
   const renderBillingInfo = () => (
     <>
@@ -65,8 +72,23 @@ const ConfirmationScreen = ({ extractedData, onConfirm, onCancel }) => {
         <p className="text-center text-gray-500 py-8">Nenhum passageiro foi detectado no documento.</p>
       )}
 
-      <div className="flex justify-end gap-4 mt-8 pt-4 border-t">
-        <button onClick={onCancel} className="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors">
+      {/* Seção de Feedback */}
+      <div className="mt-8 pt-4 border-t">
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">A extração falhou?</h3>
+          <p className="text-sm text-gray-600 mb-3">
+            Se algum dado foi extraído incorretamente ou está faltando, por favor, descreva o erro aqui para ajudar a IA a melhorar na próxima vez.
+          </p>
+          <textarea
+            value={feedback}
+            onChange={(e) => setFeedback(e.target.value)}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors"
+            placeholder="Ex: O CPF do passageiro 'João da Silva' está incorreto. O correto é 123.456.789-00."
+            rows="3"
+          />
+      </div>
+
+      <div className="flex justify-end gap-4 mt-6">
+        <button onClick={handleFeedbackAndCancel} className="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors">
           Cancelar
         </button>
         <button onClick={() => onConfirm(extractedData)} className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors" disabled={!passengers || passengers.length === 0}>

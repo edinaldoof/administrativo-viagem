@@ -1,3 +1,4 @@
+// src/ai/geminiService.js
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
@@ -6,10 +7,10 @@ const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
 /**
  * Processa o texto de um PDF usando IA para extrair dados de múltiplos beneficiários.
  * @param {string} text - O conteúdo de texto bruto extraído do PDF.
- * @param {object} preprocessedData - Dados já extraídos via Regex para dar contexto à IA (opcional).
+ * @param {string} [feedback=''] - Feedback opcional do usuário sobre extrações anteriores.
  * @returns {Promise<object>} - Uma promessa que resolve para o objeto JSON final com a estrutura de múltiplos passageiros.
  */
-export const extractDataFromPdfWithGemini = async (text, preprocessedData = {}) => {
+export const extractDataFromPdfWithGemini = async (text, feedback = '') => {
   if (!apiKey) {
     throw new Error('Erro de Configuração: A chave da API do Google não foi encontrada.');
   }
@@ -21,6 +22,12 @@ export const extractDataFromPdfWithGemini = async (text, preprocessedData = {}) 
     You are a highly specialized data extraction assistant for travel requests.
     Your task is to meticulously analyze the provided PDF document, which can contain multiple travel requests for different people across many pages.
     Extract all information and return a single, well-structured JSON object.
+
+    ${feedback ? `**Important User Feedback from Previous Extractions (Use this to improve):**
+    ---
+    ${feedback}
+    ---
+    ` : ''}
 
     **Extraction Instructions:**
 
