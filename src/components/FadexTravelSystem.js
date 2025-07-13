@@ -21,7 +21,8 @@ import {
   formatPhone,
   validarCPF,
   validarDataNascimento,
-  validarDataViagem
+  validarDataViagem,
+  formatDate
 } from '../utils/utils.js';
 import { generateSolicitacaoPDF } from '../utils/pdfGenerator.js';
 import { exportDataToExcel } from '../utils/excelExporter.js';
@@ -115,7 +116,7 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
       const result = await extractDataFromPdfWithGemini(textContent); 
       setExtractedData(result);
       setProcessingState('success');
-      setProcessingMessage('Dados extraídos com sucesso! Verifique, corrija e confirme.');
+      setProcessingMessage('Dados extraídos! Revise, edite se necessário e confirme.');
     } catch (err) {
       console.error("Erro no processamento do arquivo:", err);
       setProcessingState('error');
@@ -123,7 +124,7 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
     }
   };
   
-  const handleCancelAndStoreFeedback = async (justification) => {
+  const handleFeedbackAndCancel = async (justification) => {
     if (justification && justification.trim()) {
       try {
         await saveFeedback(justification);
@@ -135,21 +136,23 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
     setExtractedData(null);
     setProcessingState('idle');
     setFile(null);
+    onBack(); // Volta para a tela principal
   };
 
   const handleCancel = () => {
     setExtractedData(null);
     setProcessingState('idle');
     setFile(null);
+    onBack(); // Volta para a tela principal
   };
 
   if (extractedData) {
     return (
       <ConfirmationScreen
-        extractedData={extractedData}
+        originalData={extractedData}
         onConfirm={onImportConfirmed}
-        onCancel={handleCancel}
-        onSendFeedback={handleCancelAndStoreFeedback}
+        onCancel={handleCancel} // Apenas fecha a tela de confirmação
+        onSendFeedback={handleFeedbackAndCancel} // Envia feedback e depois fecha
       />
     );
   }
