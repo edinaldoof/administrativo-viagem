@@ -6,12 +6,11 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "dev": "react-scripts start",
+    "dev": "PORT=9002 react-scripts start",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "firebase": "^11.10.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.2",
