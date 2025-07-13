@@ -1,32 +1,24 @@
-
-'use server';
+// src/ai/flows/extract-info-flow.ts
 /**
- * @fileOverview Flow para extrair informações de viagem de um PDF.
- *
- * - extractInfoFromPdf - Extrai dados estruturados de uma solicitação de viagem em PDF.
- * - ExtractInfoInput - O tipo de entrada para a função.
- * - ExtractInfoOutput - O tipo de saída para a função.
+ * @fileOverview Flow to extract travel information from a PDF.
  */
 
-import { ai } from '@/ai/genkit';
+import { ai } from '../genkit';
 import { z } from 'zod';
-import { travelRequestSchema } from '@/lib/schemas';
+import { travelRequestSchema } from '../../lib/schemas';
 
-// Define o esquema de entrada para o fluxo
 const ExtractInfoInputSchema = z.object({
   pdfDataUri: z
     .string()
     .describe(
-      "Um arquivo PDF de solicitação de viagem como um data URI, que deve incluir um tipo MIME e usar codificação Base64. Formato esperado: 'data:application/pdf;base64,<dados_codificados>'."
+      "A travel request PDF file as a data URI, which must include a MIME type and use Base64 encoding. Expected format: 'data:application/pdf;base64,<encoded_data>'."
     ),
 });
 export type ExtractInfoInput = z.infer<typeof ExtractInfoInputSchema>;
 
-// A saída deve corresponder ao esquema do formulário de viagem
 const ExtractInfoOutputSchema = travelRequestSchema;
 export type ExtractInfoOutput = z.infer<typeof ExtractInfoOutputSchema>;
 
-// Função exportada que o aplicativo chamará
 export async function extractInfoFromPdf(input: ExtractInfoInput): Promise<ExtractInfoOutput> {
   return extractInfoFlow(input);
 }
@@ -35,14 +27,11 @@ const parseDate = (dateString: string | null): Date | undefined => {
     if (!dateString) return undefined;
     const parts = dateString.match(/(\d{2})\/(\d{2})\/(\d{4})/);
     if (parts) {
-      // parts[1] = DD, parts[2] = MM, parts[3] = YYYY
       return new Date(parseInt(parts[3], 10), parseInt(parts[2], 10) - 1, parseInt(parts[1], 10));
     }
     return undefined;
 };
 
-
-// Define o fluxo do Genkit
 const extractInfoFlow = ai.defineFlow(
   {
     name: 'extractInfoFlow',
@@ -52,34 +41,30 @@ const extractInfoFlow = ai.defineFlow(
   async (input) => {
     const { output } = await ai.generate({
       prompt: `
-        Você é um assistente especialista em extração de dados de documentos.
-        Sua tarefa é analisar o documento PDF a seguir e extrair as informações para preencher um formulário de solicitação de viagem.
-        
-        O documento é uma "Requisição para Compra de Passagens".
-
-        Extraia as seguintes informações e retorne-as em um formato JSON. Preste muita atenção aos nomes dos campos e à estrutura.
-
-        - "title": O título principal da requisição, geralmente encontrado no topo.
+        You are an expert-level assistant for extracting data from documents.
+        Your task is to analyze the following PDF document and extract the information to fill out a travel request form.
+        The document is a "Requisição para Compra de Passagens".
+        Extract the following information and return it in a JSON format. Pay close attention to the field names and structure.
+        - "title": The main title of the request, usually found at the top.
         - "billing":
-          - "costCenter": O valor do campo "CENTRO DE CUSTO".
-          - "account": O valor do campo "NUMERO DO PROJETO".
-          - "webId": O número da solicitação, que aparece como "Numero da Solicitacao: WEB:". Extraia apenas o número.
-          - "description": O conteúdo do campo "JUSTIFICATIVA/FINALIDADE".
-        - "passengers": Uma lista contendo um passageiro.
-          - "name": O nome completo do passageiro, encontrado em "CPF E NOME".
-          - "cpf": O CPF do passageiro, encontrado em "CPF E NOME".
-          - "birthDate": A data de nascimento, encontrada em "DATA DE NASCIMENTO". Formate como DD/MM/YYYY.
-          - "email": O e-mail do passageiro, encontrado em "E-MAIL".
-          - "phone": O telefone do passageiro, encontrado em "TELEFONE" ou "CELULAR".
-          - "itinerary": Uma lista de trechos da viagem.
-            - "origin": A "CIDADE DE ORIGEM".
-            - "destination": A "CIDADE DE DESTINO".
-            - "departureDate": A "DATA DE SAIDA". Formate como DD/MM/YYYY.
-            - "returnDate": A "DATA DE RETORNO", se existir. Formate como DD/MM/YYYY.
-            - "isRoundTrip": Defina como 'true' se houver uma data de retorno, caso contrário, 'false'.
-            - "ciaAerea", "voo", "horarios": Tente extrair esses detalhes do campo "OBSERVACOES" ou "Sugestao". Se não encontrar, deixe em branco.
-
-        Documento para análise: {{media url="${input.pdfDataUri}"}}
+          - "costCenter": The value from the "CENTRO DE CUSTO" field.
+          - "account": The value from the "NUMERO DO PROJETO" field.
+          - "webId": The request number, which appears as "Numero da Solicitacao: WEB:". Extract only the number.
+          - "description": The content of the "JUSTIFICATIVA/FINALIDADE" field.
+        - "passengers": A list containing one passenger.
+          - "name": The full name of the passenger, found in "CPF E NOME".
+          - "cpf": The passenger's CPF, found in "CPF E NOME".
+          - "birthDate": The date of birth, found in "DATA DE NASCIMENTO". Format as DD/MM/YYYY.
+          - "email": The passenger's email, found in "E-MAIL".
+          - "phone": The passenger's phone, found in "TELEFONE" or "CELULAR".
+          - "itinerary": A list of travel segments.
+            - "origin": The "CIDADE DE ORIGEM".
+            - "destination": The "CIDADE DE DESTINO".
+            - "departureDate": The "DATA DE SAIDA". Format as DD/MM/YYYY.
+            - "returnDate": The "DATA DE RETORNO", if it exists. Format as DD/MM/YYYY.
+            - "isRoundTrip": Set to 'true' if a return date is present, otherwise 'false'.
+            - "ciaAerea", "voo", "horarios": Try to extract these details from the "OBSERVACOES" or "Sugestao" field. If not found, leave them blank.
+        Document for analysis: {{media url="${input.pdfDataUri}"}}
       `,
       output: {
         format: 'json',
@@ -88,16 +73,13 @@ const extractInfoFlow = ai.defineFlow(
     });
 
     if (!output) {
-        throw new Error("A IA não conseguiu extrair os dados do PDF. Verifique se o documento é válido.");
+        throw new Error("AI failed to extract data from the PDF. Please ensure the document is valid.");
     }
 
-    // A IA retorna o objeto JSON diretamente, então apenas o retornamos.
-    // Opcional: fazer pós-processamento ou validação adicional aqui, se necessário.
     const processedOutput = {
       ...output,
       passengers: output.passengers.map(p => ({
         ...p,
-        // Garante que as datas sejam objetos Date, pois a IA pode retornar strings.
         birthDate: parseDate(p.birthDate as any) || new Date(),
         itinerary: (p.itinerary || []).map(i => ({
           ...i,
@@ -111,9 +93,9 @@ const extractInfoFlow = ai.defineFlow(
         const validatedOutput = ExtractInfoOutputSchema.parse(processedOutput);
         return validatedOutput;
     } catch (e) {
-        console.error("Erro de validação Zod após extração da IA:", e);
-        console.error("Dados recebidos da IA:", JSON.stringify(output, null, 2));
-        throw new Error("Os dados extraídos pela IA não são válidos. Verifique o console para detalhes.");
+        console.error("Zod validation error after AI extraction:", e);
+        console.error("Data received from AI:", JSON.stringify(output, null, 2));
+        throw new Error("The data extracted by the AI is not valid. Check the console for details.");
     }
   }
 );

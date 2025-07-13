@@ -1,77 +1,38 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-const fileSchema = z.object({
-  name: z.string(),
-  size: z.number(),
-  type: z.string(),
-  url: z.string(),
-  fileObject: z.any().optional(),
+// Esquema para um único itinerário
+const ItinerarySchema = z.object({
+  origin: z.string().describe("Cidade de origem da viagem."),
+  destination: z.string().describe("Cidade de destino da viagem."),
+  departureDate: z.coerce.date().describe("Data de partida no formato YYYY-MM-DD."),
+  returnDate: z.coerce.date().optional().describe("Data de retorno no formato YYYY-MM-DD, se for ida e volta."),
+  isRoundTrip: z.boolean().describe("Verdadeiro se for uma viagem de ida e volta."),
+  ciaAerea: z.string().optional().describe("Companhia aérea sugerida."),
+  voo: z.string().optional().describe("Número do voo sugerido."),
+  horarios: z.string().optional().describe("Horários de voo sugeridos."),
 });
 
-export const itinerarySchema = z.object({
-  id: z.string(),
-  origin: z.string().min(2, "A origem é obrigatória."),
-  destination: z.string().min(2, "O destino é obrigatório."),
-  departureDate: z.date({ required_error: "A data de partida é obrigatória." }),
-  isRoundTrip: z.boolean().default(false),
-  returnDate: z.date().optional(),
-  ciaAerea: z.string().optional(),
-  voo: z.string().optional(),
-  horarios: z.string().optional(),
-}).refine(data => {
-    if (data.isRoundTrip && data.returnDate) {
-        return data.returnDate > data.departureDate;
-    }
-    return true;
-}, {
-    message: "A data de retorno deve ser posterior à data de partida.",
-    path: ["returnDate"],
+// Esquema para um único passageiro
+const PassengerSchema = z.object({
+  name: z.string().describe("Nome completo do passageiro."),
+  cpf: z.string().describe("CPF do passageiro."),
+  birthDate: z.coerce.date().describe("Data de nascimento do passageiro."),
+  email: z.string().email().optional().describe("E-mail do passageiro."),
+  phone: z.string().optional().describe("Telefone de contato do passageiro."),
+  itinerary: z.array(ItinerarySchema).describe("Lista de itinerários para o passageiro."),
 });
 
-const validateCpf = (cpf: string) => {
-  cpf = cpf.replace(/[^\d]+/g, '');
-  if (cpf.length !== 11 || !!cpf.match(/(\d)\1{10}/)) return false;
-
-  const digits = cpf.split('').map(Number);
-  
-  const validator = (n: number) => {
-    const rest = digits.slice(0, n).reduce((sum, digit, index) => sum + digit * (n + 1 - index), 0) % 11;
-    return rest < 2 ? 0 : 11 - rest;
-  };
-  
-  return validator(9) === digits[9] && validator(10) === digits[10];
-};
-
-export const passengerSchema = z.object({
-  id: z.string(),
-  name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres."),
-  cpf: z.string().refine(validateCpf, { message: "CPF inválido." }),
-  birthDate: z.date({ required_error: "A data de nascimento é obrigatória." }),
-  email: z.string().email({ message: "E-mail inválido." }).optional().or(z.literal('')),
-  phone: z.string().optional(),
-  documents: z.array(fileSchema).optional().default([]),
-  itinerary: z.array(itinerarySchema).min(1, "É necessário pelo menos um trecho no itinerário."),
+// Esquema para os dados de faturamento
+const BillingSchema = z.object({
+  costCenter: z.string().optional().describe("Centro de custo para faturamento."),
+  account: z.string().optional().describe("Número do projeto para faturamento."),
+  webId: z.string().optional().describe("ID da web ou número da solicitação."),
+  description: z.string().optional().describe("Justificativa ou finalidade da viagem."),
 });
 
+// Esquema principal para a solicitação de viagem
 export const travelRequestSchema = z.object({
-  title: z.string().min(3, "O título deve ter pelo menos 3 caracteres."),
-  passengers: z.array(passengerSchema).min(1, "É necessário pelo menos um passageiro."),
-  billing: z.object({
-    costCenter: z.string().min(1, "O centro de custo é obrigatório."),
-    account: z.string().optional(),
-    description: z.string().optional(),
-    webId: z.string().optional(),
-  })
+  title: z.string().optional().describe("Título do documento de solicitação."),
+  billing: BillingSchema.describe("Informações de faturamento."),
+  passengers: z.array(PassengerSchema).describe("Lista de passageiros."),
 });
-
-// Esquema para o formulário de cadastro de passageiro
-export const passengerProfileSchema = z.object({
-  id: z.string(),
-  name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres."),
-  cpf: z.string().refine(validateCpf, { message: "CPF inválido." }),
-  birthDate: z.date({ required_error: "A data de nascimento é obrigatória." }),
-  email: z.string().email({ message: "E-mail inválido." }).optional().or(z.literal('')),
-  phone: z.string().optional(),
-});
-
-export type TravelRequestFormValues = z.infer<typeof travelRequestSchema>;
