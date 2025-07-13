@@ -139,7 +139,7 @@ const ConfirmationScreen = ({ extractedData, onConfirm, onCancel, onSendFeedback
             {justifications.map((item, index) => <li key={index}>{item}</li>)}
           </ul>
         </div>
-      </div>
+      )}
 
       <div className="flex justify-between items-center gap-4 mt-6 pt-4 border-t">
         <button 
