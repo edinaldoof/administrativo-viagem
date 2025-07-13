@@ -1,5 +1,5 @@
 // src/components/FadexTravelSystem.js
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 // Componentes
 import Header from './Header';
@@ -11,8 +11,10 @@ import PassengerList from './PassengerList';
 import Preview from './Preview';
 import ConfirmationScreen from './ConfirmationScreen';
 import HelpChatbot from './HelpChatbot';
+import RequestList from './RequestList'; // Novo
+import PassengerRegistry from './PassengerRegistry'; // Novo
 
-// Utilitários
+// Utilitários e Serviços
 import {
   generateId,
   formatCPF,
@@ -25,6 +27,8 @@ import { generateSolicitacaoPDF } from '../utils/pdfGenerator.js';
 import { exportDataToExcel } from '../utils/excelExporter.js';
 import { exportPreviewToPNG } from '../utils/pngExporter.js';
 import { saveFeedback } from '../services/feedbackService';
+import { saveRequest } from '../services/requestService'; // Novo
+import { getOrSavePassenger } from '../services/passengerService'; // Novo
 
 // Utilitários de IA e PDF
 import { extractDataFromPdfWithGemini } from '../ai/geminiService';
@@ -207,7 +211,7 @@ const FadexTravelSystem = () => {
   const [errors, setErrors] = useState({});
   const [successInfo, setSuccessInfo] = useState({ show: false, message: '' });
   const previewRef = useRef(null);
-  const [currentView, setCurrentView] = useState('main');
+  const [currentView, setCurrentView] = useState('creating'); // creating, viewingRequests, viewingPassengers, import
 
   const showSuccessMessageHandler = (message) => { setSuccessInfo({ show: true, message }); };
   const handleSuccessClose = () => { setSuccessInfo({ show: false, message: '' }); };
@@ -270,6 +274,49 @@ const FadexTravelSystem = () => {
   const handleExportPDF = async () => { try { await generateSolicitacaoPDF(passageiros, faturamento); showSuccessMessageHandler('PDF exportado com sucesso!'); } catch (error) { alert(`Erro ao gerar PDF: ${error.message}`); } };
   const handleExportExcel = () => { try { exportDataToExcel(passageiros, faturamento, `solicitacao-fadex-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}`); showSuccessMessageHandler('Excel exportado com sucesso!'); } catch (error) { alert(error.message); } };
   
+  const resetRequestState = () => {
+    setPassageiros([]);
+    setFaturamento({ contaProjeto: '', descricao: '', cc: '', webId: '' });
+    resetCurrentPassageiro();
+    setActiveForm(null);
+    setErrors({});
+  };
+
+  const handleSaveRequest = async () => {
+    if (passageiros.length === 0) {
+      setErrors({ global: 'Adicione pelo menos um passageiro para salvar a requisição.'});
+      return;
+    }
+    if (!faturamento.webId) {
+       setErrors({ global: 'O campo WEB ID é obrigatório para salvar a requisição.'});
+      return;
+    }
+    try {
+      // Garante que todos os passageiros estão salvos no 'catálogo' de passageiros
+      const passengerPromises = passageiros.map(p => getOrSavePassenger(p));
+      const savedPassengers = await Promise.all(passengerPromises);
+
+      // Mapeia para salvar apenas os IDs na requisição
+      const passengerRefs = savedPassengers.map(p => p.id);
+      
+      const requestData = {
+        ...faturamento,
+        passengerIds: passengerRefs, // Armazenando IDs
+        passengersData: passageiros, // Armazenando cópia dos dados para o histórico
+        createdAt: new Date(),
+      };
+
+      await saveRequest(requestData);
+      showSuccessMessageHandler('Requisição salva com sucesso no banco de dados!');
+      resetRequestState();
+
+    } catch(error) {
+      console.error("Erro ao salvar requisição:", error);
+      showSuccessMessageHandler(`Erro ao salvar: ${error.message}`);
+    }
+  };
+
+
   const handleImportPDF = () => {
     setCurrentView('import');
   };
@@ -277,7 +324,7 @@ const FadexTravelSystem = () => {
   const handleConfirmImport = (dataFromAI) => {
     if (!dataFromAI) {
       showSuccessMessageHandler('Nenhuma informação útil pôde ser extraída.');
-      setCurrentView('main');
+      setCurrentView('creating');
       return;
     }
 
@@ -299,7 +346,7 @@ const FadexTravelSystem = () => {
 
     if (passageirosParaAdicionar.length === 0) {
         showSuccessMessageHandler('Dados de faturamento atualizados, mas nenhum passageiro foi encontrado para importar.');
-        setCurrentView('main');
+        setCurrentView('creating');
         return;
     }
 
@@ -359,33 +406,26 @@ const FadexTravelSystem = () => {
 
     let message = `${addedCount} passageiro(s) adicionado(s) e ${updatedCount} atualizado(s) com sucesso.`;
     showSuccessMessageHandler(message);
-    setCurrentView('main');
+    setCurrentView('creating');
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <SuccessMessage
-        show={successInfo.show}
-        message={successInfo.message}
-        onClose={handleSuccessClose}
-      />
-      <Header
-        onExportPNG={handleExportPNG}
-        onExportPDF={handleExportPDF}
-        onExportExcel={handleExportExcel}
-        onImportPDF={handleImportPDF}
-        isExportDisabled={passageiros.length === 0}
-        showImport={true}
-      />
-
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {currentView === 'import' ? (
+  const renderContent = () => {
+    switch (currentView) {
+      case 'viewingRequests':
+        return <RequestList />;
+      case 'viewingPassengers':
+        return <PassengerRegistry />;
+      case 'import':
+        return (
           <ImportScreen
             onImportConfirmed={handleConfirmImport}
-            onBack={() => setCurrentView('main')}
+            onBack={() => setCurrentView('creating')}
             showSuccessMessage={showSuccessMessageHandler}
           />
-        ) : (
+        );
+      case 'creating':
+      default:
+        return (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
               {activeForm !== 'passageiro' && (
@@ -409,6 +449,14 @@ const FadexTravelSystem = () => {
                 faturamento={faturamento}
                 onFaturamentoChange={setFaturamento}
               />
+               <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-8 shadow-xl border border-white/20 flex justify-end">
+                <button 
+                  onClick={handleSaveRequest}
+                  className="px-8 py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg"
+                  >
+                  Salvar Requisição no Sistema
+                </button>
+              </div>
             </div>
             <div className="space-y-6">
               <PassengerList
@@ -424,7 +472,31 @@ const FadexTravelSystem = () => {
               />
             </div>
           </div>
-        )}
+        );
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <SuccessMessage
+        show={successInfo.show}
+        message={successInfo.message}
+        onClose={handleSuccessClose}
+      />
+      <Header
+        onExportPNG={handleExportPNG}
+        onExportPDF={handleExportPDF}
+        onExportExcel={handleExportExcel}
+        onImportPDF={handleImportPDF}
+        isExportDisabled={passageiros.length === 0}
+        showImport={currentView === 'creating'}
+        setCurrentView={setCurrentView}
+        currentView={currentView}
+        resetRequest={resetRequestState}
+      />
+
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {renderContent()}
       </div>
 
       <HelpChatbot />
