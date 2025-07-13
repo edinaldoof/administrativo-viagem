@@ -1,6 +1,8 @@
 // src/components/Header.js
 import React from 'react';
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, Download, FileImage, FileText, FileSpreadsheet, UploadCloud, Plane, List, Users, PlusCircle } from 'lucide-react';
+import { Button } from './ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 
 const Header = ({
   onExportPNG,
@@ -20,86 +22,98 @@ const Header = ({
     setCurrentView('creating');
   };
 
+  const NavButton = ({ view, label, icon: Icon }) => (
+    <Button
+      variant={currentView === view ? "default" : "ghost"}
+      onClick={() => setCurrentView(view)}
+      className="flex items-center gap-2"
+    >
+      <Icon size={16} />
+      {label}
+    </Button>
+  );
+
   return (
-    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-white/20 dark:border-slate-700/50 shadow-xl">
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
+    <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-gray-200 dark:border-slate-800 shadow-sm sticky top-0 z-40">
+      <div className="max-w-7xl mx-auto px-6 py-3">
+        <div className="flex items-center justify-between flex-wrap gap-y-3">
+          {/* Left Side: Title */}
           <div className="flex items-center space-x-4">
-            <div className="p-3 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl shadow-lg">
-              {/* Plane Icon Removed */}
-            </div>
+             <div className="p-3 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl shadow-md">
+               <Plane className="text-white h-6 w-6" />
+             </div>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
                 Sistema de Viagens
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 font-medium">Administrativo Fadex</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Administrativo Fadex</p>
             </div>
           </div>
-          <div className="flex items-center space-x-3">
-             {/* Botões de Navegação */}
-             <button
+
+          {/* Right Side: Actions & Navigation */}
+          <div className="flex items-center flex-wrap gap-2">
+            {/* Navigation Buttons */}
+            <Button
+              variant={currentView === 'creating' ? "default" : "ghost"}
               onClick={handleCreateNew}
-              className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${currentView === 'creating' ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-slate-600'}`}
+              className="flex items-center gap-2"
             >
+              <PlusCircle size={16} />
               Nova Requisição
-            </button>
-            <button
-              onClick={() => setCurrentView('viewingRequests')}
-              className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${currentView === 'viewingRequests' ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-slate-600'}`}
-            >
-              Requisições Salvas
-            </button>
-             <button
-              onClick={() => setCurrentView('viewingPassengers')}
-              className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${currentView === 'viewingPassengers' ? 'bg-blue-600 text-white shadow-lg' : 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-slate-600'}`}
-            >
-              Passageiros
-            </button>
+            </Button>
+            <NavButton view="viewingRequests" label="Requisições" icon={List} />
+            <NavButton view="viewingPassengers" label="Passageiros" icon={Users} />
             
             <div className="border-l h-8 mx-2 border-gray-300 dark:border-gray-600"></div>
-            
-            <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-700">
-              {theme === 'light' ? <Moon className="h-5 w-5 text-gray-700" /> : <Sun className="h-5 w-5 text-yellow-400" />}
-            </button>
 
-            {/* Botões de Ação Contextuais */}
+            {/* Contextual Action Buttons */}
             {currentView === 'creating' && (
               <>
                 {showImport && (
-                  <button
+                  <Button
+                    variant="outline"
                     onClick={onImportPDF}
-                    className="flex items-center space-x-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                    className="flex items-center gap-2"
                   >
-                    <span>Importar PDF</span>
-                  </button>
+                    <UploadCloud size={16} />
+                    Importar PDF
+                  </Button>
                 )}
-                <button
-                  onClick={onExportPNG}
-                  disabled={isExportDisabled}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
-                >
-                  <span>PNG</span>
-                </button>
-                <button
-                  onClick={onExportPDF}
-                  disabled={isExportDisabled}
-                  className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
-                >
-                  <span>PDF</span>
-                </button>
-                <button
-                  onClick={onExportExcel}
-                  disabled={isExportDisabled}
-                  className="flex items-center space-x-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
-                >
-                  <span>Excel</span>
-                </button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button disabled={isExportDisabled} className="flex items-center gap-2">
+                      <Download size={16} />
+                      Exportar
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={onExportPNG} className="flex items-center gap-2 cursor-pointer">
+                      <FileImage size={16} />
+                      <span>PNG</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onExportPDF} className="flex items-center gap-2 cursor-pointer">
+                      <FileText size={16} />
+                      <span>PDF</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onExportExcel} className="flex items-center gap-2 cursor-pointer">
+                      <FileSpreadsheet size={16} />
+                      <span>Excel</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             )}
+
+            <Button onClick={toggleTheme} variant="ghost" size="icon" className="ml-2">
+              <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+              <span className="sr-only">Toggle theme</span>
+            </Button>
           </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 };
 
