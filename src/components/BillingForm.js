@@ -38,7 +38,7 @@ const BillingForm = ({ faturamento, onFaturamentoChange }) => {
           />
         </div>
         <div>
-          <label htmlFor="cc" className="block text-sm font-medium text-gray-700 mb-2">CC</label>
+          <label htmlFor="cc" className="block text-sm font-medium text-gray-700 mb-2">Conta corrente do projeto</label>
           <input
             type="text"
             name="cc"

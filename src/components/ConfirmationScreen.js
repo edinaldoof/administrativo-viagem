@@ -186,7 +186,7 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
         <div className="space-y-2">
           {renderField("Título", "title")}
           {renderField("Conta do Projeto", "billing.account")}
-          {renderField("Conta corrente", "billing.costCenter")}
+          {renderField("Conta corrente do projeto", "billing.costCenter")}
           {renderField("Web ID", "billing.webId")}
           {renderField("Justificativa", "billing.description")}
         </div>

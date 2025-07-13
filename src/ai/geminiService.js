@@ -58,7 +58,7 @@ export const extractDataFromPdfWithGemini = async (text) => {
 
     1.  **Global Information (Billing & Title):**
         -   **title**: The main title, typically "Requisição para Compra de Passagens" plus the project name (e.g., "12071-5-CONT 31/2024 - IFMA - PROJETO...").
-        -   **billing.costCenter**: Find the "CENTRO DE CUSTO" value. If not available, use the project number.
+        -   **billing.costCenter**: Find the "CENTRO DE CUSTO" value. This is the project's current account. If not available, use the project number.
         -   **billing.account**: Find the "NUMERO DO PROJETO" value.
         -   **billing.webId**: Extract only the number from "Número da Solicitação: WEB:".
         -   **billing.description**: Get the full content from the "JUSTIFICATIVA/FINALIDADE" field.

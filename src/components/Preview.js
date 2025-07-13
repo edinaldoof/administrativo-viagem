@@ -35,7 +35,7 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
             )}
             {faturamento.cc && (
               <div>
-                <p className="font-medium text-gray-500">Centro de Custo (CC)</p>
+                <p className="font-medium text-gray-500">Conta corrente do projeto</p>
                 <p className="text-gray-800">{faturamento.cc}</p>
               </div>
             )}
