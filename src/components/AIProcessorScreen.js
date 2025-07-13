@@ -1,148 +1,79 @@
-// src/components/AIProcessorScreen.js
-import React, { useState, useRef } from 'react';
-import * as pdfjsLib from 'pdfjs-dist';
-import { extractDataFromPdfWithGemini } from '../ai/geminiService';
-import ConfirmationScreen from './ConfirmationScreen';
+import React, { useState } from 'react';
 
-// Configuração do worker do PDF.js
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url).toString();
+const ConfirmationScreen = ({ extractedData, onConfirm, onCancel }) => {
+  if (!extractedData) return null;
 
-const AIProcessorScreen = ({ onConfirm, onCancel }) => {
-  const [file, setFile] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [processedData, setProcessedData] = useState(null);
-  const [error, setError] = useState('');
-  const fileInputRef = useRef(null);
+  const { title, billing, passengers } = extractedData;
 
-  const extractTextFromPdf = async (file) => {
-    const reader = new FileReader();
-    return new Promise((resolve, reject) => {
-      reader.onload = async (event) => {
-        try {
-          const loadingTask = pdfjsLib.getDocument({ data: event.target.result });
-          const pdf = await loadingTask.promise;
-          let text = '';
-          for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const content = await page.getTextContent();
-            text += content.items.map(item => item.str).join(' ');
-          }
-          resolve(text);
-        } catch (e) {
-          reject(new Error('Falha ao ler o arquivo PDF.'));
-        }
-      };
-      reader.onerror = () => reject(new Error('Erro ao ler o arquivo.'));
-      reader.readAsArrayBuffer(file);
-    });
-  };
-
-  const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-    if (selectedFile && selectedFile.type === 'application/pdf') {
-      setFile(selectedFile);
-      setProcessedData(null);
-      setError('');
-    } else {
-      setError('Por favor, selecione um arquivo PDF.');
-    }
-  };
-
-  const handleProcessClick = async () => {
-    if (!file) {
-      setError('Por favor, selecione um arquivo PDF para processar.');
-      return;
-    }
-
-    setIsProcessing(true);
-    setError('');
-    setProcessedData(null);
-
-    try {
-      const text = await extractTextFromPdf(file);
-      const result = await extractDataFromPdfWithGemini(text);
-      setProcessedData(result);
-    } catch (e) {
-      console.error("Erro ao processar com a IA:", e);
-      setError(e.message || 'Falha ao extrair dados. Verifique o arquivo e tente novamente.');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  // Se os dados foram processados, mostra a tela de confirmação
-  if (processedData) {
-    return (
-      <ConfirmationScreen
-        extractedData={processedData}
-        onConfirm={onConfirm}
-        onCancel={() => {
-          setProcessedData(null); // Limpa os dados para permitir um novo upload
-          setFile(null);
-        }}
-      />
-    );
-  }
-
-  // Tela inicial de upload e processamento
-  return (
-    <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-8 shadow-xl border border-white/20 w-full max-w-3xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
-          Processamento de PDF com IA
-        </h2>
-        <button onClick={onCancel} className="p-2 hover:bg-gray-200 rounded-full">
-          <span>X</span>
-        </button>
+  const renderBillingInfo = () => (
+    <>
+      <h3 className="text-xl font-semibold text-gray-700 mb-3 mt-6">Informações Globais</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 p-4 bg-gray-50 rounded-lg text-sm">
+        {title && <p className="col-span-2"><strong>Título:</strong> {title}</p>}
+        {billing?.account && <p><strong>Conta do Projeto:</strong> {billing.account}</p>}
+        {billing?.costCenter && <p><strong>Centro de Custo:</strong> {billing.costCenter}</p>}
+        {billing?.webId && <p><strong>Web ID:</strong> {billing.webId}</p>}
+        {billing?.description && <p className="col-span-2"><strong>Justificativa:</strong> {billing.description}</p>}
       </div>
+    </>
+  );
 
-      <div className="space-y-6">
-        <div 
-          className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-colors"
-          onClick={() => fileInputRef.current.click()}
-        >
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            style={{ display: 'none' }}
-            accept="application/pdf"
-          />
-          <p className="font-semibold text-gray-700">
-            {file ? `Arquivo selecionado: ${file.name}` : 'Clique para selecionar um PDF'}
-          </p>
-          <p className="text-sm text-gray-500">Arraste e solte ou clique para fazer o upload</p>
-        </div>
-
-        {file && !isProcessing && (
-          <div className="text-center">
-            <button
-              onClick={handleProcessClick}
-              disabled={!file}
-              className="w-full bg-purple-600 text-white font-bold py-3 px-6 rounded-xl hover:bg-purple-700 transition-all duration-300 shadow-lg flex items-center justify-center gap-2 disabled:bg-purple-300"
-            >
-              {'Processar com IA'}
-            </button>
-          </div>
-        )}
-
-        {isProcessing && (
-           <div className="text-center flex flex-col items-center justify-center p-4">
-              <p className="mt-3 text-gray-600 font-medium">Analisando o documento... A IA está trabalhando.</p>
+  const renderPassengerInfo = () => (
+    <>
+      <h3 className="text-xl font-semibold text-gray-700 mb-3 mt-6">
+        Passageiros Encontrados ({passengers?.length || 0})
+      </h3>
+      <div className="space-y-4">
+        {(passengers || []).map((passenger, pIndex) => (
+          <div key={pIndex} className="p-4 border rounded-lg bg-white shadow-sm">
+            <h4 className="font-bold text-lg text-blue-700 mb-2">{passenger.name || 'Beneficiário não identificado'}</h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1 text-sm mb-3">
+              <p><strong>CPF:</strong> {passenger.cpf || 'N/A'}</p>
+              <p><strong>Nascimento:</strong> {passenger.birthDate || 'N/A'}</p>
+              <p><strong>Email:</strong> {passenger.email || 'N/A'}</p>
+              <p><strong>Telefone:</strong> {passenger.phone || 'N/A'}</p>
             </div>
-        )}
-        
-        {error && (
-          <div className="bg-red-50 border-l-4 border-red-400 text-red-800 rounded-lg p-4 text-sm flex items-center space-x-3">
-              <div>
-                  <p className="font-bold">Ocorreu um erro:</p>
-                  <p>{error}</p>
-              </div>
+            
+            <h5 className="font-semibold text-md text-gray-600 mt-3 mb-2">Itinerário(s)</h5>
+            <div className="space-y-2">
+              {(passenger.itinerary || []).map((it, iIndex) => (
+                <div key={iIndex} className="p-3 bg-gray-50 rounded text-sm">
+                  <p><strong>Trajeto:</strong> {it.origin} → {it.destination}</p>
+                  <p><strong>Partida:</strong> {it.departureDate || 'N/A'}</p>
+                  {it.returnDate && <p><strong>Retorno:</strong> {it.returnDate}</p>}
+                  <p><strong>Voo:</strong> {it.ciaAerea || ''} {it.voo || ''} - {it.horarios || 'N/A'}</p>
+                  <p><strong>Bagagem:</strong> {it.baggage || 'Não especificado'}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        )}
+        ))}
+      </div>
+    </>
+  );
+
+  return (
+    <div className="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg animate-fade-in">
+      <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Confirme os Dados Importados</h2>
+      
+      {billing && renderBillingInfo()}
+      
+      {passengers && passengers.length > 0 && renderPassengerInfo()}
+
+      {!passengers?.length && (
+        <p className="text-center text-gray-500 py-8">Nenhum passageiro foi detectado no documento.</p>
+      )}
+
+      <div className="flex justify-end gap-4 mt-8 pt-4 border-t">
+        <button onClick={onCancel} className="px-6 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors">
+          Cancelar
+        </button>
+        <button onClick={() => onConfirm(extractedData)} className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors" disabled={!passengers || passengers.length === 0}>
+          Confirmar e Usar Dados
+        </button>
       </div>
     </div>
   );
 };
 
-export default AIProcessorScreen;
+export default ConfirmationScreen;

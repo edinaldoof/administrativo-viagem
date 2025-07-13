@@ -1,13 +1,13 @@
+
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// A chave da API é lida das variáveis de ambiente
 const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
 
 /**
- * Processa o texto de um PDF usando uma abordagem híbrida (Regex + IA).
+ * Processa o texto de um PDF usando IA para extrair dados de múltiplos beneficiários.
  * @param {string} text - O conteúdo de texto bruto extraído do PDF.
- * @param {object} preprocessedData - Dados já extraídos via Regex para dar contexto à IA.
- * @returns {Promise<object>} - Uma promessa que resolve para o objeto JSON final.
+ * @param {object} preprocessedData - Dados já extraídos via Regex para dar contexto à IA (opcional).
+ * @returns {Promise<object>} - Uma promessa que resolve para o objeto JSON final com a estrutura de múltiplos passageiros.
  */
 export const extractDataFromPdfWithGemini = async (text, preprocessedData = {}) => {
   if (!apiKey) {
@@ -17,67 +17,80 @@ export const extractDataFromPdfWithGemini = async (text, preprocessedData = {}) 
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-  // ALTERAÇÃO: O prompt foi aprimorado para extrair mais detalhes relevantes.
   const prompt = `
-    Você é um assistente especialista em extração de dados de "Requisições de Compra de Passagens".
-    Sua tarefa é analisar o texto, validar os dados pré-extraídos e extrair informações adicionais, retornando um único objeto JSON.
+    You are a highly specialized data extraction assistant for travel requests.
+    Your task is to meticulously analyze the provided PDF document, which can contain multiple travel requests for different people across many pages.
+    Extract all information and return a single, well-structured JSON object.
 
-    **Dados Pré-Extraídos (Gabarito):**
-    Use estes dados como ponto de partida.
-    \`\`\`json
-    ${JSON.stringify(preprocessedData, null, 2)}
-    \`\`\`
+    **Extraction Instructions:**
 
-    **Sua Tarefa Detalhada:**
-    1.  **Validar e Completar:** Confirme os dados do gabarito com o texto completo. Se algo estiver faltando, extraia do texto.
-    2.  **Extrair Tabela de Itens:** Extraia a tabela de itens para o array "itens".
-    3.  **Extrair Dados do Beneficiário:** Encontre a seção "DADOS DO BENEFICIÁRIO" e extraia os campos "NOME", "CPF" e "DATA DE NASCIMENTO" para um objeto aninhado chamado "dados_beneficiario".
-    4.  **Extrair Dados da Viagem:** Encontre a seção "DADOS DA VIAGEM" e extraia "TIPO DA VIAGEM", "CIDADE DE ORIGEM", "CIDADE DE DESTINO", "DATA DE SAÍDA", "DATA DE RETORNO" e "BAGAGENS" para um objeto aninhado chamado "dados_viagem".
-    5.  **Gerar JSON Final:** Combine todas as informações no formato JSON especificado abaixo.
+    1.  **Global Information (Billing & Title):** This information usually appears once at the top of the document and applies to all passengers.
+        -   **title**: The main title, typically "Requisição para Compra de Passagens" plus the project name (e.g., "12071-5-CONT 31/2024 - IFMA - PROJETO...").
+        -   **billing.costCenter**: Find the "CENTRO DE CUSTO" value. If not available, use the project number.
+        -   **billing.account**: Find the "NUMERO DO PROJETO" value.
+        -   **billing.webId**: Extract only the number from "Número da Solicitação: WEB:".
+        -   **billing.description**: Get the full content from the "JUSTIFICATIVA/FINALIDADE" field.
 
-    **Formato JSON de Saída Esperado:**
+    2.  **Passengers (Array of objects):** Scour the entire document for all passenger sections. Each passenger is usually identified by a "DADOS DO BENEFICIÁRIO" section. Create one object in the array for each passenger found.
+        -   **name**: The full name from "CPF E NOME".
+        -   **cpf**: The CPF from "CPF E NOME".
+        -   **birthDate**: The birth date from "DATA DE NASCIMENTO" in DD/MM/YYYY format.
+        -   **email**: The email from "E-MAIL".
+        -   **phone**: The phone number from "TELEFONE" or "CELULAR".
+        -   **itinerary (Array of objects)**: For each passenger, extract their travel segments from the "DADOS DA VIAGEM" or "DETALHE DO ITEM" sections associated with them.
+            -   **origin**: The "CIDADE DE ORIGEM" or "ORIGEM".
+            -   **destination**: The "CIDADE DE DESTINO" or "DESTINO".
+            -   **departureDate**: The "DATA DE SAÍDA" or "IDA" date in DD/MM/YYYY format.
+            -   **returnDate**: The "DATA DE RETORNO" or "RETORNO" date in DD/MM/YYYY format. If not present, this field should be null.
+            -   **isRoundTrip**: Set to 'true' if a return date exists, otherwise 'false'.
+            -   **ciaAerea**, **voo**, **horarios**: Extract these from the "DETALHE DO ITEM" or "OBSERVAÇÕES" sections. Look for flight numbers (e.g., "VÔO N°: AD4361"), airline names (e.g., "Latam", "Azul"), and times.
+            -   **baggage**: Check the "BAGAGENS" field. If it contains "COM BAGAGENS", set to "Com Bagagem". If "SEM BAGAGENS", set to "Sem Bagagem".
+
+    **Expected JSON Output Format:**
     {
-      "requisicao_numero": "string",
-      "data_emissao": "string",
-      "centro_custo": "string",
-      "solicitante": "string",
-      "observacao": "string",
-      "total_geral_requisicao": "string",
-      "itens": [
-        {
-          "codigo": "string",
-          "produto": "string",
-          "unidade": "string",
-          "quantidade": "string",
-          "valor_unitario": "string",
-          "valor_total": "string"
-        }
-      ],
-      "dados_beneficiario": {
-        "nome": "string",
-        "cpf": "string",
-        "data_nascimento": "string"
+      "title": "string or null",
+      "billing": {
+        "costCenter": "string or null",
+        "account": "string or null",
+        "webId": "string or null",
+        "description": "string or null"
       },
-      "dados_viagem": {
-        "tipo_viagem": "string",
-        "cidade_origem": "string",
-        "cidade_destino": "string",
-        "data_saida": "string",
-        "data_retorno": "string",
-        "bagagens": "string"
-      }
+      "passengers": [
+        {
+          "name": "string",
+          "cpf": "string",
+          "birthDate": "string (DD/MM/YYYY)",
+          "email": "string or null",
+          "phone": "string or null",
+          "itinerary": [
+            {
+              "origin": "string",
+              "destination": "string",
+              "departureDate": "string (DD/MM/YYYY)",
+              "returnDate": "string (DD/MM/YYYY) or null",
+              "isRoundTrip": "boolean",
+              "ciaAerea": "string or null",
+              "voo": "string or null",
+              "horarios": "string or null",
+              "baggage": "string or null"
+            }
+          ]
+        }
+      ]
     }
 
-    Retorne **APENAS e SOMENTE** o objeto JSON final.
+    **Crucial Instructions:**
+    - A single document can have many pages and multiple passengers. You MUST iterate through all pages to find every beneficiary.
+    - The details for a single passenger can be spread across multiple pages.
+    - Be precise. Do not invent data. If a field is not present in the document, return null or an empty string for that field.
 
-    **Texto Completo do Documento para Análise:**
+    **Document for analysis:**
     ---
     ${text}
     ---
   `;
 
   try {
-    // A chamada para a API agora envia o prompt como uma única parte de texto.
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const jsonText = response.text();
@@ -87,7 +100,6 @@ export const extractDataFromPdfWithGemini = async (text, preprocessedData = {}) 
     return JSON.parse(cleanJson);
   } catch (error) {
     console.error('Erro ao processar com a API Gemini:', error);
-    // Log detalhado para futuros problemas
     if (error.message.includes('API key not valid')) {
         throw new Error("Erro de Configuração: A chave da API é inválida. Por favor, contate o administrador do sistema.");
     }
