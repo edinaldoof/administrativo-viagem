@@ -111,92 +111,64 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
     setJustifications(prev => prev.filter(j => j.id !== hintId));
   };
   
-  const processAndSubmit = (isConfirming) => {
-    let allFeedbackLines = justifications.map(j => `Dica Manual para '${j.fieldKey}': ${j.text}`);
-    const manualHintFields = new Set(justifications.map(j => j.fieldKey));
+  // Mapeamento de caminhos para rótulos amigáveis
+  const friendlyLabels = {
+    'title': 'Título', 'billing.account': 'Conta do Projeto', 'billing.costCenter': 'Conta corrente do projeto',
+    'billing.webId': 'Web ID', 'billing.description': 'Justificativa',
+  };
+  if (originalData.passengers) {
+      originalData.passengers.forEach((p, i) => {
+          friendlyLabels[`passengers.${i}.name`] = `Nome P.${i + 1}`;
+          friendlyLabels[`passengers.${i}.cpf`] = `CPF P.${i + 1}`;
+          friendlyLabels[`passengers.${i}.birthDate`] = `Nascimento P.${i + 1}`;
+          friendlyLabels[`passengers.${i}.email`] = `Email P.${i + 1}`;
+          friendlyLabels[`passengers.${i}.phone`] = `Telefone P.${i + 1}`;
+          (p.itinerary || []).forEach((it, itIndex) => {
+              friendlyLabels[`passengers[${i}].itinerary[${itIndex}].quantity`] = `Qtd Trecho ${itIndex+1} P.${i+1}`;
+              friendlyLabels[`passengers[${i}].itinerary[${itIndex}].unitPrice`] = `Valor Trecho ${itIndex+1} P.${i+1}`;
+          });
+      });
+  }
 
+  const processAndSubmit = (isConfirming) => {
+    // Apenas as dicas manuais
+    let allFeedbackLines = justifications.map(j => `Regra do Usuário para '${j.fieldKey}': ${j.text}`);
+
+    // Feedback automático simplificado para cada campo editado
     const compareAndGenerateFeedback = (original, edited, path = '') => {
+        if (!original || !edited) return;
         Object.keys(original).forEach(key => {
             const currentPath = path ? `${path}.${key}` : key;
             const originalValue = original[key];
             const editedValue = edited[key];
 
-            // Ignorar campos que já têm dica manual
-            if (manualHintFields.has(currentPath)) return;
-
-            if (typeof originalValue === 'object' && originalValue !== null && !Array.isArray(originalValue)) {
-                compareAndGenerateFeedback(originalValue, editedValue || {}, currentPath);
-            } else if (Array.isArray(originalValue) && key === 'passengers') {
-                // Lógica específica para comparar passageiros
-                originalValue.forEach((origPassenger, index) => {
-                    const editedPassenger = editedValue?.[index];
-                    if (editedPassenger) {
-                        compareAndGenerateFeedback(origPassenger, editedPassenger, `passengers[${index}]`);
-                    }
-                });
-            } else if (JSON.stringify(originalValue) !== JSON.stringify(editedValue)) {
-                // Para todos os outros campos simples
-                 if (typeof originalValue !== 'object' && typeof editedValue !== 'object') {
-                    const autoJustification = `Feedback Automático: O campo '${currentPath}' foi alterado de '${originalValue || 'vazio'}' para '${editedValue || 'vazio'}'.`;
-                    allFeedbackLines.push(autoJustification);
-                 }
-            }
-        });
-    };
-    
-    // Mapeamento de caminhos para rótulos amigáveis
-    const friendlyLabels = {
-        'title': 'Título',
-        'billing.account': 'Conta do Projeto',
-        'billing.costCenter': 'Conta corrente do projeto',
-        'billing.webId': 'Web ID',
-        'billing.description': 'Justificativa',
-    };
-    originalData.passengers.forEach((p, i) => {
-        friendlyLabels[`passengers.${i}.name`] = `Nome P.${i + 1}`;
-        friendlyLabels[`passengers.${i}.cpf`] = `CPF P.${i + 1}`;
-        friendlyLabels[`passengers.${i}.birthDate`] = `Nascimento P.${i + 1}`;
-        friendlyLabels[`passengers.${i}.email`] = `Email P.${i + 1}`;
-        friendlyLabels[`passengers.${i}.phone`] = `Telefone P.${i + 1}`;
-        (p.itinerary || []).forEach((it, itIndex) => {
-            friendlyLabels[`passengers.${i}.itinerary.${itIndex}.quantity`] = `Qtd Trecho ${itIndex+1} P.${i+1}`;
-            friendlyLabels[`passengers.${i}.itinerary.${itIndex}.unitPrice`] = `Valor Trecho ${itIndex+1} P.${i+1}`;
-        });
-    });
-    
-    // Gerar feedback automático com rótulos amigáveis
-    const compareAndGenerateFeedbackWithLabels = (original, edited, path = '') => {
-        if (!original || !edited) return;
-        Object.keys(original).forEach(key => {
-            const currentPath = path ? `${path}.${key}` : key;
+            // Ignora campos que já têm dica manual
             const label = friendlyLabels[currentPath] || currentPath;
-            if (manualHintFields.has(label)) return;
-
-            const originalValue = original[key];
-            const editedValue = edited ? edited[key] : undefined;
+            if (justifications.some(j => j.fieldKey === label)) return;
 
             if (typeof originalValue === 'object' && originalValue !== null && !Array.isArray(originalValue)) {
-                compareAndGenerateFeedbackWithLabels(originalValue, editedValue, currentPath);
+                compareAndGenerateFeedback(originalValue, editedValue, currentPath);
             } else if(Array.isArray(originalValue)) {
                  originalValue.forEach((origItem, index) => {
                     if (editedValue && editedValue[index]) {
-                        compareAndGenerateFeedbackWithLabels(origItem, editedValue[index], `${currentPath}.${index}`);
+                        compareAndGenerateFeedback(origItem, editedValue[index], `${currentPath}.${index}`);
                     }
                 });
             } else if (JSON.stringify(originalValue) !== JSON.stringify(editedValue)) {
                 if (typeof originalValue !== 'object' && typeof editedValue !== 'object') {
-                    const autoJustification = `Feedback Automático: O campo '${label}' foi alterado de '${originalValue || 'vazio'}' para '${editedValue || 'vazio'}'.`;
+                    // Feedback automático muito mais simples
+                    const autoJustification = `Regra do Usuário para '${label}': o valor correto é '${editedValue || 'vazio'}'`;
                     allFeedbackLines.push(autoJustification);
                 }
             }
         });
     };
 
-    compareAndGenerateFeedbackWithLabels(originalData, editedData);
-
+    compareAndGenerateFeedback(originalData, editedData);
 
     if (allFeedbackLines.length > 0) {
-      onSendFeedback(allFeedbackLines.join('\n\n'));
+      // Envia uma string única com todas as dicas separadas por nova linha
+      onSendFeedback(allFeedbackLines.join('\n'));
     }
 
     if (isConfirming) {
@@ -290,7 +262,7 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
       )}
       
       <h2 className="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Confirme, Edite e Ensine a IA</h2>
-      <p className="text-sm text-gray-600 mb-6">Revise e edite os dados extraídos diretamente. Clique em "Ajustar IA" para dar uma dica. Suas edições diretas também serão salvas como feedback automático.</p>
+      <p className="text-sm text-gray-600 mb-6">Revise e edite os dados extraídos. Suas edições serão salvas como dicas para a IA melhorar em extrações futuras. Use "Ajustar IA" para dar uma dica mais complexa.</p>
       
       <div className="mb-6">
         <h3 className="text-xl font-semibold text-gray-700 mb-3">Informações Globais</h3>

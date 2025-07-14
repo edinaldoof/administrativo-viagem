@@ -14,14 +14,14 @@ const generateFeedbackPrompt = (feedbackHistory) => {
   if (feedbackHistory.length === 0) return '';
 
   let promptSection = `
-**Crucial User Feedback & Business Rules from Previous Corrections (Use this to improve accuracy):**
+**Regras de Negócio e Correções Anteriores do Usuário (Use para melhorar a precisão):**
 ---`;
 
   feedbackHistory.forEach(item => {
-    // Agora o feedback é apenas texto.
+    // O feedback agora é uma dica textual direta.
     if (item.justification && item.justification.trim()) {
       promptSection += `
-- Rule/Correction provided by user: "${item.justification.trim()}"`;
+- Regra/Correção fornecida: "${item.justification.trim()}"`;
     }
     promptSection += `
 ---`;
@@ -44,46 +44,46 @@ export const extractDataFromPdfWithGemini = async (text) => {
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   // Busca o histórico de feedbacks para aprimorar a IA
-  const storedFeedback = await getRecentFeedback(10); // Aumentado para 10 para mais contexto
+  const storedFeedback = await getRecentFeedback(15); // Aumentado para 15 para mais contexto
   const feedbackPrompt = generateFeedbackPrompt(storedFeedback);
 
   const prompt = `
-    You are a highly specialized data extraction assistant for travel requests.
-    Your task is to meticulously analyze the provided PDF document text and return a single, well-structured JSON object.
-    You must learn from the user's past corrections.
+    Você é um assistente de extração de dados altamente especializado para requisições de viagem.
+    Sua tarefa é analisar meticulosamente o texto do documento PDF fornecido e retornar um único objeto JSON bem estruturado.
+    Você deve aprender com as correções anteriores do usuário.
 
     ${feedbackPrompt}
 
-    **Extraction Instructions:**
+    **Instruções de Extração:**
 
-    1.  **Global Information (Billing & Title):**
-        -   **title**: The main title, typically "Requisição para Compra de Passagens" plus the project name (e.g., "12071-5-CONT 31/2024 - IFMA - PROJETO...").
-        -   **billing.costCenter**: Find the "CENTRO DE CUSTO" value. This is the project's current account. If not available, use the project number.
-        -   **billing.account**: Find the "NUMERO DO PROJETO" value.
-        -   **billing.webId**: Extract only the number from "Número da Solicitação: WEB:".
-        -   **billing.description**: Get the full content from the "JUSTIFICATIVA/FINALIDADE" field.
+    1.  **Informações Globais (Faturamento e Título):**
+        -   **title**: O título principal, tipicamente "Requisição para Compra de Passagens" mais o nome do projeto (ex: "12071-5-CONT 31/2024 - IFMA - PROJETO...").
+        -   **billing.costCenter**: Encontre o valor de "CENTRO DE CUSTO". Esta é a conta corrente do projeto. Se não disponível, use o número do projeto.
+        -   **billing.account**: Encontre o valor de "NUMERO DO PROJETO".
+        -   **billing.webId**: Extraia apenas o número de "Número da Solicitação: WEB:".
+        -   **billing.description**: Obtenha o conteúdo completo do campo "JUSTIFICATIVA/FINALIDADE".
 
-    2.  **Passengers (Array of objects):** Find all passenger sections. Each "DADOS GERAIS DO ITEM" or "DADOS DO BENEFICIÁRIO" section represents a request for one passenger.
-        -   **name**: The full name from "CPF E NOME". Standardize the name by converting it to all uppercase letters.
-        -   **cpf**: The CPF from "CPF E NOME".
-        -   **birthDate**: The birth date from "DATA DE NASCIMENTO" in DD/MM/YYYY format.
-        -   **email**: The email from "E-MAIL".
-        -   **phone**: The phone number from "TELEFONE" or "CELULAR".
-        -   **itinerary (Array of objects)**: For each passenger, extract their travel segments.
-            -   **origin**: The "CIDADE DE ORIGEM" or "ORIGEM". Standardize the city name by removing accents and converting to all uppercase letters (e.g., 'São Paulo' becomes 'SAO PAULO').
-            -   **destination**: The "CIDADE DE DESTINO" or "DESTINO". Standardize the city name by removing accents and converting to all uppercase letters (e.g., 'CUIABÁ' becomes 'CUIABA').
-            -   **departureDate**: The "DATA DE SAÍDA" or "IDA" date in DD/MM/YYYY format.
-            -   **returnDate**: The "DATA DE RETORNO" or "RETORNO" date in DD/MM/YYYY format. If not present, this field should be null.
-            -   **isRoundTrip**: Set to 'true' if a return date exists, otherwise 'false'.
-            -   **tripType**: Determine if it's "Aéreo" or "Terrestre". Default to "Aéreo" if not specified.
-            -   **ciaAerea**: Extract these from "DETALHE DO ITEM" or "OBSERVAÇÕES". For terrestrial, this could be the bus company.
-            -   **voo**: Extract these from "DETALHE DO ITEM" or "OBSERVAÇÕES". For terrestrial, this can be null.
-            -   **horarios**: Extract these from "DETALHE DO ITEM" or "OBSERVAÇÕES".
-            -   **baggage**: Check the "BAGAGENS" field. If it contains "COM BAGAGENS", set to "Com Bagagem". If "SEM BAGAGENS", set to "Sem Bagagem". If not present, set to "Não especificado".
-            -   **quantity**: Extract the value from "QUANTIDADE". It's a number. If not present, default to 1.
-            -   **unitPrice**: Extract the value from "VALOR UNITARIO". It should be a number (e.g., 1234.56). If not present, default to 0.
+    2.  **Passageiros (Array de objetos):** Encontre todas as seções de passageiros. Cada seção "DADOS GERAIS DO ITEM" ou "DADOS DO BENEFICIÁRIO" representa uma requisição para um passageiro.
+        -   **name**: O nome completo de "CPF E NOME". Padronize o nome convertendo-o para letras maiúsculas (ex: 'João da Silva' se torna 'JOÃO DA SILVA').
+        -   **cpf**: O CPF de "CPF E NOME".
+        -   **birthDate**: A data de nascimento de "DATA DE NASCIMENTO" no formato DD/MM/AAAA.
+        -   **email**: O e-mail de "E-MAIL".
+        -   **phone**: O número de telefone de "TELEFONE" ou "CELULAR".
+        -   **itinerary (Array de objetos)**: Para cada passageiro, extraia seus segmentos de viagem.
+            -   **origin**: A "CIDADE DE ORIGEM" ou "ORIGEM". Padronize o nome da cidade removendo acentos e convertendo para maiúsculas (ex: 'São Paulo' se torna 'SAO PAULO').
+            -   **destination**: A "CIDADE DE DESTINO" ou "DESTINO". Padronize o nome da cidade removendo acentos e convertendo para maiúsculas (ex: 'CUIABÁ' se torna 'CUIABA').
+            -   **departureDate**: A data de "DATA DE SAÍDA" ou "IDA" no formato DD/MM/AAAA.
+            -   **returnDate**: A data de "DATA DE RETORNO" ou "RETORNO" no formato DD/MM/AAAA. Se não estiver presente, este campo deve ser nulo.
+            -   **isRoundTrip**: Defina como 'true' se uma data de retorno existir, caso contrário, 'false'.
+            -   **tripType**: Determine se é "Aéreo" ou "Terrestre". Padrão para "Aéreo" se não especificado.
+            -   **ciaAerea**: Extraia de "DETALHE DO ITEM" ou "OBSERVAÇÕES". Para terrestre, pode ser a empresa de ônibus.
+            -   **voo**: Extraia de "DETALHE DO ITEM" ou "OBSERVAÇÕES". Para terrestre, pode ser nulo.
+            -   **horarios**: Extraia de "DETALHE DO ITEM" ou "OBSERVAÇÕES".
+            -   **baggage**: Verifique o campo "BAGAGENS". Se contiver "COM BAGAGENS", defina como "Com Bagagem". Se "SEM BAGAGENS", defina como "Sem Bagagem". Se não estiver presente, defina como "Não especificado".
+            -   **quantity**: Extraia o valor de "QUANTIDADE". É um número. Se não presente, o padrão é 1.
+            -   **unitPrice**: Extraia o valor de "VALOR UNITARIO". Deve ser um número (ex: 1234.56). Se não presente, o padrão é 0.
 
-    **Expected JSON Output Format:**
+    **Formato de Saída JSON Esperado:**
     {
       "title": "string or null",
       "billing": {
@@ -94,17 +94,17 @@ export const extractDataFromPdfWithGemini = async (text) => {
       },
       "passengers": [
         {
-          "name": "string (ALL UPPERCASE)",
+          "name": "string (TUDO MAIÚSCULO)",
           "cpf": "string",
-          "birthDate": "string (DD/MM/YYYY)",
+          "birthDate": "string (DD/MM/AAAA)",
           "email": "string or null",
           "phone": "string or null",
           "itinerary": [
             {
-              "origin": "string (ALL UPPERCASE, NO ACCENTS)",
-              "destination": "string (ALL UPPERCASE, NO ACCENTS)",
-              "departureDate": "string (DD/MM/YYYY)",
-              "returnDate": "string (DD/MM/YYYY) or null",
+              "origin": "string (TUDO MAIÚSCULO, SEM ACENTOS)",
+              "destination": "string (TUDO MAIÚSCULO, SEM ACENTOS)",
+              "departureDate": "string (DD/MM/AAAA)",
+              "returnDate": "string (DD/MM/AAAA) or null",
               "isRoundTrip": "boolean",
               "tripType": "Aéreo" | "Terrestre",
               "ciaAerea": "string or null",
@@ -119,12 +119,12 @@ export const extractDataFromPdfWithGemini = async (text) => {
       ]
     }
 
-    **Crucial Instructions:**
-    - Be precise. If a field is not present, return null or an empty string as appropriate based on the schema, except for quantity (default 1) and unitPrice (default 0).
-    - If you are using feedback to make a correction, be sure to apply it. The user's rules are more important than your initial analysis. For example, if the user states "The project number is always the first part of the title", you must follow that rule.
-    - **Always standardize passenger names and city names as instructed above.**
+    **Instruções Cruciais:**
+    - Seja preciso. Se um campo não estiver presente, retorne nulo ou uma string vazia conforme apropriado pelo esquema, exceto para quantidade (padrão 1) e valorUnitario (padrão 0).
+    - Se você estiver usando o feedback para fazer uma correção, certifique-se de aplicá-la. As regras do usuário são mais importantes que sua análise inicial. Por exemplo, se o usuário afirmar "O número do projeto é sempre a primeira parte do título", você deve seguir essa regra.
+    - **Sempre padronize os nomes de passageiros e cidades como instruído acima.**
 
-    **Document for analysis:**
+    **Documento para análise:**
     ---
     ${text}
     ---

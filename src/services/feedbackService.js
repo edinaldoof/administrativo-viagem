@@ -4,12 +4,16 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
 
 /**
  * Salva a justificativa de feedback do usuário no Firestore.
- * @param {string} justification - A justificativa textual fornecida pelo usuário.
+ * @param {string} justification - A justificativa textual ou as dicas concatenadas fornecidas pelo usuário.
  * @returns {Promise<void>}
  */
 export const saveFeedback = async (justification) => {
+  if (!justification || !justification.trim()) {
+      console.warn("Tentativa de salvar feedback vazio.");
+      return;
+  }
   try {
-    // A coleção agora armazena apenas a justificativa e um timestamp.
+    // A coleção armazena a justificativa e um timestamp.
     await addDoc(collection(db, "feedback"), {
       justification: justification,
       createdAt: serverTimestamp()
@@ -25,7 +29,7 @@ export const saveFeedback = async (justification) => {
  * @param {number} count - O número de feedbacks a serem recuperados.
  * @returns {Promise<Array<object>>} - Uma lista de objetos de feedback.
  */
-export const getRecentFeedback = async (count = 5) => {
+export const getRecentFeedback = async (count = 10) => {
   try {
     const feedbackCol = collection(db, "feedback");
     const q = query(feedbackCol, orderBy("createdAt", "desc"), limit(count));
