@@ -22,10 +22,10 @@ const Header = ({
     setCurrentView('creating');
   };
 
-  const NavButton = ({ view, label, icon: Icon }) => (
+  const NavButton = ({ view, label, icon: Icon, onClick }) => (
     <Button
       variant={currentView === view ? "default" : "ghost"}
-      onClick={() => setCurrentView(view)}
+      onClick={onClick}
       className="flex items-center gap-2"
     >
       <Icon size={16} />
@@ -53,16 +53,9 @@ const Header = ({
           {/* Right Side: Actions & Navigation */}
           <div className="flex items-center flex-wrap gap-2">
             {/* Navigation Buttons */}
-            <Button
-              variant={currentView === 'creating' ? "default" : "ghost"}
-              onClick={handleCreateNew}
-              className="flex items-center gap-2"
-            >
-              <PlusCircle size={16} />
-              Nova Requisição
-            </Button>
-            <NavButton view="viewingRequests" label="Requisições" icon={List} />
-            <NavButton view="viewingPassengers" label="Passageiros" icon={Users} />
+            <NavButton view="creating" label="Nova Requisição" icon={PlusCircle} onClick={handleCreateNew} />
+            <NavButton view="viewingRequests" label="Requisições" icon={List} onClick={() => setCurrentView('viewingRequests')} />
+            <NavButton view="viewingPassengers" label="Passageiros" icon={Users} onClick={() => setCurrentView('viewingPassengers')} />
             
             <div className="border-l h-8 mx-2 border-gray-300 dark:border-gray-600"></div>
 
