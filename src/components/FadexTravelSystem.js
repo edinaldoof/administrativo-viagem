@@ -1,3 +1,4 @@
+
 // src/components/FadexTravelSystem.js
 import React, { useState, useRef, useEffect } from 'react';
 
@@ -214,7 +215,7 @@ const FadexTravelSystem = () => {
   const [editingPassageiro, setEditingPassageiro] = useState(null);
   const initialPassageiroState = { id: '', nome: '', cpf: '', dataNascimento: '', email: '', phone: '', itinerarios: [], anexos: [] };
   const [currentPassageiro, setCurrentPassageiro] = useState(initialPassageiroState);
-  const initialItinerarioState = { id: '', origem: '', destino: '', dataSaida: '', ciaAerea: '', voo: '', horarios: '', quantidade: 1, valorUnitario: 0 };
+  const initialItinerarioState = { id: '', origem: '', destino: '', dataSaida: '', ciaAerea: '', voo: '', horarios: '', quantidade: 1, valorUnitario: 0, tripType: 'Aéreo', baggage: 'Não especificado' };
   const [currentItinerario, setCurrentItinerario] = useState(initialItinerarioState);
   const [errors, setErrors] = useState({});
   const [successInfo, setSuccessInfo] = useState({ show: false, message: '' });
@@ -385,6 +386,9 @@ const FadexTravelSystem = () => {
             horarios: it.horarios || '',
             quantidade: it.quantity || 1,
             valorUnitario: it.unitPrice || 0,
+            tripType: it.tripType || 'Aéreo',
+            baggage: it.baggage || 'Não especificado',
+            isRoundTrip: it.isRoundTrip || false,
         }));
 
         // Handle round trip logic if present
@@ -401,6 +405,9 @@ const FadexTravelSystem = () => {
                 horarios: primeiroItinerario.horarios || '',
                 quantidade: primeiroItinerario.quantity || 1,
                 valorUnitario: primeiroItinerario.unitPrice || 0,
+                tripType: primeiroItinerario.tripType || 'Aéreo',
+                baggage: primeiroItinerario.baggage || 'Não especificado',
+                isRoundTrip: false, // O trecho de volta em si não é "ida e volta"
             });
         }
         

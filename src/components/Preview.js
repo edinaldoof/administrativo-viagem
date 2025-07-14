@@ -1,6 +1,8 @@
+
 // src/components/Preview.js
 import React from 'react';
 import { formatCurrency } from '../utils/utils';
+import { Plane, Bus, Briefcase, RefreshCw } from 'lucide-react';
 
 const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
   const currentDate = new Date().toLocaleDateString('pt-BR');
@@ -14,13 +16,34 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
     return totalReq + totalPassageiro;
   }, 0);
 
+  const renderItineraryDetails = (itinerary) => {
+    return (
+        <div className="flex items-center space-x-3 text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <span className="flex items-center gap-1">
+                {itinerary.tripType === 'Aéreo' ? <Plane size={12} /> : <Bus size={12} />}
+                {itinerary.tripType || 'N/A'}
+            </span>
+            <span className="flex items-center gap-1">
+                <Briefcase size={12} />
+                {itinerary.baggage || 'N/A'}
+            </span>
+            {itinerary.isRoundTrip && (
+                <span className="flex items-center gap-1 font-semibold text-blue-600 dark:text-blue-400">
+                    <RefreshCw size={12} />
+                    Ida e Volta
+                </span>
+            )}
+        </div>
+    );
+  };
+
   return (
     // Card principal com sombra e bordas arredondadas
     <div ref={ref} className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-xl border border-gray-100 dark:border-slate-700 font-sans">
       {/* Cabeçalho */}
       <div className="text-center mb-8 border-b border-gray-200 dark:border-slate-700 pb-6">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 tracking-tight">Administrativo Fadex</h2>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Solicitação de Passagens Aéreas</p>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">Solicitação de Passagens</p>
         <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Data de Emissão: {currentDate}</p>
       </div>
 
@@ -109,7 +132,7 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
                                 {formatCurrency(totalItinerario)}
                              </div>
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 pl-1 mt-1 flex justify-between">
+                         <div className="text-xs text-gray-500 dark:text-gray-400 pl-1 mt-1 flex justify-between">
                           <div>
                             <span>{itinerario.dataSaida ? new Date(itinerario.dataSaida + 'T03:00:00Z').toLocaleDateString('pt-BR') : 'N/A'}</span>
                             {itinerario.ciaAerea && <span className="mx-1">|</span>}
@@ -121,6 +144,7 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
                             {itinerario.quantidade} x {formatCurrency(itinerario.valorUnitario)}
                           </div>
                         </div>
+                        {renderItineraryDetails(itinerario)}
                       </div>
                       )
                     })

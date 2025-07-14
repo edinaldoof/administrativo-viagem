@@ -1,3 +1,4 @@
+
 // src/components/ConfirmationScreen.js
 import React, { useState, useEffect } from 'react';
 import { Trash2, Edit, Plane, Bus, Briefcase, RefreshCw } from 'lucide-react'; // Ícones para ações

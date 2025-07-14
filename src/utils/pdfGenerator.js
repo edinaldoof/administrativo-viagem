@@ -1,3 +1,4 @@
+
 // src/utils/pdfGenerator.js
 import { jsPDF } from 'jspdf';
 import { formatCPF, formatCurrency } from './utils'; //
@@ -77,7 +78,7 @@ const addHeaderFooter = (doc, pageNumber, totalPages, logoImgData, isFirstPage) 
       } catch (e) { console.error("Erro ao adicionar logo (outras páginas):", e); }
     }
     doc.setFont(FONTS.DEFAULT, 'bold'); doc.setFontSize(10); doc.setTextColor(COLORS.DARK_TEXT);
-    doc.text('Solicitação de Passagens Aéreas', pageWidth - PAGE_MARGIN, 13, { align: 'right' });
+    doc.text('Solicitação de Passagens', pageWidth - PAGE_MARGIN, 13, { align: 'right' });
   }
 
   // Footer
@@ -210,7 +211,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   };
 
   doc.setFont(FONTS.DEFAULT, 'bold'); doc.setFontSize(18); doc.setTextColor(COLORS.DARK_TEXT);
-  doc.text('Solicitação de Passagens Aéreas', (doc.internal.pageSize.getWidth() + GRADIENT_WIDTH) / 2 , yPosition, { align: 'center'});
+  doc.text('Solicitação de Passagens', (doc.internal.pageSize.getWidth() + GRADIENT_WIDTH) / 2 , yPosition, { align: 'center'});
   yPosition += doc.internal.getLineHeight() * 0.8;
   doc.setFont(FONTS.DEFAULT, 'normal'); doc.setFontSize(10); doc.setTextColor(COLORS.MEDIUM_TEXT);
   doc.text(`Data da Emissão: ${new Date().toLocaleDateString('pt-BR')}`, (doc.internal.pageSize.getWidth() + GRADIENT_WIDTH) / 2, yPosition, { align: 'center' });
@@ -278,7 +279,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
       let totalPassageiro = (passageiro.itinerarios || []).reduce((acc, it) => acc + ((parseFloat(it.quantidade) || 0) * (parseFloat(it.valorUnitario) || 0)), 0);
       totalGeral += totalPassageiro;
 
-      const passengerCardHeight = 15 + (passageiro.itinerarios || []).length * 15;
+      const passengerCardHeight = 20 + (passageiro.itinerarios || []).length * 20; // Increased height per itinerary
       if(checkAndAddPage(passengerCardHeight)) {
          yPosition = addSectionTitle(doc, 'Passageiros e Itinerários (Continuação)', HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN);
       }
@@ -304,7 +305,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
       if (passageiro.itinerarios && passageiro.itinerarios.length > 0) {
         const primeiroItinerario = passageiro.itinerarios[0];
         passageiro.itinerarios.forEach((itinerario) => {
-            if(checkAndAddPage(20)) {
+            if(checkAndAddPage(25)) {
                  yPosition = HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN;
                  doc.setFont(FONTS.DEFAULT, 'italic', 'normal'); doc.setTextColor(COLORS.MEDIUM_TEXT); doc.setFontSize(9);
                  doc.text(`Continuação Itinerários para: ${passageiro.nome}`, GRADIENT_WIDTH + PAGE_MARGIN, yPosition);
@@ -331,6 +332,9 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
             doc.setFontSize(8); doc.setTextColor(COLORS.MEDIUM_TEXT);
             const dataSaidaFormatada = itinerario.dataSaida ? new Date(itinerario.dataSaida + 'T00:00:00-03:00').toLocaleDateString('pt-BR') : 'N/A';
             doc.text(`Data: ${dataSaidaFormatada} | Cia: ${itinerario.ciaAerea || 'N/I'} | Voo: ${itinerario.voo || 'N/I'}`, itinerarioStartX + 5, yPosition + 2, {baseline: 'middle'});
+
+            yPosition += 5;
+            doc.text(`Tipo: ${itinerario.tripType || 'N/A'} | Bagagem: ${itinerario.baggage || 'N/A'}`, itinerarioStartX + 5, yPosition + 2, {baseline: 'middle'});
 
             yPosition += 8;
         });

@@ -1,7 +1,16 @@
+
 // src/components/PassengerForm.js
 import React, { useState, useMemo } from 'react';
 import { formatCPF, formatDate, formatPhone, formatCurrency } from '../utils/utils';
 import { Button } from './ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+
 
 const PassengerForm = ({
   currentPassageiro,
@@ -31,6 +40,10 @@ const PassengerForm = ({
 
   const handleItinerarioInputChange = (e) => {
     const { name, value } = e.target;
+    onItinerarioFieldChange(name, value);
+  };
+
+  const handleItinerarioSelectChange = (name, value) => {
     onItinerarioFieldChange(name, value);
   };
 
@@ -170,6 +183,34 @@ const PassengerForm = ({
               <input type="text" name="ciaAerea" value={currentItinerario.ciaAerea} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-slate-600 dark:text-gray-200" placeholder="Cia Aérea"/>
               <input type="text" name="voo" value={currentItinerario.voo} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-slate-600 dark:text-gray-200" placeholder="Número do Voo"/>
               <input type="text" name="horarios" value={currentItinerario.horarios} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-slate-600 dark:text-gray-200" placeholder="Horários (Ex: 08:00 - 10:00)"/>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Tipo de Viagem</label>
+                 <Select value={currentItinerario.tripType} onValueChange={(value) => handleItinerarioSelectChange('tripType', value)}>
+                  <SelectTrigger className="bg-gray-50 dark:bg-slate-600 border-gray-300 dark:border-slate-600 dark:text-gray-200">
+                    <SelectValue placeholder="Selecione o tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Aéreo">Aéreo</SelectItem>
+                    <SelectItem value="Terrestre">Terrestre</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Bagagem</label>
+                <Select value={currentItinerario.baggage} onValueChange={(value) => handleItinerarioSelectChange('baggage', value)}>
+                   <SelectTrigger className="bg-gray-50 dark:bg-slate-600 border-gray-300 dark:border-slate-600 dark:text-gray-200">
+                    <SelectValue placeholder="Selecione a bagagem" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Não especificado">Não especificado</SelectItem>
+                    <SelectItem value="Sem Bagagem">Sem Bagagem</SelectItem>
+                    <SelectItem value="Com Bagagem">Com Bagagem</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
