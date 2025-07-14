@@ -36,8 +36,8 @@ const drawSideGradient = (doc, pageHeight) => {
   for (let i = 0; i < steps; i++) {
     const ratio = i / (steps - 1);
     const r = Math.round(initialColor.r + (finalColor.r - initialColor.r) * ratio);
-    const g = Math.round(initialColor.g + (finalColor.g - initialColor.g) * ratio);
-    const b = Math.round(initialColor.b + (finalColor.b - initialColor.b) * ratio);
+    const g = Math.round(initialColor.g + (finalColor.g - finalColor.g) * ratio);
+    const b = Math.round(initialColor.b + (finalColor.b - finalColor.b) * ratio);
     doc.setFillColor(r, g, b);
     doc.rect(0, (pageHeight / steps) * i, GRADIENT_WIDTH, pageHeight / steps + 0.5, 'F');
   }
@@ -181,11 +181,15 @@ async function loadImageData(url) {
     } catch (error) { console.error('Erro de rede ao carregar imagem:', url, error); return null; }
 }
 
-function drawPlaneIcon(doc, x, y, size, color) {
-    doc.setLineWidth(0.4);
+function drawDirectionalIcon(doc, x, y, size, color, isReturn = false) {
+    doc.setLineWidth(0.8);
     doc.setDrawColor(color);
-    doc.text('\u2708', x, y, {baseline: 'middle'}); // Using a unicode plane character is simpler
+    doc.setFont(FONTS.DEFAULT, 'bold');
+    doc.setFontSize(size);
+    const icon = isReturn ? '<' : '>';
+    doc.text(icon, x, y, { baseline: 'middle' });
 }
+
 
 export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
@@ -298,6 +302,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
 
       // Itinerarios
       if (passageiro.itinerarios && passageiro.itinerarios.length > 0) {
+        const primeiroItinerario = passageiro.itinerarios[0];
         passageiro.itinerarios.forEach((itinerario) => {
             if(checkAndAddPage(20)) {
                  yPosition = HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN;
@@ -310,10 +315,12 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
             doc.setFont(FONTS.DEFAULT, 'normal'); doc.setFontSize(10); doc.setTextColor(COLORS.DARK_TEXT);
             const textBaseY = yPosition + 4;
             
-            drawPlaneIcon(doc, itinerarioStartX, textBaseY, 10, COLORS.PRIMARY);
+            const isReturn = itinerario.origem === primeiroItinerario.destino && itinerario.destino === primeiroItinerario.origem;
+            drawDirectionalIcon(doc, itinerarioStartX, textBaseY, 12, COLORS.PRIMARY, isReturn);
             
             doc.text(`${itinerario.origem || 'N/I'}`, itinerarioStartX + 5, textBaseY, {baseline: 'middle'});
-            doc.text(`\u2192`, itinerarioStartX + 5 + doc.getTextWidth(itinerario.origem || 'N/I') + 3, textBaseY, {baseline: 'middle'});
+            const arrowSymbol = '\u2192'; // Seta para a direita
+            doc.text(arrowSymbol, itinerarioStartX + 5 + doc.getTextWidth(itinerario.origem || 'N/I') + 3, textBaseY, {baseline: 'middle'});
             doc.text(`${itinerario.destino || 'N/I'}`, itinerarioStartX + 5 + doc.getTextWidth(itinerario.origem || 'N/I') + 3 + 5, textBaseY, {baseline: 'middle'});
             
             const totalTrecho = (parseFloat(itinerario.quantidade) || 0) * (parseFloat(itinerario.valorUnitario) || 0);
