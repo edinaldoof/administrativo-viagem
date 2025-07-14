@@ -113,7 +113,7 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
       const textContent = await extractTextFromPdf(file);
       if (!textContent) throw new Error('Falha ao extrair texto.');
       
-      setProcessingMessage('Analisando com a IA Gemini...');
+      setProcessingMessage('Analisando com a Fadex IA...');
       const result = await extractDataFromPdfWithGemini(textContent); 
       setExtractedData(result);
       setProcessingState('success');
