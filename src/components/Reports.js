@@ -31,6 +31,15 @@ const ListCard = ({ title, data, icon: Icon, renderItem }) => (
     </div>
 );
 
+// Função para padronizar strings (maiúsculas, sem acentos)
+const standardizeString = (str) => {
+    if (!str) return '';
+    return str
+        .normalize("NFD") // Normaliza para decompor acentos
+        .replace(/[\u0300-\u036f]/g, "") // Remove os acentos
+        .toUpperCase(); // Converte para maiúsculas
+};
+
 
 const Reports = () => {
   const [requests, setRequests] = useState([]);
@@ -78,16 +87,16 @@ const Reports = () => {
       projectCounts[projectName] = (projectCounts[projectName] || 0) + 1;
 
       (req.passengersData || []).forEach(passenger => {
-        // Contagem por passageiro
-        const passengerName = passenger.nome || 'Não identificado';
+        // Contagem por passageiro (padronizado)
+        const passengerName = standardizeString(passenger.nome) || 'NAO IDENTIFICADO';
         passengerCounts[passengerName] = (passengerCounts[passengerName] || 0) + (passenger.itinerarios?.length || 0);
 
         (passenger.itinerarios || []).forEach(it => {
             totalTrips++;
             totalValue += (parseFloat(it.valorUnitario) || 0) * (parseFloat(it.quantidade) || 1);
             
-            // Contagem de destinos
-            const destination = it.destino || 'Não especificado';
+            // Contagem de destinos (padronizado)
+            const destination = standardizeString(it.destino) || 'NAO ESPECIFICADO';
             destinationCounts[destination] = (destinationCounts[destination] || 0) + 1;
         });
       });

@@ -64,14 +64,14 @@ export const extractDataFromPdfWithGemini = async (text) => {
         -   **billing.description**: Get the full content from the "JUSTIFICATIVA/FINALIDADE" field.
 
     2.  **Passengers (Array of objects):** Find all passenger sections. Each "DADOS GERAIS DO ITEM" or "DADOS DO BENEFICIÁRIO" section represents a request for one passenger.
-        -   **name**: The full name from "CPF E NOME".
+        -   **name**: The full name from "CPF E NOME". Standardize the name by converting it to all uppercase letters.
         -   **cpf**: The CPF from "CPF E NOME".
         -   **birthDate**: The birth date from "DATA DE NASCIMENTO" in DD/MM/YYYY format.
         -   **email**: The email from "E-MAIL".
         -   **phone**: The phone number from "TELEFONE" or "CELULAR".
         -   **itinerary (Array of objects)**: For each passenger, extract their travel segments.
-            -   **origin**: The "CIDADE DE ORIGEM" or "ORIGEM".
-            -   **destination**: The "CIDADE DE DESTINO" or "DESTINO".
+            -   **origin**: The "CIDADE DE ORIGEM" or "ORIGEM". Standardize the city name by removing accents and converting to all uppercase letters (e.g., 'São Paulo' becomes 'SAO PAULO').
+            -   **destination**: The "CIDADE DE DESTINO" or "DESTINO". Standardize the city name by removing accents and converting to all uppercase letters (e.g., 'CUIABÁ' becomes 'CUIABA').
             -   **departureDate**: The "DATA DE SAÍDA" or "IDA" date in DD/MM/YYYY format.
             -   **returnDate**: The "DATA DE RETORNO" or "RETORNO" date in DD/MM/YYYY format. If not present, this field should be null.
             -   **isRoundTrip**: Set to 'true' if a return date exists, otherwise 'false'.
@@ -94,15 +94,15 @@ export const extractDataFromPdfWithGemini = async (text) => {
       },
       "passengers": [
         {
-          "name": "string",
+          "name": "string (ALL UPPERCASE)",
           "cpf": "string",
           "birthDate": "string (DD/MM/YYYY)",
           "email": "string or null",
           "phone": "string or null",
           "itinerary": [
             {
-              "origin": "string",
-              "destination": "string",
+              "origin": "string (ALL UPPERCASE, NO ACCENTS)",
+              "destination": "string (ALL UPPERCASE, NO ACCENTS)",
               "departureDate": "string (DD/MM/YYYY)",
               "returnDate": "string (DD/MM/YYYY) or null",
               "isRoundTrip": "boolean",
@@ -122,6 +122,7 @@ export const extractDataFromPdfWithGemini = async (text) => {
     **Crucial Instructions:**
     - Be precise. If a field is not present, return null or an empty string as appropriate based on the schema.
     - If you are using feedback to make a correction, be sure to apply it. The user's rules are more important than your initial analysis. For example, if the user states "The project number is always the first part of the title", you must follow that rule.
+    - **Always standardize passenger names and city names as instructed above.**
 
     **Document for analysis:**
     ---
