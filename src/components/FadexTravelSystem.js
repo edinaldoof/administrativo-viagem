@@ -175,7 +175,7 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <FileText className="h-6 w-6 text-red-500" />
-              <span className="font-medium dark:text-gray-200">{file.name}</span>
+              <span className="font-medium text-gray-800 dark:text-gray-200">{file.name}</span>
             </div>
             <button onClick={handleProcessFile} disabled={processingState === 'processing'} className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-blue-300">
               {processingState === 'processing' ? 'Processando...' : 'Processar Arquivo'}
