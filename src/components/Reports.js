@@ -151,7 +151,7 @@ const Reports = () => {
       if (!window.XLSX) {
         await loadScript("https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js");
       }
-      exportReportsToExcel(stats);
+      exportReportsToExcel(stats, requests); // Passa os dados brutos também
     } catch (e) {
       console.error(e);
       alert('Houve um erro ao exportar os relatórios.');

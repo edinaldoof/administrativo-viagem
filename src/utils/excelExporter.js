@@ -143,9 +143,10 @@ export const exportDataToExcel = (passageiros, faturamento, fileName = 'solicita
 /**
  * Exporta os dados do painel de relatórios para um arquivo Excel (XLSX).
  * @param {object} stats - Objeto contendo as estatísticas processadas.
+ * @param {Array} allRequests - Array com todas as requisições brutas para a aba de detalhes.
  * @param {string} fileName - O nome base para o arquivo (sem extensão).
  */
-export const exportReportsToExcel = (stats, fileName = 'relatorio-viagens-fadex') => {
+export const exportReportsToExcel = (stats, allRequests, fileName = 'relatorio-viagens-fadex') => {
     if (!window.XLSX) {
         throw new Error('A biblioteca XLSX não está disponível.');
     }
@@ -196,6 +197,55 @@ export const exportReportsToExcel = (stats, fileName = 'relatorio-viagens-fadex'
     const wsPassengers = XLSX.utils.aoa_to_sheet(topPassengersData);
     wsPassengers['!cols'] = [{ wch: 30 }, { wch: 20 }];
     XLSX.utils.book_append_sheet(wb, wsPassengers, 'Top Passageiros');
+
+    // --- Aba de Detalhes ---
+    const detailedData = [];
+    const detailedHeader = [
+        'WEB ID', 'Data Requisição', 'Projeto', 'Descrição Projeto',
+        'Nome Passageiro', 'CPF Passageiro', 'Origem', 'Destino', 'Data Saída',
+        'Cia Aérea', 'Voo', 'Horários', 'Bagagem', 'Ida e Volta', 'Tipo Viagem',
+        'Quantidade', 'Valor Unitário', 'Valor Total Trecho'
+    ];
+    detailedData.push(detailedHeader);
+
+    allRequests.forEach(req => {
+        const requestDate = req.savedAt?.toDate().toLocaleDateString('pt-BR') || 'N/A';
+        (req.passengersData || []).forEach(passenger => {
+            (passenger.itinerarios || []).forEach(it => {
+                const totalTrecho = (parseFloat(it.quantidade) || 1) * (parseFloat(it.valorUnitario) || 0);
+                detailedData.push([
+                    req.webId || 'N/A',
+                    requestDate,
+                    req.contaProjeto || 'N/A',
+                    req.descricao || 'N/A',
+                    passenger.nome || 'N/A',
+                    passenger.cpf || 'N/A',
+                    it.origem || 'N/A',
+                    it.destino || 'N/A',
+                    it.dataSaida ? new Date(it.dataSaida + 'T03:00:00Z').toLocaleDateString('pt-BR') : 'N/A',
+                    it.ciaAerea || 'N/A',
+                    it.voo || 'N/A',
+                    it.horarios || 'N/A',
+                    it.baggage || 'Não especificado',
+                    it.isRoundTrip ? 'Sim' : 'Não',
+                    it.tripType || 'Não especificado',
+                    it.quantidade || 1,
+                    { t: 'n', v: it.valorUnitario || 0, z: '"R$"#,##0.00' },
+                    { t: 'n', v: totalTrecho, z: '"R$"#,##0.00' }
+                ]);
+            });
+        });
+    });
+
+    const wsDetailed = XLSX.utils.aoa_to_sheet(detailedData);
+    wsDetailed['!cols'] = [
+        { wch: 20 }, { wch: 15 }, { wch: 30 }, { wch: 40 },
+        { wch: 30 }, { wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 15 },
+        { wch: 15 }, { wch: 10 }, { wch: 15 }, { wch: 20 }, { wch: 12 }, { wch: 15 },
+        { wch: 10 }, { wch: 15 }, { wch: 15 }
+    ];
+    XLSX.utils.book_append_sheet(wb, wsDetailed, 'Detalhado');
+
 
     // Escreve o arquivo final
     XLSX.writeFile(wb, `${fileName}-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.xlsx`);
