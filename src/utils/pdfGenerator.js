@@ -1,7 +1,7 @@
 
 // src/utils/pdfGenerator.js
 import { jsPDF } from 'jspdf';
-import { formatCPF, formatCurrency } from './utils'; //
+import { formatCPF, formatCurrency } from './utils';
 
 const COLORS = {
   PRIMARY: '#4F46E5', // Indigo-600 from Tailwind
@@ -37,8 +37,8 @@ const drawSideGradient = (doc, pageHeight) => {
   for (let i = 0; i < steps; i++) {
     const ratio = i / (steps - 1);
     const r = Math.round(initialColor.r + (finalColor.r - initialColor.r) * ratio);
-    const g = Math.round(initialColor.g + (finalColor.g - finalColor.g) * ratio);
-    const b = Math.round(initialColor.b + (finalColor.b - finalColor.b) * ratio);
+    const g = Math.round(initialColor.g + (finalColor.g - initialColor.g) * ratio);
+    const b = Math.round(initialColor.b + (finalColor.b - initialColor.b) * ratio);
     doc.setFillColor(r, g, b);
     doc.rect(0, (pageHeight / steps) * i, GRADIENT_WIDTH, pageHeight / steps + 0.5, 'F');
   }
@@ -187,6 +187,7 @@ function drawDirectionalIcon(doc, x, y, size, color, isReturn = false) {
     doc.setDrawColor(color);
     doc.setFont(FONTS.DEFAULT, 'bold');
     doc.setFontSize(size);
+    // Usando > para ida e < para volta
     const icon = isReturn ? '<' : '>';
     doc.text(icon, x, y, { baseline: 'middle' });
 }
@@ -217,7 +218,12 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   doc.text(`Data da Emissão: ${new Date().toLocaleDateString('pt-BR')}`, (doc.internal.pageSize.getWidth() + GRADIENT_WIDTH) / 2, yPosition, { align: 'center' });
   yPosition += doc.internal.getLineHeight() * 1.5;
 
-  let totalGeral = 0;
+  const totalGeral = passageiros.reduce((totalReq, passageiro) => {
+    const totalPassageiro = (passageiro.itinerarios || []).reduce((totalIt, it) => {
+        return totalIt + ((parseFloat(it.quantidade) || 0) * (parseFloat(it.valorUnitario) || 0));
+    }, 0);
+    return totalReq + totalPassageiro;
+  }, 0);
   
   // Faturamento
   if (faturamento && (faturamento.contaProjeto || faturamento.descricao || faturamento.cc || faturamento.webId)) {
@@ -276,8 +282,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
     yPosition = addSectionTitle(doc, 'Passageiros e Itinerários', yPosition);
 
     passageiros.forEach((passageiro, index) => {
-      let totalPassageiro = (passageiro.itinerarios || []).reduce((acc, it) => acc + ((parseFloat(it.quantidade) || 0) * (parseFloat(it.valorUnitario) || 0)), 0);
-      totalGeral += totalPassageiro;
+      const totalPassageiro = (passageiro.itinerarios || []).reduce((acc, it) => acc + ((parseFloat(it.quantidade) || 0) * (parseFloat(it.valorUnitario) || 0)), 0);
 
       const passengerCardHeight = 20 + (passageiro.itinerarios || []).length * 20; // Increased height per itinerary
       if(checkAndAddPage(passengerCardHeight)) {
