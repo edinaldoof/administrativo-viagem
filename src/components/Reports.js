@@ -42,6 +42,21 @@ const standardizeString = (str) => {
         .toUpperCase(); // Converte para maiúsculas
 };
 
+// Função para carregar um script dinamicamente
+const loadScript = (src) => {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load script ${src}`));
+    document.body.appendChild(script);
+  });
+};
+
 
 const Reports = () => {
   const [requests, setRequests] = useState([]);
@@ -131,8 +146,11 @@ const Reports = () => {
     };
   }, [requests]);
   
-  const handleExport = () => {
+  const handleExport = async () => {
     try {
+      if (!window.XLSX) {
+        await loadScript("https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js");
+      }
       exportReportsToExcel(stats);
     } catch (e) {
       console.error(e);
