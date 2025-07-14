@@ -75,8 +75,11 @@ export const extractDataFromPdfWithGemini = async (text) => {
             -   **departureDate**: The "DATA DE SAÍDA" or "IDA" date in DD/MM/YYYY format.
             -   **returnDate**: The "DATA DE RETORNO" or "RETORNO" date in DD/MM/YYYY format. If not present, this field should be null.
             -   **isRoundTrip**: Set to 'true' if a return date exists, otherwise 'false'.
-            -   **ciaAerea**, **voo**, **horarios**: Extract these from "DETALHE DO ITEM" or "OBSERVAÇÕES".
-            -   **baggage**: Check the "BAGAGENS" field. If it contains "COM BAGAGENS", set to "Com Bagagem". If "SEM BAGAGENS", set to "Sem Bagagem".
+            -   **tripType**: Determine if it's "Aéreo" or "Terrestre". Default to "Aéreo" if not specified.
+            -   **ciaAerea**: Extract these from "DETALHE DO ITEM" or "OBSERVAÇÕES". For terrestrial, this could be the bus company.
+            -   **voo**: Extract these from "DETALHE DO ITEM" or "OBSERVAÇÕES". For terrestrial, this can be null.
+            -   **horarios**: Extract these from "DETALHE DO ITEM" or "OBSERVAÇÕES".
+            -   **baggage**: Check the "BAGAGENS" field. If it contains "COM BAGAGENS", set to "Com Bagagem". If "SEM BAGAGENS", set to "Sem Bagagem". If not present, set to "Não especificado".
             -   **quantity**: Extract the value from "QUANTIDADE". It's a number.
             -   **unitPrice**: Extract the value from "VALOR UNITARIO". It should be a number (e.g., 1234.56).
 
@@ -103,10 +106,11 @@ export const extractDataFromPdfWithGemini = async (text) => {
               "departureDate": "string (DD/MM/YYYY)",
               "returnDate": "string (DD/MM/YYYY) or null",
               "isRoundTrip": "boolean",
+              "tripType": "Aéreo" | "Terrestre",
               "ciaAerea": "string or null",
               "voo": "string or null",
               "horarios": "string or null",
-              "baggage": "string or null",
+              "baggage": "Com Bagagem" | "Sem Bagagem" | "Não especificado",
               "quantity": "number or null",
               "unitPrice": "number or null"
             }
@@ -116,7 +120,7 @@ export const extractDataFromPdfWithGemini = async (text) => {
     }
 
     **Crucial Instructions:**
-    - Be precise. If a field is not present, return null or an empty string.
+    - Be precise. If a field is not present, return null or an empty string as appropriate based on the schema.
     - If you are using feedback to make a correction, be sure to apply it. The user's rules are more important than your initial analysis. For example, if the user states "The project number is always the first part of the title", you must follow that rule.
 
     **Document for analysis:**

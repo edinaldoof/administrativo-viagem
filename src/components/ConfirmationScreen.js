@@ -1,6 +1,6 @@
 // src/components/ConfirmationScreen.js
 import React, { useState, useEffect } from 'react';
-import { Trash2, Edit } from 'lucide-react'; // Ícones para ações
+import { Trash2, Edit, Plane, Bus, Briefcase, RefreshCw } from 'lucide-react'; // Ícones para ações
 
 // Componente para a caixa de diálogo de feedback manual
 const FeedbackDialog = ({ fieldKey, onSave, onCancel, existingText = '' }) => {
@@ -233,6 +233,27 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
     );
   };
 
+  const renderItineraryDetails = (itinerary) => {
+    return (
+        <div className="flex items-center space-x-4 text-xs text-gray-500 mt-2">
+            <span className="flex items-center gap-1">
+                {itinerary.tripType === 'Aéreo' ? <Plane size={14} /> : <Bus size={14} />}
+                {itinerary.tripType || 'N/A'}
+            </span>
+            <span className="flex items-center gap-1">
+                <Briefcase size={14} />
+                {itinerary.baggage || 'N/A'}
+            </span>
+            {itinerary.isRoundTrip && (
+                <span className="flex items-center gap-1 font-semibold text-blue-600">
+                    <RefreshCw size={14} />
+                    Ida e Volta
+                </span>
+            )}
+        </div>
+    );
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg animate-fade-in">
       {feedbackDialogInfo.isOpen && (
@@ -277,7 +298,9 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
                  {(passenger.itinerary || []).map((it, itIndex) => (
                    <div key={itIndex} className="p-3 bg-gray-50 rounded-lg mb-2">
                       <p className="font-medium">{it.origin || 'N/A'} → {it.destination || 'N/A'}</p>
-                      <div className="grid grid-cols-2 gap-x-4">
+                      <p className="text-sm">Partida: {it.departureDate || 'N/A'} {it.returnDate && ` | Retorno: ${it.returnDate}`}</p>
+                      {renderItineraryDetails(it)}
+                      <div className="grid grid-cols-2 gap-x-4 mt-3 pt-3 border-t">
                         {renderField(`Qtd Trecho ${itIndex+1} P.${pIndex+1}`, `passengers.${pIndex}.itinerary.${itIndex}.quantity`, "number")}
                         {renderField(`Valor Trecho ${itIndex+1} P.${pIndex+1}`, `passengers.${pIndex}.itinerary.${itIndex}.unitPrice`, "number")}
                       </div>
