@@ -34,7 +34,7 @@ import { getOrSavePassenger } from '../services/passengerService'; // Novo
 
 // Utilitários de IA e PDF
 import { extractDataFromPdfWithGemini } from '../ai/geminiService';
-import { UploadCloud, FileText, CheckCircle, XCircle, Loader } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle, XCircle, Loader, Info } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 import { Button } from './ui/button.jsx';
 
@@ -507,7 +507,7 @@ const FadexTravelSystem = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-gray-900 flex flex-col">
       <SuccessMessage
         show={successInfo.show}
         message={successInfo.message}
@@ -527,11 +527,22 @@ const FadexTravelSystem = () => {
         theme={theme}
       />
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <main className="flex-grow max-w-7xl mx-auto px-6 py-8 w-full">
         {renderContent()}
-      </div>
+      </main>
 
       <HelpChatbot />
+      
+      <footer className="w-full bg-white/50 dark:bg-slate-900/50 border-t border-gray-200 dark:border-slate-800 mt-auto">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-center text-center gap-2">
+            <Info size={16} className="text-yellow-600 dark:text-yellow-400" />
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              <strong>Atenção:</strong> Os dados exibidos representam a solicitação inicial e podem sofrer alterações. Para informações finais e consolidadas, consulte o sistema Sagi.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
