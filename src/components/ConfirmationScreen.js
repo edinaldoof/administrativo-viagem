@@ -131,43 +131,9 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
   }
 
   const processAndSubmit = (isConfirming) => {
-    // Apenas as dicas manuais
-    let allFeedbackLines = justifications.map(j => `Regra do Usuário para '${j.fieldKey}': ${j.text}`);
-
-    // Feedback automático simplificado para cada campo editado
-    const compareAndGenerateFeedback = (original, edited, path = '') => {
-        if (!original || !edited) return;
-        Object.keys(original).forEach(key => {
-            const currentPath = path ? `${path}.${key}` : key;
-            const originalValue = original[key];
-            const editedValue = edited[key];
-
-            // Ignora campos que já têm dica manual
-            const label = friendlyLabels[currentPath] || currentPath;
-            if (justifications.some(j => j.fieldKey === label)) return;
-
-            if (typeof originalValue === 'object' && originalValue !== null && !Array.isArray(originalValue)) {
-                compareAndGenerateFeedback(originalValue, editedValue, currentPath);
-            } else if(Array.isArray(originalValue)) {
-                 originalValue.forEach((origItem, index) => {
-                    if (editedValue && editedValue[index]) {
-                        compareAndGenerateFeedback(origItem, editedValue[index], `${currentPath}.${index}`);
-                    }
-                });
-            } else if (JSON.stringify(originalValue) !== JSON.stringify(editedValue)) {
-                if (typeof originalValue !== 'object' && typeof editedValue !== 'object') {
-                    // Feedback automático muito mais simples
-                    const autoJustification = `Regra do Usuário para '${label}': o valor correto é '${editedValue || 'vazio'}'`;
-                    allFeedbackLines.push(autoJustification);
-                }
-            }
-        });
-    };
-
-    compareAndGenerateFeedback(originalData, editedData);
-
-    if (allFeedbackLines.length > 0) {
-      // Envia uma string única com todas as dicas separadas por nova linha
+    // Envia apenas as dicas manuais
+    if (justifications.length > 0) {
+      const allFeedbackLines = justifications.map(j => `Regra para '${j.fieldKey}': ${j.text}`);
       onSendFeedback(allFeedbackLines.join('\n'));
     }
 
@@ -352,3 +318,5 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
 };
 
 export default ConfirmationScreen;
+
+    

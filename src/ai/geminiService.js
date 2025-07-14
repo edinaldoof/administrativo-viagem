@@ -148,3 +148,5 @@ export const extractDataFromPdfWithGemini = async (text) => {
     throw new Error('Falha ao extrair dados do PDF com a IA.');
   }
 };
+
+    
