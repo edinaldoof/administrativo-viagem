@@ -1,6 +1,6 @@
 // src/components/Header.js
 import React from 'react';
-import { Moon, Sun, Download, FileImage, FileText, FileSpreadsheet, UploadCloud, Plane, List, Users, PlusCircle } from 'lucide-react';
+import { Moon, Sun, Download, FileImage, FileText, FileSpreadsheet, UploadCloud, Plane, List, Users, PlusCircle, BarChart2 } from 'lucide-react';
 import { Button } from './ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 
@@ -22,10 +22,10 @@ const Header = ({
     setCurrentView('creating');
   };
 
-  const NavButton = ({ view, label, icon: Icon, onClick }) => (
+  const NavButton = ({ view, label, icon: Icon }) => (
     <Button
       variant={currentView === view ? "default" : "ghost"}
-      onClick={onClick}
+      onClick={() => setCurrentView(view)}
       className="flex items-center gap-2"
     >
       <Icon size={16} />
@@ -53,9 +53,10 @@ const Header = ({
           {/* Right Side: Actions & Navigation */}
           <div className="flex items-center flex-wrap gap-2">
             {/* Navigation Buttons */}
-            <NavButton view="creating" label="Nova Requisição" icon={PlusCircle} onClick={handleCreateNew} />
-            <NavButton view="viewingRequests" label="Requisições" icon={List} onClick={() => setCurrentView('viewingRequests')} />
-            <NavButton view="viewingPassengers" label="Passageiros" icon={Users} onClick={() => setCurrentView('viewingPassengers')} />
+            <NavButton view="creating" label="Nova Requisição" icon={PlusCircle} />
+            <NavButton view="viewingRequests" label="Requisições" icon={List} />
+            <NavButton view="viewingPassengers" label="Passageiros" icon={Users} />
+            <NavButton view="reports" label="Relatórios" icon={BarChart2} />
             
             <div className="border-l h-8 mx-2 border-gray-300 dark:border-gray-600"></div>
 

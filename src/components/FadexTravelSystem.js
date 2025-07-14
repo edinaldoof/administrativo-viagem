@@ -13,6 +13,7 @@ import ConfirmationScreen from './ConfirmationScreen';
 import HelpChatbot from './HelpChatbot';
 import RequestList from './RequestList'; // Novo
 import PassengerRegistry from './PassengerRegistry'; // Novo
+import Reports from './Reports'; // Novo
 
 // Utilitários e Serviços
 import {
@@ -211,7 +212,7 @@ const FadexTravelSystem = () => {
   const [errors, setErrors] = useState({});
   const [successInfo, setSuccessInfo] = useState({ show: false, message: '' });
   const previewRef = useRef(null);
-  const [currentView, setCurrentView] = useState('creating'); // creating, viewingRequests, viewingPassengers, import
+  const [currentView, setCurrentView] = useState('creating'); // creating, viewingRequests, viewingPassengers, import, reports
   const [theme, setTheme] = useState('light');
 
   useEffect(() => {
@@ -441,6 +442,8 @@ const FadexTravelSystem = () => {
         return <RequestList onViewDetails={handleViewRequestDetails} />;
       case 'viewingPassengers':
         return <PassengerRegistry />;
+      case 'reports':
+        return <Reports />;
       case 'import':
         return (
           <ImportScreen
