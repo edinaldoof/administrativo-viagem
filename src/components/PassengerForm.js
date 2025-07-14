@@ -1,6 +1,7 @@
 // src/components/PassengerForm.js
 import React, { useState, useMemo } from 'react';
 import { formatCPF, formatDate, formatPhone, formatCurrency } from '../utils/utils';
+import { Button } from './ui/button';
 
 const PassengerForm = ({
   currentPassageiro,
@@ -311,10 +312,12 @@ const PassengerForm = ({
 
         {/* Botões de Ação do Formulário */}
         <div className="flex justify-end space-x-4">
-          <button onClick={onCancel} className="px-6 py-3 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-200 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">Cancelar</button>
-          <button onClick={onSavePassageiro} className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl font-medium transition-all duration-200 shadow-lg">
-            <span>{isEditing ? 'Salvar Alterações' : 'Salvar Passageiro'}</span>
-          </button>
+          <Button onClick={onCancel} variant="outline" size="lg">
+            Cancelar
+          </Button>
+          <Button onClick={onSavePassageiro} size="lg" className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-medium transition-all duration-200 shadow-lg">
+            {isEditing ? 'Salvar Alterações' : 'Salvar Passageiro'}
+          </Button>
         </div>
       </div>
     </div>
