@@ -23,7 +23,7 @@ const BillingForm = ({ faturamento, onFaturamentoChange }) => {
             id="contaProjeto"
             value={faturamento.contaProjeto}
             onChange={handleChange}
-            className="w-full p-4 border border-gray-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-slate-700 dark:text-gray-200"
+            className="w-full p-4 border border-gray-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-200"
             placeholder="Ex: CONT 31/2024 - IFMA - PROJETO..."
           />
         </div>
@@ -35,7 +35,7 @@ const BillingForm = ({ faturamento, onFaturamentoChange }) => {
             id="descricao"
             value={faturamento.descricao}
             onChange={handleChange}
-            className="w-full p-4 border border-gray-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-slate-700 dark:text-gray-200"
+            className="w-full p-4 border border-gray-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-200"
             placeholder="Descrição do projeto"
           />
         </div>
@@ -47,7 +47,7 @@ const BillingForm = ({ faturamento, onFaturamentoChange }) => {
             id="cc"
             value={faturamento.cc}
             onChange={handleChange}
-            className="w-full p-4 border border-gray-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-slate-700 dark:text-gray-200"
+            className="w-full p-4 border border-gray-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-200"
             placeholder="Ex: 12.071-5"
           />
         </div>
@@ -59,7 +59,7 @@ const BillingForm = ({ faturamento, onFaturamentoChange }) => {
             id="webId"
             value={faturamento.webId}
             onChange={handleChange}
-            className="w-full p-4 border border-gray-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-slate-700 dark:text-gray-200"
+            className="w-full p-4 border border-gray-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-200"
             placeholder="Ex: WEB 7735/2025"
           />
         </div>

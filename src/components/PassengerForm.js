@@ -1,4 +1,3 @@
-
 // src/components/PassengerForm.js
 import React, { useState, useMemo } from 'react';
 import { formatCPF, formatDate, formatPhone, formatCurrency } from '../utils/utils';
@@ -116,7 +115,7 @@ const PassengerForm = ({
             <input
               type="text" name="nome" id="nome" value={currentPassageiro.nome}
               onChange={handlePassageiroInputChange}
-              className={`w-full p-4 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.nome ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-slate-600'} bg-white dark:bg-slate-700 dark:text-gray-200`}
+              className={`w-full p-4 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-200 ${errors.nome ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-slate-600'} bg-white dark:bg-slate-700`}
               placeholder="Digite o nome completo"
             />
             {errors.nome && <div className="flex items-center space-x-1 mt-1 text-red-500 text-sm"><span>{errors.nome}</span></div>}
@@ -126,7 +125,7 @@ const PassengerForm = ({
             <input
               type="text" name="cpf" id="cpf" value={currentPassageiro.cpf}
               onChange={handlePassageiroInputChange}
-              className={`w-full p-4 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.cpf ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-slate-600'} bg-white dark:bg-slate-700 dark:text-gray-200`}
+              className={`w-full p-4 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-200 ${errors.cpf ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-slate-600'} bg-white dark:bg-slate-700`}
               placeholder="000.000.000-00" maxLength="14"
             />
             {errors.cpf && <div className="flex items-center space-x-1 mt-1 text-red-500 text-sm"><span>{errors.cpf}</span></div>}
@@ -136,7 +135,7 @@ const PassengerForm = ({
             <input
               type="text" name="dataNascimento" id="dataNascimento" value={currentPassageiro.dataNascimento}
               onChange={handlePassageiroInputChange}
-              className={`w-full p-4 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${errors.dataNascimento ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-slate-600'} bg-white dark:bg-slate-700 dark:text-gray-200`}
+              className={`w-full p-4 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-gray-900 dark:text-gray-200 ${errors.dataNascimento ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-slate-600'} bg-white dark:bg-slate-700`}
               placeholder="DD/MM/AAAA" maxLength="10"
             />
             {errors.dataNascimento && <div className="flex items-center space-x-1 mt-1 text-red-500 text-sm"><span>{errors.dataNascimento}</span></div>}
@@ -146,7 +145,7 @@ const PassengerForm = ({
             <input
               type="email" name="email" id="email" value={currentPassageiro.email}
               onChange={handlePassageiroInputChange}
-              className="w-full p-4 border border-gray-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-slate-700 dark:text-gray-200"
+              className="w-full p-4 border border-gray-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-200"
               placeholder="email@exemplo.com"
             />
           </div>
@@ -155,7 +154,7 @@ const PassengerForm = ({
             <input
               type="text" name="phone" id="phone" value={currentPassageiro.phone}
               onChange={handlePassageiroInputChange}
-              className="w-full p-4 border border-gray-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-slate-700 dark:text-gray-200"
+              className="w-full p-4 border border-gray-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-200"
               placeholder="(00) 0 0000-0000" maxLength="16"
             />
           </div>
@@ -169,27 +168,27 @@ const PassengerForm = ({
           <div className="bg-white dark:bg-slate-700 rounded-xl p-4 mb-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
               <div>
-                <input type="text" name="origem" value={currentItinerario.origem} onChange={handleItinerarioInputChange} className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-gray-200 ${errors.origem ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-600'}`} placeholder="Origem *"/>
+                <input type="text" name="origem" value={currentItinerario.origem} onChange={handleItinerarioInputChange} className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-200 ${errors.origem ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-600'}`} placeholder="Origem *"/>
                 {errors.origem && <span className="text-red-500 text-xs block mt-1">{errors.origem}</span>}
               </div>
               <div>
-                <input type="text" name="destino" value={currentItinerario.destino} onChange={handleItinerarioInputChange} className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-gray-200 ${errors.destino ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-600'}`} placeholder="Destino *"/>
+                <input type="text" name="destino" value={currentItinerario.destino} onChange={handleItinerarioInputChange} className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-gray-200 ${errors.destino ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-600'}`} placeholder="Destino *"/>
                 {errors.destino && <span className="text-red-500 text-xs block mt-1">{errors.destino}</span>}
               </div>
               <div>
                 <input type="date" name="dataSaida" value={currentItinerario.dataSaida} onChange={handleItinerarioInputChange} className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.dataSaida ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-600'} text-gray-700 dark:text-gray-300`}/>
                 {errors.dataSaida && <span className="text-red-500 text-xs block mt-1">{errors.dataSaida}</span>}
               </div>
-              <input type="text" name="ciaAerea" value={currentItinerario.ciaAerea} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-slate-600 dark:text-gray-200" placeholder="Cia Aérea"/>
-              <input type="text" name="voo" value={currentItinerario.voo} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-slate-600 dark:text-gray-200" placeholder="Número do Voo"/>
-              <input type="text" name="horarios" value={currentItinerario.horarios} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-slate-600 dark:text-gray-200" placeholder="Horários (Ex: 08:00 - 10:00)"/>
+              <input type="text" name="ciaAerea" value={currentItinerario.ciaAerea} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-slate-600 text-gray-900 dark:text-gray-200" placeholder="Cia Aérea"/>
+              <input type="text" name="voo" value={currentItinerario.voo} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-slate-600 text-gray-900 dark:text-gray-200" placeholder="Número do Voo"/>
+              <input type="text" name="horarios" value={currentItinerario.horarios} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-slate-600 text-gray-900 dark:text-gray-200" placeholder="Horários (Ex: 08:00 - 10:00)"/>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Tipo de Viagem</label>
                  <Select value={currentItinerario.tripType} onValueChange={(value) => handleItinerarioSelectChange('tripType', value)}>
-                  <SelectTrigger className="bg-gray-50 dark:bg-slate-600 border-gray-300 dark:border-slate-600 dark:text-gray-200">
+                  <SelectTrigger className="bg-gray-50 dark:bg-slate-600 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-gray-200">
                     <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent>
@@ -201,7 +200,7 @@ const PassengerForm = ({
               <div>
                 <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Bagagem</label>
                 <Select value={currentItinerario.baggage} onValueChange={(value) => handleItinerarioSelectChange('baggage', value)}>
-                   <SelectTrigger className="bg-gray-50 dark:bg-slate-600 border-gray-300 dark:border-slate-600 dark:text-gray-200">
+                   <SelectTrigger className="bg-gray-50 dark:bg-slate-600 border-gray-300 dark:border-slate-600 text-gray-900 dark:text-gray-200">
                     <SelectValue placeholder="Selecione a bagagem" />
                   </SelectTrigger>
                   <SelectContent>
@@ -216,11 +215,11 @@ const PassengerForm = ({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                <div>
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Valor Unitário</label>
-                  <input type="number" name="valorUnitario" value={currentItinerario.valorUnitario} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-600 rounded-lg w-full dark:text-gray-200" placeholder="0.00"/>
+                  <input type="number" name="valorUnitario" value={currentItinerario.valorUnitario} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-600 rounded-lg w-full text-gray-900 dark:text-gray-200" placeholder="0.00"/>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Quantidade</label>
-                  <input type="number" name="quantidade" value={currentItinerario.quantidade} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-600 rounded-lg w-full dark:text-gray-200" placeholder="1"/>
+                  <input type="number" name="quantidade" value={currentItinerario.quantidade} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-600 rounded-lg w-full text-gray-900 dark:text-gray-200" placeholder="1"/>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Total do Trecho</label>
@@ -279,7 +278,7 @@ const PassengerForm = ({
               <div className="flex-1">
                 <div className="flex items-center space-x-4 text-sm flex-wrap">
                   <span className="font-medium text-blue-600 dark:text-blue-400">#{index + 1}</span>
-                  <span className="dark:text-gray-200">{itinerario.origem} → {itinerario.destino}</span>
+                  <span className="text-gray-900 dark:text-gray-200">{itinerario.origem} → {itinerario.destino}</span>
                   <span className="text-gray-500 dark:text-gray-400">{itinerario.dataSaida ? new Date(itinerario.dataSaida + 'T00:00:00-03:00').toLocaleDateString('pt-BR') : 'N/A'}</span>
                    <span className="text-gray-500 dark:text-gray-300 font-semibold">{formatCurrency((itinerario.quantidade || 1) * (itinerario.valorUnitario || 0))}</span>
                   {itinerario.ciaAerea && <span className="text-gray-500 dark:text-gray-400">{itinerario.ciaAerea}</span>}
@@ -329,7 +328,7 @@ const PassengerForm = ({
                                 className="flex items-center justify-between p-3 bg-white dark:bg-slate-700 rounded-lg border border-gray-200 dark:border-slate-600"
                             >
                                 <div className="flex items-center space-x-2 overflow-hidden">
-                                    <span className="dark:text-gray-200">{getFileIcon(file.type)}</span>
+                                    <span className="text-gray-900 dark:text-gray-200">{getFileIcon(file.type)}</span>
                                     <span className="text-sm text-gray-700 dark:text-gray-300 truncate" title={file.name}>
                                         {file.name}
                                     </span>
