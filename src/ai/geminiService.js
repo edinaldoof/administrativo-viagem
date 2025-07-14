@@ -80,8 +80,8 @@ export const extractDataFromPdfWithGemini = async (text) => {
             -   **voo**: Extract these from "DETALHE DO ITEM" or "OBSERVAÇÕES". For terrestrial, this can be null.
             -   **horarios**: Extract these from "DETALHE DO ITEM" or "OBSERVAÇÕES".
             -   **baggage**: Check the "BAGAGENS" field. If it contains "COM BAGAGENS", set to "Com Bagagem". If "SEM BAGAGENS", set to "Sem Bagagem". If not present, set to "Não especificado".
-            -   **quantity**: Extract the value from "QUANTIDADE". It's a number.
-            -   **unitPrice**: Extract the value from "VALOR UNITARIO". It should be a number (e.g., 1234.56).
+            -   **quantity**: Extract the value from "QUANTIDADE". It's a number. If not present, default to 1.
+            -   **unitPrice**: Extract the value from "VALOR UNITARIO". It should be a number (e.g., 1234.56). If not present, default to 0.
 
     **Expected JSON Output Format:**
     {
@@ -111,8 +111,8 @@ export const extractDataFromPdfWithGemini = async (text) => {
               "voo": "string or null",
               "horarios": "string or null",
               "baggage": "Com Bagagem" | "Sem Bagagem" | "Não especificado",
-              "quantity": "number or null",
-              "unitPrice": "number or null"
+              "quantity": "number",
+              "unitPrice": "number"
             }
           ]
         }
@@ -120,7 +120,7 @@ export const extractDataFromPdfWithGemini = async (text) => {
     }
 
     **Crucial Instructions:**
-    - Be precise. If a field is not present, return null or an empty string as appropriate based on the schema.
+    - Be precise. If a field is not present, return null or an empty string as appropriate based on the schema, except for quantity (default 1) and unitPrice (default 0).
     - If you are using feedback to make a correction, be sure to apply it. The user's rules are more important than your initial analysis. For example, if the user states "The project number is always the first part of the title", you must follow that rule.
     - **Always standardize passenger names and city names as instructed above.**
 

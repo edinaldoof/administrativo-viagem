@@ -66,10 +66,19 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
       let current = newData;
       for (let i = 0; i < keys.length - 1; i++) {
         // Evita erro se um objeto aninhado (como billing) não existir
-        if (current[keys[i]] === undefined || current[keys[i]] === null) {
-            current[keys[i]] = {};
+        const key = keys[i];
+        if (key.includes('[')) { // Handle array paths like 'passengers[0]'
+            const arrayKey = key.substring(0, key.indexOf('['));
+            const index = parseInt(key.substring(key.indexOf('[') + 1, key.indexOf(']')), 10);
+            if (!current[arrayKey]) current[arrayKey] = [];
+            if (!current[arrayKey][index]) current[arrayKey][index] = {};
+            current = current[arrayKey][index];
+        } else {
+            if (current[key] === undefined || current[key] === null) {
+                current[key] = {};
+            }
+            current = current[key];
         }
-        current = current[keys[i]];
       }
       current[keys[keys.length - 1]] = value;
       return newData;
@@ -203,11 +212,26 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
     let value = editedData;
     let originalValue = originalData;
     try {
-        keys.forEach(key => { value = value?.[key]; });
-        keys.forEach(key => { originalValue = originalValue?.[key]; });
+        let currentOriginal = originalData;
+        let currentEdited = editedData;
+        
+        keys.forEach(key => {
+             if (key.includes('[')) { // Handle array paths like 'passengers[0]'
+                const arrayKey = key.substring(0, key.indexOf('['));
+                const index = parseInt(key.substring(key.indexOf('[') + 1, key.indexOf(']')), 10);
+                currentOriginal = currentOriginal?.[arrayKey]?.[index];
+                currentEdited = currentEdited?.[arrayKey]?.[index];
+            } else {
+                currentOriginal = currentOriginal?.[key];
+                currentEdited = currentEdited?.[key];
+            }
+        });
+        originalValue = currentOriginal;
+        value = currentEdited;
+
     } catch (e) { value = ''; originalValue = ''; }
 
-    const isEdited = value !== originalValue;
+    const isEdited = JSON.stringify(value) !== JSON.stringify(originalValue);
 
     return (
      <div className={`p-3 border-b border-gray-100 hover:bg-gray-50 rounded-md ${isEdited ? 'bg-yellow-50 border-l-4 border-yellow-400' : ''}`}>
@@ -301,8 +325,8 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
                       <p className="text-sm">Partida: {it.departureDate || 'N/A'} {it.returnDate && ` | Retorno: ${it.returnDate}`}</p>
                       {renderItineraryDetails(it)}
                       <div className="grid grid-cols-2 gap-x-4 mt-3 pt-3 border-t">
-                        {renderField(`Qtd Trecho ${itIndex+1} P.${pIndex+1}`, `passengers.${pIndex}.itinerary.${itIndex}.quantity`, "number")}
-                        {renderField(`Valor Trecho ${itIndex+1} P.${pIndex+1}`, `passengers.${pIndex}.itinerary.${itIndex}.unitPrice`, "number")}
+                        {renderField(`Qtd Trecho ${itIndex+1} P.${pIndex+1}`, `passengers[${pIndex}].itinerary[${itIndex}].quantity`, "number")}
+                        {renderField(`Valor Trecho ${itIndex+1} P.${pIndex+1}`, `passengers[${pIndex}].itinerary[${itIndex}].unitPrice`, "number")}
                       </div>
                    </div>
                  ))}

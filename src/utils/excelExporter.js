@@ -139,3 +139,64 @@ export const exportDataToExcel = (passageiros, faturamento, fileName = 'solicita
         throw new Error(`Falha ao gerar arquivo Excel/CSV: ${error.message}`);
     }
 };
+
+/**
+ * Exporta os dados do painel de relatórios para um arquivo Excel (XLSX).
+ * @param {object} stats - Objeto contendo as estatísticas processadas.
+ * @param {string} fileName - O nome base para o arquivo (sem extensão).
+ */
+export const exportReportsToExcel = (stats, fileName = 'relatorio-viagens-fadex') => {
+    if (!window.XLSX) {
+        throw new Error('A biblioteca XLSX não está disponível.');
+    }
+
+    const XLSX = window.XLSX;
+    const wb = XLSX.utils.book_new();
+
+    // --- Aba de Resumo ---
+    const summaryData = [
+        ['Painel de Relatórios - Fadex Viagens'],
+        [`Data da Emissão: ${new Date().toLocaleDateString('pt-BR')}`],
+        [],
+        ['Métrica', 'Valor'],
+        ['Total de Requisições', stats.totalRequests],
+        ['Valor Total', { t: 'n', v: stats.totalValue, z: '"R$"#,##0.00' }],
+        ['Total de Trechos de Viagem', stats.totalTrips],
+    ];
+    const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+    wsSummary['!cols'] = [{ wch: 30 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'Resumo');
+
+    // --- Aba de Destinos ---
+    const topDestinationsData = [
+        ['Destinos Mais Solicitados'],
+        ['Destino', 'Nº de Solicitações'],
+        ...stats.topDestinations.map(([dest, count]) => [dest, count])
+    ];
+    const wsDestinations = XLSX.utils.aoa_to_sheet(topDestinationsData);
+    wsDestinations['!cols'] = [{ wch: 30 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, wsDestinations, 'Top Destinos');
+
+    // --- Aba de Projetos ---
+    const requestsByProjectData = [
+        ['Requisições por Projeto'],
+        ['Projeto', 'Nº de Requisições'],
+        ...stats.requestsByProject.map(([project, count]) => [project, count])
+    ];
+    const wsProjects = XLSX.utils.aoa_to_sheet(requestsByProjectData);
+    wsProjects['!cols'] = [{ wch: 40 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, wsProjects, 'Reqs por Projeto');
+
+    // --- Aba de Passageiros ---
+    const topPassengersData = [
+        ['Passageiros Mais Frequentes'],
+        ['Passageiro', 'Nº de Trechos'],
+        ...stats.topPassengers.map(([name, count]) => [name, count])
+    ];
+    const wsPassengers = XLSX.utils.aoa_to_sheet(topPassengersData);
+    wsPassengers['!cols'] = [{ wch: 30 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, wsPassengers, 'Top Passageiros');
+
+    // Escreve o arquivo final
+    XLSX.writeFile(wb, `${fileName}-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.xlsx`);
+};

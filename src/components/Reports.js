@@ -1,8 +1,10 @@
 // src/components/Reports.js
 import React, { useState, useEffect, useMemo } from 'react';
 import { getAllRequests } from '../services/requestService';
-import { Loader, BarChart2, Plane, Users, DollarSign, MapPin, Briefcase } from 'lucide-react';
+import { Loader, BarChart2, Plane, Users, DollarSign, MapPin, Briefcase, FileSpreadsheet } from 'lucide-react';
 import { formatCurrency } from '../utils/utils';
+import { Button } from './ui/button';
+import { exportReportsToExcel } from '../utils/excelExporter';
 
 const StatCard = ({ title, value, icon: Icon, subtext }) => (
   <div className="bg-white dark:bg-slate-700 p-6 rounded-2xl shadow-md border border-gray-200 dark:border-slate-600 flex items-center gap-4">
@@ -89,16 +91,21 @@ const Reports = () => {
       (req.passengersData || []).forEach(passenger => {
         // Contagem por passageiro (padronizado)
         const passengerName = standardizeString(passenger.nome) || 'NAO IDENTIFICADO';
-        passengerCounts[passengerName] = (passengerCounts[passengerName] || 0) + (passenger.itinerarios?.length || 0);
-
+        
+        let passengerTripCount = 0;
         (passenger.itinerarios || []).forEach(it => {
             totalTrips++;
             totalValue += (parseFloat(it.valorUnitario) || 0) * (parseFloat(it.quantidade) || 1);
+            passengerTripCount++;
             
             // Contagem de destinos (padronizado)
             const destination = standardizeString(it.destino) || 'NAO ESPECIFICADO';
             destinationCounts[destination] = (destinationCounts[destination] || 0) + 1;
         });
+        
+        if (passengerTripCount > 0) {
+            passengerCounts[passengerName] = (passengerCounts[passengerName] || 0) + passengerTripCount;
+        }
       });
     });
     
@@ -123,6 +130,15 @@ const Reports = () => {
       topPassengers,
     };
   }, [requests]);
+  
+  const handleExport = () => {
+    try {
+      exportReportsToExcel(stats);
+    } catch (e) {
+      console.error(e);
+      alert('Houve um erro ao exportar os relatórios.');
+    }
+  };
 
   if (loading) {
     return (
@@ -139,10 +155,17 @@ const Reports = () => {
 
   return (
     <div className="animate-fade-in space-y-8">
-      <div className="flex items-center gap-4">
-        <BarChart2 className="h-8 w-8 text-gray-800 dark:text-gray-100" />
-        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Painel de Relatórios</h2>
+      <div className="flex justify-between items-center flex-wrap gap-4">
+        <div className="flex items-center gap-4">
+            <BarChart2 className="h-8 w-8 text-gray-800 dark:text-gray-100" />
+            <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Painel de Relatórios</h2>
+        </div>
+        <Button onClick={handleExport} variant="outline" disabled={requests.length === 0}>
+            <FileSpreadsheet className="mr-2 h-4 w-4" />
+            Exportar para Excel
+        </Button>
       </div>
+
 
       {/* Cards de estatísticas principais */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
