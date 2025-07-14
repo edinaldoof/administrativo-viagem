@@ -75,7 +75,7 @@ const Header = ({
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button disabled={isExportDisabled} className="flex items-center gap-2">
+                    <Button disabled={isExportDisabled} className="flex items-center gap-2" variant="outline">
                       <Download size={16} />
                       Exportar
                     </Button>
