@@ -1,4 +1,3 @@
-
 // src/ai/geminiService.js
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -149,5 +148,3 @@ export const extractDataFromPdfWithGemini = async (text) => {
     throw new Error('Falha ao extrair dados do PDF com a IA.');
   }
 };
-
-    
