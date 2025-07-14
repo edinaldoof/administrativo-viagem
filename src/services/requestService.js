@@ -1,6 +1,6 @@
 // src/services/requestService.js
 import { db } from '../firebaseConfig';
-import { collection, addDoc, getDocs, query, where, orderBy, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, documentId } from "firebase/firestore";
 
 /**
  * Salva uma nova requisição no Firestore.
@@ -56,5 +56,27 @@ export const getRequestsByWebId = async (webId) => {
   } catch (e) {
     console.error("Error searching requests by webId: ", e);
     throw new Error("Could not search requests.");
+  }
+};
+
+/**
+ * Busca requisições por uma lista de IDs de passageiros.
+ * @param {Array<string>} passengerIds - Array de IDs de passageiros (CPFs).
+ * @returns {Promise<Array<object>>} - Uma lista de requisições que correspondem aos IDs.
+ */
+export const getRequestsByPassengerIds = async (passengerIds) => {
+  if (!passengerIds || passengerIds.length === 0) {
+    return [];
+  }
+  try {
+    const requestsCol = collection(db, "requests");
+    // Firestore 'array-contains-any' é ideal para isso.
+    const q = query(requestsCol, where("passengerIds", "array-contains-any", passengerIds));
+    const querySnapshot = await getDocs(q);
+    const requestList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return requestList;
+  } catch (e) {
+    console.error("Error searching requests by passenger IDs: ", e);
+    throw new Error("Could not search requests by passenger IDs.");
   }
 };
