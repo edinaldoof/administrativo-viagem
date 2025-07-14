@@ -64,6 +64,13 @@ const formatDateToDDMMYYYY = (date) => {
         const [year, month, day] = date.split('-');
         return `${day}/${month}/${year}`;
     }
+    // Handle DD/MM/AAAA format coming from AI
+    if (typeof date === 'string' && date.includes('/')) {
+        const parts = date.split('/');
+        if (parts.length === 3) {
+            return date; // Already in the correct format
+        }
+    }
     if (!(date instanceof Date) || isNaN(date)) return '';
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -380,14 +387,20 @@ const FadexTravelSystem = () => {
             valorUnitario: it.unitPrice || 0,
         }));
 
+        // Handle round trip logic if present
         const primeiroItinerario = pIA.itinerary?.[0];
-        if (primeiroItinerario?.returnDate) {
+        if (primeiroItinerario?.isRoundTrip && primeiroItinerario?.returnDate) {
             itinerariosFormatados.push({
                 ...initialItinerarioState,
                 id: generateId(),
                 origem: primeiroItinerario.destination || '',
                 destino: primeiroItinerario.origin || '',
                 dataSaida: formatDateToYYYYMMDD(primeiroItinerario.returnDate),
+                ciaAerea: primeiroItinerario.ciaAerea || '',
+                voo: primeiroItinerario.voo || '',
+                horarios: primeiroItinerario.horarios || '',
+                quantidade: primeiroItinerario.quantity || 1,
+                valorUnitario: primeiroItinerario.unitPrice || 0,
             });
         }
         
@@ -399,6 +412,7 @@ const FadexTravelSystem = () => {
             passageiroExistente.itinerarios.push(...itinerariosFormatados);
             if (pIA.email && !passageiroExistente.email) passageiroExistente.email = pIA.email;
             if (pIA.phone && !passageiroExistente.phone) passageiroExistente.phone = formatPhone(pIA.phone);
+            if (pIA.birthDate && !passageiroExistente.dataNascimento) passageiroExistente.dataNascimento = formatDateToDDMMYYYY(pIA.birthDate);
             updatedCount++;
         } else {
             updatedPassageiros.push({
