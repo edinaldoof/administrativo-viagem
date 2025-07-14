@@ -35,6 +35,7 @@ import { getOrSavePassenger } from '../services/passengerService'; // Novo
 import { extractDataFromPdfWithGemini } from '../ai/geminiService';
 import { UploadCloud, FileText, CheckCircle, XCircle, Loader } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
+import { Button } from './ui/button.jsx';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.mjs',
@@ -475,12 +476,13 @@ const FadexTravelSystem = () => {
                 onFaturamentoChange={setFaturamento}
               />
                <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-3xl p-8 shadow-xl border border-white/20 dark:border-slate-700/50 flex justify-end">
-                <button 
+                <Button 
                   onClick={handleSaveRequest}
-                  className="px-8 py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg"
+                  size="lg"
+                  className="font-bold shadow-lg"
                   >
                   Salvar Requisição no Sistema
-                </button>
+                </Button>
               </div>
             </div>
             <div className="space-y-6">
