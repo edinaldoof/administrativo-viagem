@@ -2,18 +2,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 // Componentes
-import Header from '@/components/Header';
-import SuccessMessage from '@/components/SuccessMessage';
-import AddPassengerButton from '@/components/AddPassengerButton';
-import PassengerForm from '@/components/PassengerForm';
-import BillingForm from '@/components/BillingForm';
-import PassengerList from '@/components/PassengerList';
-import Preview from '@/components/Preview';
-import ConfirmationScreen from '@/components/ConfirmationScreen';
-import HelpChatbot from '@/components/HelpChatbot';
-import RequestList from '@/components/RequestList'; // Novo
-import PassengerRegistry from '@/components/PassengerRegistry'; // Novo
-import Reports from '@/components/Reports'; // Novo
+import Header from './Header';
+import SuccessMessage from './SuccessMessage';
+import AddPassengerButton from './AddPassengerButton';
+import PassengerForm from './PassengerForm';
+import BillingForm from './BillingForm';
+import PassengerList from './PassengerList';
+import Preview from './Preview';
+import ConfirmationScreen from './ConfirmationScreen';
+import HelpChatbot from './HelpChatbot';
+import RequestList from './RequestList'; // Novo
+import PassengerRegistry from './PassengerRegistry'; // Novo
+import Reports from './Reports'; // Novo
 
 // Utilitários e Serviços
 import {
@@ -24,19 +24,19 @@ import {
   validarDataNascimento,
   validarDataViagem,
   formatDate
-} from '@/utils/utils.js';
-import { generateSolicitacaoPDF } from '@/utils/pdfGenerator.js';
-import { exportDataToExcel } from '@/utils/excelExporter.js';
-import { exportPreviewToPNG } from '@/utils/pngExporter.js';
-import { saveFeedback } from '@/services/feedbackService';
-import { saveRequest } from '@/services/requestService'; // Novo
-import { getOrSavePassenger } from '@/services/passengerService'; // Novo
+} from '../utils/utils.js';
+import { generateSolicitacaoPDF } from '../utils/pdfGenerator.js';
+import { exportDataToExcel } from '../utils/excelExporter.js';
+import { exportPreviewToPNG } from '../utils/pngExporter.js';
+import { saveFeedback } from '../services/feedbackService.js';
+import { saveRequest } from '../services/requestService.js'; // Novo
+import { getOrSavePassenger } from '../services/passengerService.js'; // Novo
 
 // Utilitários de IA e PDF
-import { extractDataFromPdfWithGemini } from '@/ai/geminiService';
+import { extractDataFromPdfWithGemini } from '../ai/geminiService';
 import { UploadCloud, FileText, CheckCircle, XCircle, Loader, Info } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
-import { Button } from '@/components/ui/button.jsx';
+import { Button } from './ui/button.jsx';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.mjs',

@@ -1,14 +1,14 @@
 // src/components/PassengerForm.js
 import React, { useState, useMemo } from 'react';
-import { formatCPF, formatDate, formatPhone, formatCurrency } from '@/utils/utils';
-import { Button } from '@/components/ui/button';
+import { formatCPF, formatDate, formatPhone, formatCurrency } from '../utils/utils';
+import { Button } from './ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "./ui/select";
 
 
 const PassengerForm = ({

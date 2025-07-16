@@ -1,9 +1,9 @@
 // src/components/PassengerRegistry.js
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { getAllPassengers } from '@/services/passengerService';
-import { getAllRequests } from '@/services/requestService';
+import { getAllPassengers } from '../services/passengerService.js';
+import { getAllRequests } from '../services/requestService.js';
 import { Loader, Search, ChevronDown, ChevronUp } from 'lucide-react';
-import { formatCPF, formatCurrency } from '@/utils/utils';
+import { formatCPF, formatCurrency } from '../utils/utils';
 
 // Componente para exibir detalhes de uma requisição
 const RequestDetail = ({ request }) => (

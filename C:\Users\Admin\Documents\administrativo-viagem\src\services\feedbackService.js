@@ -1,5 +1,5 @@
 // src/services/feedbackService.js
-import { db } from "@/firebaseConfig.js";
+import { db } from "../firebaseConfig";
 import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } from "firebase/firestore";
 
 /**

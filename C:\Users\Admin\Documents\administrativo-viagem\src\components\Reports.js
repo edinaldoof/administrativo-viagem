@@ -1,10 +1,10 @@
 // src/components/Reports.js
 import React, { useState, useEffect, useMemo } from 'react';
-import { getAllRequests } from '@/services/requestService';
+import { getAllRequests } from '../services/requestService.js';
 import { Loader, BarChart2, Plane, Users, DollarSign, MapPin, Briefcase, FileSpreadsheet } from 'lucide-react';
-import { formatCurrency } from '@/utils/utils';
-import { Button } from '@/components/ui/button';
-import { exportReportsToExcel } from '@/utils/excelExporter';
+import { formatCurrency } from '../utils/utils';
+import { Button } from './ui/button';
+import { exportReportsToExcel } from '../utils/excelExporter';
 
 const StatCard = ({ title, value, icon: Icon, subtext }) => (
   <div className="bg-white dark:bg-slate-700 p-6 rounded-2xl shadow-md border border-gray-200 dark:border-slate-600 flex items-center gap-4">

@@ -1,7 +1,7 @@
 // src/ai/geminiService.js
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { getRecentFeedback } from '@/services/feedbackService.js'; 
+import { getRecentFeedback } from '../services/feedbackService.js'; 
 
 const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
 

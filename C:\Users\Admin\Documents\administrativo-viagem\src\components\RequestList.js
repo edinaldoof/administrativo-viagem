@@ -1,6 +1,6 @@
 // src/components/RequestList.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { getAllRequests, getRequestsByWebId } from '@/services/requestService';
+import { getAllRequests, getRequestsByWebId } from '../services/requestService.js';
 import { Search, Loader } from 'lucide-react';
 
 const RequestList = ({ onViewDetails }) => {
