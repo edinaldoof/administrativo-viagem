@@ -1,5 +1,5 @@
 // src/services/passengerService.js
-import { db } from '../firebaseConfig';
+import { db } from "../firebaseConfig.js";
 import { collection, doc, getDoc, setDoc, getDocs, query, where } from "firebase/firestore";
 
 /**
