@@ -1,5 +1,5 @@
 // src/services/requestService.js
-import { db } from "../firebaseConfig";
+import { db } from "../firebaseConfig.js";
 import { collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, documentId } from "firebase/firestore";
 
 /**
