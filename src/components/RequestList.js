@@ -1,6 +1,6 @@
 // src/components/RequestList.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { getAllRequests, getRequestsByWebId } from '../services/requestService';
+// import { getAllRequests, getRequestsByWebId } from '../services/requestService';
 import { Search, Loader } from 'lucide-react';
 
 const RequestList = ({ onViewDetails }) => {
@@ -13,10 +13,11 @@ const RequestList = ({ onViewDetails }) => {
     setLoading(true);
     setError(null);
     try {
-      const data = searchTerm 
-        ? await getRequestsByWebId(searchTerm) 
-        : await getAllRequests();
-      setRequests(data);
+      // const data = searchTerm 
+      //   ? await getRequestsByWebId(searchTerm) 
+      //   : await getAllRequests();
+      // setRequests(data);
+      setError("A funcionalidade de Requisições Salvas está desativada nesta versão.");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -101,3 +102,5 @@ const RequestList = ({ onViewDetails }) => {
 };
 
 export default RequestList;
+
+    

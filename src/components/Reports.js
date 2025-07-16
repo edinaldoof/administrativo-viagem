@@ -1,6 +1,6 @@
 // src/components/Reports.js
 import React, { useState, useEffect, useMemo } from 'react';
-import { getAllRequests } from '../services/requestService';
+// import { getAllRequests } from '../services/requestService';
 import { Loader, BarChart2, Plane, Users, DollarSign, MapPin, Briefcase, FileSpreadsheet } from 'lucide-react';
 import { formatCurrency } from '../utils/utils';
 import { Button } from './ui/button';
@@ -68,8 +68,9 @@ const Reports = () => {
       setLoading(true);
       setError(null);
       try {
-        const requestData = await getAllRequests();
-        setRequests(requestData);
+        // const requestData = await getAllRequests();
+        // setRequests(requestData);
+        setError("A funcionalidade de Relatórios está desativada nesta versão.");
       } catch (err) {
         setError('Falha ao carregar os dados para os relatórios.');
         console.error(err);
@@ -233,3 +234,5 @@ const Reports = () => {
 };
 
 export default Reports;
+
+    

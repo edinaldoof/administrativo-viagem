@@ -1,5 +1,5 @@
 // src/services/requestService.js
-import { db } from "../firebaseConfig.js";
+// import { db } from "../firebaseConfig.js";
 import { collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, documentId } from "firebase/firestore";
 
 /**
@@ -8,17 +8,18 @@ import { collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, do
  * @returns {Promise<string>} - O ID da requisição salva.
  */
 export const saveRequest = async (requestData) => {
-  try {
-    const enrichedData = {
-      ...requestData,
-      savedAt: serverTimestamp() // Adiciona um timestamp do servidor
-    };
-    const docRef = await addDoc(collection(db, "requests"), enrichedData);
-    return docRef.id;
-  } catch (e) {
-    console.error("Error adding request document: ", e);
-    throw new Error("Could not save request to the database.");
-  }
+  return "temp-id"; // Funcionalidade desativada
+  // try {
+  //   const enrichedData = {
+  //     ...requestData,
+  //     savedAt: serverTimestamp() // Adiciona um timestamp do servidor
+  //   };
+  //   const docRef = await addDoc(collection(db, "requests"), enrichedData);
+  //   return docRef.id;
+  // } catch (e) {
+  //   console.error("Error adding request document: ", e);
+  //   throw new Error("Could not save request to the database.");
+  // }
 };
 
 /**
@@ -26,16 +27,17 @@ export const saveRequest = async (requestData) => {
  * @returns {Promise<Array<object>>} - Uma lista de objetos de requisição.
  */
 export const getAllRequests = async () => {
-  try {
-    const requestsCol = collection(db, "requests");
-    const q = query(requestsCol, orderBy("savedAt", "desc"));
-    const querySnapshot = await getDocs(q);
-    const requestList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    return requestList;
-  } catch (e) {
-    console.error("Error fetching requests: ", e);
-    throw new Error("Could not fetch requests from the database.");
-  }
+  return []; // Funcionalidade desativada
+  // try {
+  //   const requestsCol = collection(db, "requests");
+  //   const q = query(requestsCol, orderBy("savedAt", "desc"));
+  //   const querySnapshot = await getDocs(q);
+  //   const requestList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  //   return requestList;
+  // } catch (e) {
+  //   console.error("Error fetching requests: ", e);
+  //   throw new Error("Could not fetch requests from the database.");
+  // }
 };
 
 /**
@@ -44,19 +46,20 @@ export const getAllRequests = async () => {
  * @returns {Promise<Array<object>>} - Uma lista de requisições que correspondem ao webId.
  */
 export const getRequestsByWebId = async (webId) => {
-  if (!webId) {
-    return getAllRequests(); // Se a busca for vazia, retorna todas
-  }
-  try {
-    const requestsCol = collection(db, "requests");
-    const q = query(requestsCol, where("webId", "==", webId), orderBy("savedAt", "desc"));
-    const querySnapshot = await getDocs(q);
-    const requestList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    return requestList;
-  } catch (e) {
-    console.error("Error searching requests by webId: ", e);
-    throw new Error("Could not search requests.");
-  }
+  return []; // Funcionalidade desativada
+  // if (!webId) {
+  //   return getAllRequests(); // Se a busca for vazia, retorna todas
+  // }
+  // try {
+  //   const requestsCol = collection(db, "requests");
+  //   const q = query(requestsCol, where("webId", "==", webId), orderBy("savedAt", "desc"));
+  //   const querySnapshot = await getDocs(q);
+  //   const requestList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  //   return requestList;
+  // } catch (e) {
+  //   console.error("Error searching requests by webId: ", e);
+  //   throw new Error("Could not search requests.");
+  // }
 };
 
 /**
@@ -65,18 +68,21 @@ export const getRequestsByWebId = async (webId) => {
  * @returns {Promise<Array<object>>} - Uma lista de requisições que correspondem aos IDs.
  */
 export const getRequestsByPassengerIds = async (passengerIds) => {
-  if (!passengerIds || passengerIds.length === 0) {
-    return [];
-  }
-  try {
-    const requestsCol = collection(db, "requests");
-    // Firestore 'array-contains-any' é ideal para isso.
-    const q = query(requestsCol, where("passengerIds", "array-contains-any", passengerIds));
-    const querySnapshot = await getDocs(q);
-    const requestList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    return requestList;
-  } catch (e) {
-    console.error("Error searching requests by passenger IDs: ", e);
-    throw new Error("Could not search requests by passenger IDs.");
-  }
+  return []; // Funcionalidade desativada
+  // if (!passengerIds || passengerIds.length === 0) {
+  //   return [];
+  // }
+  // try {
+  //   const requestsCol = collection(db, "requests");
+  //   // Firestore 'array-contains-any' é ideal para isso.
+  //   const q = query(requestsCol, where("passengerIds", "array-contains-any", passengerIds));
+  //   const querySnapshot = await getDocs(q);
+  //   const requestList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  //   return requestList;
+  // } catch (e) {
+  //   console.error("Error searching requests by passenger IDs: ", e);
+  //   throw new Error("Could not search requests by passenger IDs.");
+  // }
 };
+
+    
