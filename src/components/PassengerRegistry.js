@@ -1,7 +1,7 @@
 // src/components/PassengerRegistry.js
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-// import { getAllPassengers } from '../services/passengerService';
-// import { getAllRequests } from '../services/requestService';
+import { getAllPassengers } from '../services/passengerService';
+import { getAllRequests } from '../services/requestService';
 import { Loader, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import { formatCPF, formatCurrency } from '../utils/utils';
 
@@ -83,11 +83,10 @@ const PassengerRegistry = () => {
     setLoading(true);
     setError(null);
     try {
-      // const passengerData = await getAllPassengers();
-      // const requestData = await getAllRequests();
-      // setAllPassengers(passengerData);
-      // setAllRequests(requestData);
-      setError("A funcionalidade de Catálogo de Passageiros está desativada nesta versão.");
+      const passengerData = await getAllPassengers();
+      const requestData = await getAllRequests();
+      setAllPassengers(passengerData);
+      setAllRequests(requestData);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -176,5 +175,3 @@ const PassengerRegistry = () => {
 };
 
 export default PassengerRegistry;
-
-    
