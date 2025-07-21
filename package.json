@@ -5,7 +5,7 @@
   "private": true,
   "homepage": ".",
   "scripts": {
-    "start": "react-scripts start",
+    "start": "serve -s build",
     "build": "react-scripts build",
     "dev": "PORT=9002 react-scripts start",
     "test": "react-scripts test",
