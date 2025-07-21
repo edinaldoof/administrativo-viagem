@@ -1,7 +1,7 @@
 // src/ai/geminiService.js
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { getRecentFeedback } from '../services/feedbackService'; 
+import { getRecentFeedback } from '../services/feedbackService.js'; 
 
 const apiKey = process.env.REACT_APP_GOOGLE_API_KEY;
 
@@ -48,40 +48,41 @@ export const extractDataFromPdfWithGemini = async (text) => {
   const feedbackPrompt = generateFeedbackPrompt(storedFeedback);
 
   const prompt = `
-    Você é um assistente de extração de dados altamente especializado para requisições de viagem.
-    Sua tarefa é analisar meticulosamente o texto do documento PDF fornecido e retornar um único objeto JSON bem estruturado.
-    Você deve aprender com as correções anteriores do usuário.
+    Você é um assistente de extração de dados altamente especializado para requisições de viagem de diversos formatos.
+    Sua tarefa é analisar o texto do documento fornecido e retornar um único objeto JSON bem estruturado.
+    A estrutura do documento pode variar. Você deve ser flexível para encontrar os dados, seja em tabelas, listas ou texto corrido.
+    **Aprenda com as correções anteriores do usuário, elas são a regra mais importante.**
 
     ${feedbackPrompt}
 
-    **Instruções de Extração:**
+    **Instruções de Extração Conceitual (Encontre a ideia, não apenas o texto exato):**
 
     1.  **Informações Globais (Faturamento e Título):**
-        -   **title**: O título principal, tipicamente "Requisição para Compra de Passagens" mais o nome do projeto (ex: "12071-5-CONT 31/2024 - IFMA - PROJETO...").
-        -   **billing.costCenter**: Encontre o valor de "CENTRO DE CUSTO". Esta é a conta corrente do projeto. Se não disponível, use o número do projeto.
-        -   **billing.account**: Encontre o valor de "NUMERO DO PROJETO".
-        -   **billing.webId**: Extraia apenas o número de "Número da Solicitação: WEB:".
-        -   **billing.description**: Obtenha o conteúdo completo do campo "JUSTIFICATIVA/FINALIDADE".
+        -   **title**: Identifique o título principal do documento. Geralmente está no topo e pode incluir "Requisição de Compra", "Solicitação de Viagem" e um nome ou número de projeto.
+        -   **billing.costCenter**: Encontre o centro de custo. Procure por termos como "CENTRO DE CUSTO", "CC", "Cost Center". Pode ser um código ou um nome. Se não encontrar, pode estar associado ao número do projeto.
+        -   **billing.account**: Encontre o número ou conta do projeto. Procure por "NUMERO DO PROJETO", "Conta do Projeto", "Project ID".
+        -   **billing.webId**: Extraia o número de identificação da solicitação, frequentemente associado a termos como "Número da Solicitação", "WEB ID", "Request ID".
+        -   **billing.description**: Obtenha a justificativa ou finalidade da viagem. Procure por campos como "JUSTIFICATIVA", "FINALIDADE", "OBJETIVO".
 
-    2.  **Passageiros (Array de objetos):** Encontre todas as seções de passageiros. Cada seção "DADOS GERAIS DO ITEM" ou "DADOS DO BENEFICIÁRIO" representa uma requisição para um passageiro.
-        -   **name**: O nome completo de "CPF E NOME". Padronize o nome convertendo-o para letras maiúsculas (ex: 'João da Silva' se torna 'JOÃO DA SILVA').
-        -   **cpf**: O CPF de "CPF E NOME".
-        -   **birthDate**: A data de nascimento de "DATA DE NASCIMENTO" no formato DD/MM/AAAA.
-        -   **email**: O e-mail de "E-MAIL".
-        -   **phone**: O número de telefone de "TELEFONE" ou "CELULAR".
-        -   **itinerary (Array de objetos)**: Para cada passageiro, extraia seus segmentos de viagem.
-            -   **origin**: A "CIDADE DE ORIGEM" ou "ORIGEM". Padronize o nome da cidade removendo acentos e convertendo para maiúsculas (ex: 'São Paulo' se torna 'SAO PAULO').
-            -   **destination**: A "CIDADE DE DESTINO" ou "DESTINO". Padronize o nome da cidade removendo acentos e convertendo para maiúsculas (ex: 'CUIABÁ' se torna 'CUIABA').
-            -   **departureDate**: A data de "DATA DE SAÍDA" ou "IDA" no formato DD/MM/AAAA.
-            -   **returnDate**: A data de "DATA DE RETORNO" ou "RETORNO" no formato DD/MM/AAAA. Se não estiver presente, este campo deve ser nulo.
-            -   **isRoundTrip**: Defina como 'true' se uma data de retorno existir, caso contrário, 'false'.
-            -   **tripType**: Determine se é "Aéreo" ou "Terrestre". Padrão para "Aéreo" se não especificado.
-            -   **ciaAerea**: Extraia de "DETALHE DO ITEM" ou "OBSERVAÇÕES". Para terrestre, pode ser a empresa de ônibus.
-            -   **voo**: Extraia de "DETALHE DO ITEM" ou "OBSERVAÇÕES". Para terrestre, pode ser nulo.
-            -   **horarios**: Extraia de "DETALHE DO ITEM" ou "OBSERVAÇÕES".
-            -   **baggage**: Verifique o campo "BAGAGENS". Se contiver "COM BAGAGENS", defina como "Com Bagagem". Se "SEM BAGAGENS", defina como "Sem Bagagem". Se não estiver presente, defina como "Não especificado".
-            -   **quantity**: Extraia o valor de "QUANTIDADE". É um número. Se não presente, o padrão é 1.
-            -   **unitPrice**: Extraia o valor de "VALOR UNITARIO". Deve ser um número (ex: 1234.56). Se não presente, o padrão é 0.
+    2.  **Passageiros (Array de objetos):** O documento pode conter um ou mais passageiros. Identifique cada um. Eles podem ser chamados de "Passageiro", "Beneficiário", "Viajante" ou estarem em seções como "DADOS DO ITEM".
+        -   **name**: O nome completo do passageiro. Geralmente está próximo ao CPF. **Padronize o nome para MAIÚSCULAS.**
+        -   **cpf**: O número do CPF.
+        -   **birthDate**: A data de nascimento, no formato DD/MM/AAAA.
+        -   **email**: O endereço de e-mail.
+        -   **phone**: O número de telefone ou celular.
+        -   **itinerary (Array de objetos)**: Para cada passageiro, extraia seus trechos de viagem. Um passageiro pode ter múltiplos trechos (ida, volta, conexões).
+            -   **origin**: A cidade de origem do trecho. **Padronize para MAIÚSCULAS e sem acentos (ex: 'São Paulo' -> 'SAO PAULO').**
+            -   **destination**: A cidade de destino do trecho. **Padronize para MAIÚSCulas e sem acentos (ex: 'CUIABÁ' -> 'CUIABA').**
+            -   **departureDate**: A data de partida do trecho, no formato DD/MM/AAAA.
+            -   **returnDate**: A data de retorno do trecho, no formato DD/MM/AAAA. Se o trecho for apenas de ida, este campo deve ser nulo.
+            -   **isRoundTrip**: Analise o contexto. Se houver uma data de retorno clara para o trecho de ida, marque como 'true' para aquele trecho. Para o trecho de volta, marque como 'false'.
+            -   **tripType**: Determine se é "Aéreo" ou "Terrestre" com base no contexto (ex: menção a "Voo", "Cia Aérea" vs. "Ônibus", "Empresa"). Padrão para "Aéreo" se não especificado.
+            -   **ciaAerea**: Nome da companhia aérea ou de transporte terrestre.
+            -   **voo**: O número do voo ou identificador do transporte.
+            -   **horarios**: Os horários de partida e chegada.
+            -   **baggage**: Verifique se há menção a bagagens. Pode ser "Com Bagagem", "Sem Bagagem", "Baggage included", etc. Se não houver menção, defina como "Não especificado".
+            -   **quantity**: A quantidade de passagens para este trecho. Se não for especificado, o padrão é 1.
+            -   **unitPrice**: O valor unitário do trecho. Deve ser um número. Se não for especificado, o padrão é 0.
 
     **Formato de Saída JSON Esperado:**
     {
@@ -120,9 +121,10 @@ export const extractDataFromPdfWithGemini = async (text) => {
     }
 
     **Instruções Cruciais:**
-    - Seja preciso. Se um campo não estiver presente, retorne nulo ou uma string vazia conforme apropriado pelo esquema, exceto para quantidade (padrão 1) e valorUnitario (padrão 0).
-    - Se você estiver usando o feedback para fazer uma correção, certifique-se de aplicá-la. As regras do usuário são mais importantes que sua análise inicial. Por exemplo, se o usuário afirmar "O número do projeto é sempre a primeira parte do título", você deve seguir essa regra.
-    - **Sempre padronize os nomes de passageiros e cidades como instruído acima.**
+    - Seja preciso e meticuloso. Se um campo não for encontrado, retorne nulo ou uma string vazia conforme o esquema, exceto para quantidade (padrão 1) e valorUnitario (padrão 0).
+    - **Suas regras mais importantes vêm do feedback do usuário. Aplique essas correções rigorosamente.**
+    - **Sempre padronize os nomes de passageiros e cidades como instruído.**
+    - Retorne apenas o objeto JSON, sem nenhum texto adicional ou formatação como \`\`\`json.
 
     **Documento para análise:**
     ---
@@ -135,6 +137,7 @@ export const extractDataFromPdfWithGemini = async (text) => {
     const response = await result.response;
     const jsonText = response.text();
     
+    // Limpeza robusta para garantir que apenas o JSON seja processado
     const cleanJson = jsonText.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(cleanJson);
   } catch (error) {
@@ -143,7 +146,7 @@ export const extractDataFromPdfWithGemini = async (text) => {
         throw new Error("Erro de Configuração: A chave da API é inválida.");
     }
     if (error instanceof SyntaxError) {
-        throw new Error("A IA retornou uma resposta em um formato inesperado.");
+        throw new Error("A IA retornou uma resposta em um formato inesperado. Verifique o JSON retornado: " + error.message);
     }
     throw new Error('Falha ao extrair dados do PDF com a IA.');
   }
