@@ -1,3 +1,4 @@
+
 // src/ai/geminiService.js
 
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -59,8 +60,9 @@ export const extractDataFromPdfWithGemini = async (text) => {
 
     1.  **Informações Globais (Faturamento e Título):**
         -   **title**: Identifique o título principal do documento. Geralmente está no topo e pode incluir "Requisição de Compra", "Solicitação de Viagem" e um nome ou número de projeto.
-        -   **billing.costCenter**: Encontre o centro de custo. Procure por termos como "CENTRO DE CUSTO", "CC", "Cost Center". Pode ser um código ou um nome. Se não encontrar, pode estar associado ao número do projeto.
-        -   **billing.account**: Encontre o número ou conta do projeto. Procure por "NUMERO DO PROJETO", "Conta do Projeto", "Project ID".
+        -   **billing.costCenter**: Encontre o centro de custo. Procure por termos como "CENTRO DE CUSTO", "Cost Center". Se não encontrar, pode estar associado ao número do projeto.
+        -   **billing.account**: Encontre o número da conta do projeto. Procure por "NUMERO DO PROJETO", "Conta do Projeto", "Project ID".
+        -   **billing.cc**: Extraia a conta corrente do projeto, que pode vir como "CC", "Conta Corrente", etc.
         -   **billing.webId**: Extraia o número de identificação da solicitação, frequentemente associado a termos como "Número da Solicitação", "WEB ID", "Request ID".
         -   **billing.description**: Obtenha a justificativa ou finalidade da viagem. Procure por campos como "JUSTIFICATIVA", "FINALIDADE", "OBJETIVO".
 
@@ -90,6 +92,7 @@ export const extractDataFromPdfWithGemini = async (text) => {
       "billing": {
         "costCenter": "string or null",
         "account": "string or null",
+        "cc": "string or null",
         "webId": "string or null",
         "description": "string or null"
       },
