@@ -19,7 +19,6 @@ import Reports from './Reports'; // Novo
 import {
   generateId,
   formatCPF,
-  formatPhone,
   validarCPF,
   validarDataNascimento,
   validarDataViagem,
@@ -28,9 +27,9 @@ import {
 import { generateSolicitacaoPDF } from '../utils/pdfGenerator.js';
 import { exportDataToExcel } from '../utils/excelExporter.js';
 import { exportPreviewToPNG } from '../utils/pngExporter.js';
-// import { saveFeedback } from '../services/feedbackService';
-// import { saveRequest } from '../services/requestService'; // Novo
-// import { getOrSavePassenger } from '../services/passengerService'; // Novo
+import { saveFeedback } from '../services/feedbackService.js';
+import { saveRequest } from '../services/requestService.js'; // Novo
+import { getOrSavePassenger } from '../services/passengerService.js'; // Novo
 
 // Utilitários de IA e PDF
 import { extractDataFromPdfWithGemini } from '../ai/geminiService';
@@ -136,7 +135,7 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
   const handleSendFeedback = async (justification) => {
     if (justification && justification.trim()) {
       try {
-        // await saveFeedback(justification);
+        await saveFeedback(justification);
         showSuccessMessage('Obrigado! Seu feedback foi salvo e ajudará a melhorar futuras extrações.');
       } catch (error) {
         console.error("Erro ao salvar feedback:", error);
@@ -209,7 +208,7 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
 // Componente principal
 const FadexTravelSystem = () => {
   const [passageiros, setPassageiros] = useState([]);
-  const [faturamento, setFaturamento] = useState({ contaProjeto: '', descricao: '', cc: '', webId: '' });
+  const [faturamento, setFaturamento] = useState({ contaProjeto: '', descricao: '', costCenter: '', webId: '' });
   const [activeForm, setActiveForm] = useState(null);
   const [editingPassageiro, setEditingPassageiro] = useState(null);
   const initialPassageiroState = { id: '', nome: '', cpf: '', dataNascimento: '', email: '', phone: '', itinerarios: [], anexos: [] };
@@ -303,45 +302,43 @@ const FadexTravelSystem = () => {
   
   const resetRequestState = () => {
     setPassageiros([]);
-    setFaturamento({ contaProjeto: '', descricao: '', cc: '', webId: '' });
+    setFaturamento({ contaProjeto: '', descricao: '', costCenter: '', webId: '' });
     resetCurrentPassageiro();
     setActiveForm(null);
     setErrors({});
   };
 
   const handleSaveRequest = async () => {
-    alert('A funcionalidade de salvar no banco de dados está desativada nesta versão.');
-    return;
-    // if (passageiros.length === 0) {
-    //   setErrors({ global: 'Adicione pelo menos um passageiro para salvar a requisição.'});
-    //   return;
-    // }
-    // if (!faturamento.webId) {
-    //    setErrors({ global: 'O campo WEB ID é obrigatório para salvar a requisição.'});
-    //   return;
-    // }
-    // try {
-    //   // Garante que todos os passageiros estão salvos no 'catálogo' de passageiros
-    //   const passengerPromises = passageiros.map(p => getOrSavePassenger(p));
-    //   const savedPassengers = await Promise.all(passengerPromises);
+    if (passageiros.length === 0) {
+      setErrors({ global: 'Adicione pelo menos um passageiro para salvar a requisição.'});
+      return;
+    }
+    if (!faturamento.webId) {
+       setErrors({ global: 'O campo WEB ID é obrigatório para salvar a requisição.'});
+      return;
+    }
+    try {
+      // Garante que todos os passageiros estão salvos no 'catálogo' de passageiros
+      const passengerPromises = passageiros.map(p => getOrSavePassenger(p));
+      const savedPassengers = await Promise.all(passengerPromises);
 
-    //   // Mapeia para salvar apenas os IDs na requisição
-    //   const passengerRefs = savedPassengers.map(p => p.id);
+      // Mapeia para salvar apenas os IDs na requisição
+      const passengerRefs = savedPassengers.map(p => p.id);
       
-    //   const requestData = {
-    //     ...faturamento,
-    //     passengerIds: passengerRefs, // Armazenando IDs
-    //     passengersData: passageiros, // Armazenando cópia dos dados para o histórico
-    //   };
+      const requestData = {
+        ...faturamento,
+        passengerIds: passengerRefs, // Armazenando IDs
+        passengersData: passageiros, // Armazenando cópia dos dados para o histórico
+      };
 
-    //   await saveRequest(requestData);
-    //   showSuccessMessageHandler('Requisição salva com sucesso no banco de dados!');
-    //   resetRequestState();
+      await saveRequest(requestData);
+      showSuccessMessageHandler('Requisição salva com sucesso no banco de dados!');
+      resetRequestState();
 
-    // } catch(error) {
-    //   console.error("Erro ao salvar requisição:", error);
-    //   showSuccessMessageHandler(`Erro ao salvar: ${error.message}`);
-    // }
+    } catch(error) {
+      console.error("Erro ao salvar requisição:", error);
+      showSuccessMessageHandler(`Erro ao salvar: ${error.message}`);
+    }
   };
 
 
@@ -359,7 +356,7 @@ const FadexTravelSystem = () => {
     setFaturamento(prevFaturamento => ({
       ...prevFaturamento,
       contaProjeto: dataFromAI.billing?.account || prevFaturamento.contaProjeto,
-      cc: dataFromAI.billing?.costCenter || prevFaturamento.cc,
+      costCenter: dataFromAI.billing?.costCenter || prevFaturamento.costCenter,
       descricao: dataFromAI.billing?.description || prevFaturamento.descricao,
       webId: dataFromAI.billing?.webId || prevFaturamento.webId,
     }));
@@ -419,7 +416,7 @@ const FadexTravelSystem = () => {
             const passageiroExistente = updatedPassageiros[existingPassengerIndex];
             passageiroExistente.itinerarios.push(...itinerariosFormatados);
             if (pIA.email && !passageiroExistente.email) passageiroExistente.email = pIA.email;
-            if (pIA.phone && !passageiroExistente.phone) passageiroExistente.phone = formatPhone(pIA.phone);
+            if (pIA.phone && !passageiroExistente.phone) passageiroExistente.phone = pIA.phone;
             if (pIA.birthDate && !passageiroExistente.dataNascimento) passageiroExistente.dataNascimento = formatDateToDDMMYYYY(pIA.birthDate);
             updatedCount++;
         } else {
@@ -429,7 +426,7 @@ const FadexTravelSystem = () => {
                 cpf: formattedCPF,
                 dataNascimento: formatDateToDDMMYYYY(pIA.birthDate),
                 email: pIA.email || '',
-                phone: formatPhone(pIA.phone || ''),
+                phone: pIA.phone || '',
                 anexos: [],
                 itinerarios: itinerariosFormatados,
             });
@@ -449,7 +446,7 @@ const FadexTravelSystem = () => {
     setFaturamento({
       contaProjeto: request.contaProjeto || '',
       descricao: request.descricao || '',
-      cc: request.cc || '',
+      costCenter: request.costCenter || '',
       webId: request.webId || '',
     });
     setPassageiros(request.passengersData || []);
@@ -570,5 +567,3 @@ const FadexTravelSystem = () => {
 };
 
 export default FadexTravelSystem;
-
-    

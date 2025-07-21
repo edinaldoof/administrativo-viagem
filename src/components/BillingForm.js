@@ -40,12 +40,12 @@ const BillingForm = ({ faturamento, onFaturamentoChange }) => {
           />
         </div>
         <div>
-          <label htmlFor="cc" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Conta corrente do projeto</label>
+          <label htmlFor="costCenter" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Conta corrente do projeto</label>
           <input
             type="text"
-            name="cc"
-            id="cc"
-            value={faturamento.cc}
+            name="costCenter"
+            id="costCenter"
+            value={faturamento.costCenter}
             onChange={handleChange}
             className="w-full p-4 border border-gray-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-200"
             placeholder="Ex: 12.071-5"

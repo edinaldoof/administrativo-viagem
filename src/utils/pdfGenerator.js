@@ -220,7 +220,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   }, 0);
   
   // Faturamento
-  if (faturamento && (faturamento.contaProjeto || faturamento.descricao || faturamento.cc || faturamento.webId)) {
+  if (faturamento && (faturamento.contaProjeto || faturamento.descricao || faturamento.costCenter || faturamento.webId)) {
     if(checkAndAddPage(30)) yPosition += 10;
     yPosition = addSectionTitle(doc, 'Informações de Faturamento', yPosition);
     doc.setFillColor(COLORS.BACKGROUND_SECTION);
@@ -232,7 +232,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
     const fields = [];
     if(faturamento.contaProjeto) fields.push({label: 'Projeto', value: faturamento.contaProjeto, fullWidth: true});
     if(faturamento.descricao) fields.push({label: 'Descrição', value: faturamento.descricao, fullWidth: true});
-    if(faturamento.cc) fields.push({label: 'Conta corrente do projeto', value: faturamento.cc});
+    if(faturamento.costCenter) fields.push({label: 'Conta corrente do projeto', value: faturamento.costCenter});
     if(faturamento.webId) fields.push({label: 'WEB ID', value: faturamento.webId});
     
     let faturamentoHeight = 10;

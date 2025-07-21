@@ -114,8 +114,7 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
   
   // Mapeamento de caminhos para rótulos amigáveis
   const friendlyLabels = {
-    'title': 'Título', 'billing.account': 'Conta do Projeto', 'billing.cc': 'Conta corrente do projeto',
-    'billing.costCenter': 'Centro de Custo',
+    'title': 'Título', 'billing.account': 'Conta do Projeto', 'billing.costCenter': 'Conta corrente do projeto',
     'billing.webId': 'Web ID', 'billing.description': 'Justificativa',
   };
   if (originalData.passengers) {
@@ -237,8 +236,7 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
         <div className="space-y-2">
           {renderField("Título", "title")}
           {renderField("Conta do Projeto", "billing.account")}
-          {renderField("Centro de Custo", "billing.costCenter")}
-          {renderField("Conta corrente do projeto", "billing.cc")}
+          {renderField("Conta corrente do projeto", "billing.costCenter")}
           {renderField("Web ID", "billing.webId")}
           {renderField("Justificativa", "billing.description")}
         </div>
