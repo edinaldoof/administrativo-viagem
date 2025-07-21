@@ -3,9 +3,8 @@
   "name": "viagens-fadex-react",
   "version": "1.0.0",
   "private": true,
-  "homepage": ".",
   "scripts": {
-    "start": "serve -s build",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "dev": "PORT=9002 react-scripts start",
     "test": "react-scripts test",
@@ -33,7 +32,6 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.19",
-    "serve": "^14.2.1",
     "tailwindcss": "^3.4.3"
   },
   "browserslist": {
