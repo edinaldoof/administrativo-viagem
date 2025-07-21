@@ -359,7 +359,23 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
       doc.text(`Total Geral da Requisição:`, GRADIENT_WIDTH + PAGE_MARGIN, yPosition);
       doc.setFont(FONTS.DEFAULT, 'bold'); doc.setFontSize(16); doc.setTextColor(COLORS.PRIMARY);
       doc.text(formatCurrency(totalGeral), doc.internal.pageSize.getWidth() - PAGE_MARGIN, yPosition, {align: 'right'});
+      yPosition += 10;
   }
+
+  // Observação sobre os valores
+  const observationText = "Observação: Os valores apresentados são sugestões do coordenador com base em pesquisas realizadas e estão sujeitos a alterações.";
+  const splitObservation = doc.splitTextToSize(observationText, doc.internal.pageSize.getWidth() - (GRADIENT_WIDTH + PAGE_MARGIN) * 2);
+  const observationHeight = splitObservation.length * 4 + 4; // Add some padding
+  
+  if (checkAndAddPage(observationHeight)) {
+    yPosition = pageHeight - contentMarginBottomForPageBreak - observationHeight;
+  }
+
+  doc.setFont(FONTS.DEFAULT, 'italic');
+  doc.setFontSize(8);
+  doc.setTextColor(COLORS.MEDIUM_TEXT);
+  doc.text(splitObservation, GRADIENT_WIDTH + PAGE_MARGIN, yPosition);
+
 
   const attachmentPromises = [];
   if (passageiros) {
