@@ -34,7 +34,7 @@ import { getOrSavePassenger } from '../services/passengerService.js'; // Novo
 // Utilitários de IA e PDF
 import { extractDataFromPdfWithGemini } from '../ai/geminiService.js';
 import { UploadCloud, FileText, CheckCircle, XCircle, Loader, Info } from 'lucide-react';
-import * as pdfjsLib from 'pdfjs-dist/build/pdf';
+import * as pdfjsLib from 'pdfjs-dist';
 import { Button } from './ui/button.jsx';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -208,7 +208,7 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
 // Componente principal
 const FadexTravelSystem = () => {
   const [passageiros, setPassageiros] = useState([]);
-  const [faturamento, setFaturamento] = useState({ contaProjeto: '', descricao: '', costCenter: '', webId: '' });
+  const [faturamento, setFaturamento] = useState({ contaProjeto: '', descricao: '', costCenter: '', webId: '', observacoes: '' });
   const [activeForm, setActiveForm] = useState(null);
   const [editingPassageiro, setEditingPassageiro] = useState(null);
   const initialPassageiroState = { id: '', nome: '', cpf: '', dataNascimento: '', email: '', phone: '', itinerarios: [], anexos: [] };
@@ -302,7 +302,7 @@ const FadexTravelSystem = () => {
   
   const resetRequestState = () => {
     setPassageiros([]);
-    setFaturamento({ contaProjeto: '', descricao: '', costCenter: '', webId: '' });
+    setFaturamento({ contaProjeto: '', descricao: '', costCenter: '', webId: '', observacoes: '' });
     resetCurrentPassageiro();
     setActiveForm(null);
     setErrors({});
@@ -359,6 +359,7 @@ const FadexTravelSystem = () => {
       costCenter: dataFromAI.billing?.costCenter || prevFaturamento.costCenter,
       descricao: dataFromAI.billing?.description || prevFaturamento.descricao,
       webId: dataFromAI.billing?.webId || prevFaturamento.webId,
+      observacoes: dataFromAI.observations || prevFaturamento.observacoes,
     }));
 
     const passageirosParaAdicionar = dataFromAI.passengers || [];
@@ -448,6 +449,7 @@ const FadexTravelSystem = () => {
       descricao: request.descricao || '',
       costCenter: request.costCenter || '',
       webId: request.webId || '',
+      observacoes: request.observacoes || '',
     });
     setPassageiros(request.passengersData || []);
     // Volta para a tela de criação/edição

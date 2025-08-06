@@ -56,7 +56,7 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
           <div className="bg-gray-50 dark:bg-slate-700 rounded-2xl p-6 text-sm grid grid-cols-2 gap-x-8 gap-y-4">
             {faturamento.contaProjeto && (
               <div className="col-span-2">
-                <p className="font-medium text-gray-500 dark:text-gray-400">Projeto</p>
+                <p className="font-medium text-gray-500 dark:text-gray-400">Número da Conta</p>
                 <p className="text-gray-800 dark:text-gray-100">{faturamento.contaProjeto}</p>
               </div>
             )}
@@ -77,6 +77,12 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
                 <p className="font-medium text-gray-500 dark:text-gray-400">WEB ID</p>
                 <p className="text-gray-800 dark:text-gray-100">{faturamento.webId}</p>
               </div>
+            )}
+            {faturamento.observacoes && (
+                <div className="col-span-2">
+                    <p className="font-medium text-gray-500 dark:text-gray-400">Observações</p>
+                    <p className="text-gray-800 dark:text-gray-100 whitespace-pre-wrap">{faturamento.observacoes}</p>
+                </div>
             )}
           </div>
         </div>

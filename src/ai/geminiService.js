@@ -174,6 +174,7 @@ export const extractDataFromPdfWithGemini = async (text, options = {}) => {
         -   **billing.cc**: Extraia a conta corrente do projeto, que pode vir como "CC", "Conta Corrente", "C/C".
         -   **billing.webId**: Extraia o número de identificação da solicitação, frequentemente associado a termos como "Número da Solicitação", "WEB ID", "Request ID", "WEB".
         -   **billing.description**: Obtenha a justificativa ou finalidade da viagem. Procure por campos como "JUSTIFICATIVA", "FINALIDADE", "OBJETIVO", "DESCRIÇÃO".
+        -   **observations**: Extraia qualquer texto de observação geral, que possa estar em campos como "OBSERVAÇÕES GERAIS", "OBSERVAÇÃO", ou texto livre que pareça relevante para toda a requisição.
 
     2.  **Passageiros (Array de objetos):** O documento pode conter um ou mais passageiros. Identifique cada um. Eles podem ser chamados de "Passageiro", "Beneficiário", "Viajante", "Servidor" ou estarem em seções como "DADOS DO ITEM", "DADOS DO PASSAGEIRO".
         -   **name**: O nome completo do passageiro. Geralmente está próximo ao CPF. **Padronize o nome para MAIÚSCULAS.**
@@ -204,6 +205,7 @@ export const extractDataFromPdfWithGemini = async (text, options = {}) => {
     **Formato de Saída JSON Esperado:**
     {
       "title": "string or null",
+      "observations": "string or null",
       "billing": {
         "costCenter": "string or null",
         "account": "string or null",

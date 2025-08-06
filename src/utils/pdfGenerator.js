@@ -187,7 +187,7 @@ function drawDirectionalIcon(doc, x, y, size, color, isReturn = false) {
     doc.setFont(FONTS.DEFAULT, 'bold');
     doc.setFontSize(size);
     // Usando > para ida e < para volta
-    const icon = isReturn ? '&lt;' : '&gt;';
+    const icon = isReturn ? '<' : '>';
     doc.text(icon, x, y, { baseline: 'middle' });
 }
 
@@ -239,14 +239,16 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
     if(faturamento.descricao) fields.push({label: 'Descrição', value: faturamento.descricao, fullWidth: true});
     if(faturamento.costCenter) fields.push({label: 'Conta corrente do projeto', value: faturamento.costCenter});
     if(faturamento.webId) fields.push({label: 'WEB ID', value: faturamento.webId});
+    if(faturamento.observacoes) fields.push({label: 'Observações', value: faturamento.observacoes, fullWidth: true});
     
     let faturamentoHeight = 10;
     fields.forEach(field => {
+        const textToSplit = field.value || '';
         if(field.fullWidth) {
-           const splitText = doc.splitTextToSize(field.value, doc.internal.pageSize.getWidth() - faturamentoStartX * 2 - 10);
+           const splitText = doc.splitTextToSize(textToSplit, doc.internal.pageSize.getWidth() - faturamentoStartX * 2 - 10);
            faturamentoHeight += 4 + splitText.length * 4;
         } else {
-           faturamentoHeight += 4;
+           faturamentoHeight += 8; // Aumentar um pouco para acomodar melhor
         }
     });
     faturamentoHeight = Math.max(faturamentoHeight, 20);
@@ -266,7 +268,8 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
         
         doc.setFont(FONTS.DEFAULT, 'normal');
         const textMaxWidth = field.fullWidth ? doc.internal.pageSize.getWidth() - faturamentoStartX * 2 - 10 : doc.internal.pageSize.getWidth() / 2 - faturamentoStartX;
-        const splitText = doc.splitTextToSize(field.value, textMaxWidth);
+        const textToDraw = field.value || '';
+        const splitText = doc.splitTextToSize(textToDraw, textMaxWidth);
         doc.text(splitText, currentX, currentY + 4);
         const textHeight = splitText.length * 4;
         
