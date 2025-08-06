@@ -1,4 +1,3 @@
-
 // src/utils/pdfGenerator.js
 import { jsPDF } from 'jspdf';
 import { formatCPF, formatCurrency } from './utils';
@@ -188,7 +187,7 @@ function drawDirectionalIcon(doc, x, y, size, color, isReturn = false) {
     doc.setFont(FONTS.DEFAULT, 'bold');
     doc.setFontSize(size);
     // Usando > para ida e < para volta
-    const icon = isReturn ? '<' : '>';
+    const icon = isReturn ? '&lt;' : '&gt;';
     doc.text(icon, x, y, { baseline: 'middle' });
 }
 
@@ -226,7 +225,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   }, 0);
   
   // Faturamento
-  if (faturamento && (faturamento.contaProjeto || faturamento.descricao || faturamento.cc || faturamento.webId)) {
+  if (faturamento && (faturamento.contaProjeto || faturamento.descricao || faturamento.costCenter || faturamento.webId)) {
     if(checkAndAddPage(30)) yPosition += 10;
     yPosition = addSectionTitle(doc, 'Informações de Faturamento', yPosition);
     doc.setFillColor(COLORS.BACKGROUND_SECTION);
@@ -236,9 +235,9 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
     doc.setFont(FONTS.DEFAULT, 'normal'); doc.setFontSize(9); doc.setTextColor(COLORS.MEDIUM_TEXT);
     
     const fields = [];
-    if(faturamento.contaProjeto) fields.push({label: 'Projeto', value: faturamento.contaProjeto, fullWidth: true});
+    if(faturamento.contaProjeto) fields.push({label: 'Número da Conta', value: faturamento.contaProjeto, fullWidth: true});
     if(faturamento.descricao) fields.push({label: 'Descrição', value: faturamento.descricao, fullWidth: true});
-    if(faturamento.cc) fields.push({label: 'Conta Corrente', value: faturamento.cc});
+    if(faturamento.costCenter) fields.push({label: 'Conta corrente do projeto', value: faturamento.costCenter});
     if(faturamento.webId) fields.push({label: 'WEB ID', value: faturamento.webId});
     
     let faturamentoHeight = 10;
@@ -322,12 +321,17 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
             const textBaseY = yPosition + 4;
             
             const isReturn = itinerario.origem === primeiroItinerario.destino && itinerario.destino === primeiroItinerario.origem;
-            drawDirectionalIcon(doc, itinerarioStartX, textBaseY, 12, COLORS.PRIMARY, isReturn);
+            const originText = itinerario.origem || 'N/I';
+            const destinationText = itinerario.destino || 'N/I';
+
+            doc.text(originText, itinerarioStartX, textBaseY, {baseline: 'middle'});
+
+            const originWidth = doc.getTextWidth(originText);
+            const arrowX = itinerarioStartX + originWidth + 3;
+            drawDirectionalIcon(doc, arrowX, textBaseY, 12, COLORS.PRIMARY, isReturn);
             
-            doc.text(`${itinerario.origem || 'N/I'}`, itinerarioStartX + 5, textBaseY, {baseline: 'middle'});
-            const arrowSymbol = '\u2192'; // Seta para a direita
-            doc.text(arrowSymbol, itinerarioStartX + 5 + doc.getTextWidth(itinerario.origem || 'N/I') + 3, textBaseY, {baseline: 'middle'});
-            doc.text(`${itinerario.destino || 'N/I'}`, itinerarioStartX + 5 + doc.getTextWidth(itinerario.origem || 'N/I') + 3 + 5, textBaseY, {baseline: 'middle'});
+            const destinationX = arrowX + 5;
+            doc.text(destinationText, destinationX, textBaseY, {baseline: 'middle'});
             
             const totalTrecho = (parseFloat(itinerario.quantidade) || 0) * (parseFloat(itinerario.valorUnitario) || 0);
             doc.setFont(FONTS.DEFAULT, 'bold');
@@ -336,10 +340,10 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
             yPosition += 6;
             doc.setFontSize(8); doc.setTextColor(COLORS.MEDIUM_TEXT);
             const dataSaidaFormatada = itinerario.dataSaida ? new Date(itinerario.dataSaida + 'T00:00:00-03:00').toLocaleDateString('pt-BR') : 'N/A';
-            doc.text(`Data: ${dataSaidaFormatada} | Cia: ${itinerario.ciaAerea || 'N/I'} | Voo: ${itinerario.voo || 'N/I'}`, itinerarioStartX + 5, yPosition + 2, {baseline: 'middle'});
+            doc.text(`Data: ${dataSaidaFormatada} | Cia: ${itinerario.ciaAerea || 'N/I'} | Voo: ${itinerario.voo || 'N/I'}`, itinerarioStartX, yPosition + 2, {baseline: 'middle'});
 
             yPosition += 5;
-            doc.text(`Tipo: ${itinerario.tripType || 'N/A'} | Bagagem: ${itinerario.baggage || 'N/A'}`, itinerarioStartX + 5, yPosition + 2, {baseline: 'middle'});
+            doc.text(`Tipo: ${itinerario.tripType || 'N/A'} | Bagagem: ${itinerario.baggage || 'N/A'}`, itinerarioStartX, yPosition + 2, {baseline: 'middle'});
 
             yPosition += 8;
         });
