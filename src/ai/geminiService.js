@@ -188,8 +188,8 @@ export const extractDataFromPdfWithGemini = async (text, options = {}) => {
             -   **returnDate**: A data de retorno do trecho, no formato DD/MM/AAAA. Se o trecho for apenas de ida, este campo deve ser nulo.
             -   **isRoundTrip**: Se houver menção explícita a "ida e volta" para o trecho, marque como true.
             -   **tripType**: Determine se é "Aéreo" ou "Terrestre" com base no contexto (ex: menção a "Voo", "Cia Aérea", "Avião" = Aéreo; "Ônibus", "Van", "Carro" = Terrestre). Padrão: "Aéreo".
-            -   **ciaAerea**: Nome da companhia aérea ou empresa de transporte.
-            -   **voo**: O número do voo ou identificador do transporte.
+            -   **ciaAerea**: Nome da companhia aérea ou empresa de transporte. **Busque também em seções de texto livre como "OBSERVAÇÃO" ou "DADOS GERAIS DO ITEM" por linhas contendo "Companhia:".**
+            -   **voo**: O número do voo ou identificador do transporte. **Busque também em seções de texto livre como "OBSERVAÇÃO" ou "DADOS GERAIS DO ITEM" por linhas contendo "N° Voo:", "Nº Voo:" ou "Voo:".**
             -   **horarios**: Os horários de partida e chegada (formato livre).
             -   **baggage**: Verifique se há menção a bagagens. Pode ser "Com Bagagem", "Sem Bagagem", "Bagagem incluída", "1PC", "2PC", etc. Se não houver menção, defina como "Não especificado".
             -   **quantity**: A quantidade de passagens para este trecho. Se não for especificado, o padrão é 1.
