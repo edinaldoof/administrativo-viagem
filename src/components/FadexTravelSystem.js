@@ -2,18 +2,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 // Componentes
-import Header from './Header';
-import SuccessMessage from './SuccessMessage';
-import AddPassengerButton from './AddPassengerButton';
-import PassengerForm from './PassengerForm';
-import BillingForm from './BillingForm';
-import PassengerList from './PassengerList';
-import Preview from './Preview';
-import ConfirmationScreen from './ConfirmationScreen';
-import HelpChatbot from './HelpChatbot';
-import RequestList from './RequestList'; // Novo
-import PassengerRegistry from './PassengerRegistry'; // Novo
-import Reports from './Reports'; // Novo
+import Header from './Header.js';
+import SuccessMessage from './SuccessMessage.js';
+import AddPassengerButton from './AddPassengerButton.js';
+import PassengerForm from './PassengerForm.js';
+import BillingForm from './BillingForm.js';
+import PassengerList from './PassengerList.js';
+import Preview from './Preview.js';
+import ConfirmationScreen from './ConfirmationScreen.js';
+import HelpChatbot from './HelpChatbot.js';
+import RequestList from './RequestList.js'; // Novo
+import PassengerRegistry from './PassengerRegistry.js'; // Novo
+import Reports from './Reports.js'; // Novo
 
 // Utilitários e Serviços
 import {
@@ -32,7 +32,7 @@ import { saveRequest } from '../services/requestService.js'; // Novo
 import { getOrSavePassenger } from '../services/passengerService.js'; // Novo
 
 // Utilitários de IA e PDF
-import { extractDataFromPdfWithGemini } from '../ai/geminiService';
+import { extractDataFromPdfWithGemini } from '../ai/geminiService.js';
 import { UploadCloud, FileText, CheckCircle, XCircle, Loader, Info } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 import { Button } from './ui/button.jsx';

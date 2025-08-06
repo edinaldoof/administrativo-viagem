@@ -1,4 +1,3 @@
-
 // src/utils/pdfGenerator.js
 import { jsPDF } from 'jspdf';
 import { formatCPF, formatCurrency } from './utils';
@@ -27,6 +26,7 @@ const HEADER_HEIGHT_OTHER_PAGES = 25;
 
 const FOOTER_TEXT_CONTENT = "FUNDAÇÃO CULTURAL E DE FOMENTO À PESQUISA, ENSINO, EXTENSÃO E INOVAÇÃO\nRua Hugo Napoleão, 2891 - Ininga - Teresina/PI - CEP 64048-440 - CNPJ: 07.501.328/0001-30";
 const LOGO_URL = '/logo.png';
+const AIRPLANE_ICON_URL = '/aviao.png';
 
 
 const drawSideGradient = (doc, pageHeight) => {
@@ -38,7 +38,7 @@ const drawSideGradient = (doc, pageHeight) => {
     const ratio = i / (steps - 1);
     const r = Math.round(initialColor.r + (finalColor.r - initialColor.r) * ratio);
     const g = Math.round(initialColor.g + (finalColor.g - initialColor.g) * ratio);
-    const b = Math.round(initialColor.b + (finalColor.b - initialColor.b) * ratio);
+    const b = Math.round(initialColor.b + (finalColor.b - finalColor.b) * ratio);
     doc.setFillColor(r, g, b);
     doc.rect(0, (pageHeight / steps) * i, GRADIENT_WIDTH, pageHeight / steps + 0.5, 'F');
   }
@@ -182,23 +182,17 @@ async function loadImageData(url) {
     } catch (error) { console.error('Erro de rede ao carregar imagem:', url, error); return null; }
 }
 
-function drawDirectionalIcon(doc, x, y, size, color, isReturn = false) {
-    doc.setLineWidth(0.8);
-    doc.setDrawColor(color);
-    doc.setFont(FONTS.DEFAULT, 'bold');
-    doc.setFontSize(size);
-    // Usando > para ida e < para volta
-    const icon = isReturn ? '<' : '>';
-    doc.text(icon, x, y, { baseline: 'middle' });
-}
-
 
 export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-  let logoImgData = null;
-  try {
-      logoImgData = await loadImageData(LOGO_URL);
-  } catch(e) { console.error("Falha ao carregar logo principal:", e)}
+  const [logoImgData, airplaneIconData] = await Promise.all([
+    loadImageData(LOGO_URL),
+    loadImageData(AIRPLANE_ICON_URL)
+  ]).catch(err => {
+    console.error("Falha ao carregar uma das imagens para o PDF:", err);
+    return [null, null];
+  });
+
 
   let yPosition = HEADER_HEIGHT_FIRST_PAGE + 10;
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -226,7 +220,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   }, 0);
   
   // Faturamento
-  if (faturamento && (faturamento.contaProjeto || faturamento.descricao || faturamento.cc || faturamento.webId)) {
+  if (faturamento && (faturamento.contaProjeto || faturamento.descricao || faturamento.costCenter || faturamento.webId)) {
     if(checkAndAddPage(30)) yPosition += 10;
     yPosition = addSectionTitle(doc, 'Informações de Faturamento', yPosition);
     doc.setFillColor(COLORS.BACKGROUND_SECTION);
@@ -238,7 +232,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
     const fields = [];
     if(faturamento.contaProjeto) fields.push({label: 'Projeto', value: faturamento.contaProjeto, fullWidth: true});
     if(faturamento.descricao) fields.push({label: 'Descrição', value: faturamento.descricao, fullWidth: true});
-    if(faturamento.cc) fields.push({label: 'Conta Corrente', value: faturamento.cc});
+    if(faturamento.costCenter) fields.push({label: 'Conta corrente do projeto', value: faturamento.costCenter});
     if(faturamento.webId) fields.push({label: 'WEB ID', value: faturamento.webId});
     
     let faturamentoHeight = 10;
@@ -308,7 +302,6 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
 
       // Itinerarios
       if (passageiro.itinerarios && passageiro.itinerarios.length > 0) {
-        const primeiroItinerario = passageiro.itinerarios[0];
         passageiro.itinerarios.forEach((itinerario) => {
             if(checkAndAddPage(25)) {
                  yPosition = HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN;
@@ -321,14 +314,30 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
             doc.setFont(FONTS.DEFAULT, 'normal'); doc.setFontSize(10); doc.setTextColor(COLORS.DARK_TEXT);
             const textBaseY = yPosition + 4;
             
-            const isReturn = itinerario.origem === primeiroItinerario.destino && itinerario.destino === primeiroItinerario.origem;
-            drawDirectionalIcon(doc, itinerarioStartX, textBaseY, 12, COLORS.PRIMARY, isReturn);
+            const originText = itinerario.origem || 'N/I';
+            const destinationText = itinerario.destino || 'N/I';
+
+            // Draw origin
+            doc.text(originText, itinerarioStartX, textBaseY, {baseline: 'middle'});
+
+            // Draw icon
+            const originWidth = doc.getTextWidth(originText);
+            const iconX = itinerarioStartX + originWidth + 3;
+            const iconSize = 4;
+            if (airplaneIconData) {
+              try {
+                const imgProps = doc.getImageProperties(airplaneIconData);
+                doc.addImage(airplaneIconData, imgProps.fileType, iconX, textBaseY - (iconSize/2), iconSize, iconSize);
+              } catch(e) { console.error("Error adding airplane icon", e) }
+            } else {
+              const arrowSymbol = '\u2192'; // Fallback arrow
+              doc.text(arrowSymbol, iconX, textBaseY, {baseline: 'middle'});
+            }
             
-            doc.text(`${itinerario.origem || 'N/I'}`, itinerarioStartX + 5, textBaseY, {baseline: 'middle'});
-            const arrowSymbol = '\u2192'; // Seta para a direita
-            doc.text(arrowSymbol, itinerarioStartX + 5 + doc.getTextWidth(itinerario.origem || 'N/I') + 3, textBaseY, {baseline: 'middle'});
-            doc.text(`${itinerario.destino || 'N/I'}`, itinerarioStartX + 5 + doc.getTextWidth(itinerario.origem || 'N/I') + 3 + 5, textBaseY, {baseline: 'middle'});
-            
+            // Draw destination
+            const destinationX = iconX + iconSize + 3;
+            doc.text(destinationText, destinationX, textBaseY, {baseline: 'middle'});
+
             const totalTrecho = (parseFloat(itinerario.quantidade) || 0) * (parseFloat(itinerario.valorUnitario) || 0);
             doc.setFont(FONTS.DEFAULT, 'bold');
             doc.text(formatCurrency(totalTrecho), doc.internal.pageSize.getWidth() - PAGE_MARGIN - 3, textBaseY, { align: 'right', baseline: 'middle'});
@@ -336,10 +345,10 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
             yPosition += 6;
             doc.setFontSize(8); doc.setTextColor(COLORS.MEDIUM_TEXT);
             const dataSaidaFormatada = itinerario.dataSaida ? new Date(itinerario.dataSaida + 'T00:00:00-03:00').toLocaleDateString('pt-BR') : 'N/A';
-            doc.text(`Data: ${dataSaidaFormatada} | Cia: ${itinerario.ciaAerea || 'N/I'} | Voo: ${itinerario.voo || 'N/I'}`, itinerarioStartX + 5, yPosition + 2, {baseline: 'middle'});
+            doc.text(`Data: ${dataSaidaFormatada} | Cia: ${itinerario.ciaAerea || 'N/I'} | Voo: ${itinerario.voo || 'N/I'}`, itinerarioStartX, yPosition + 2, {baseline: 'middle'});
 
             yPosition += 5;
-            doc.text(`Tipo: ${itinerario.tripType || 'N/A'} | Bagagem: ${itinerario.baggage || 'N/A'}`, itinerarioStartX + 5, yPosition + 2, {baseline: 'middle'});
+            doc.text(`Tipo: ${itinerario.tripType || 'N/A'} | Bagagem: ${itinerario.baggage || 'N/A'}`, itinerarioStartX, yPosition + 2, {baseline: 'middle'});
 
             yPosition += 8;
         });
@@ -359,7 +368,27 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
       doc.text(`Total Geral da Requisição:`, GRADIENT_WIDTH + PAGE_MARGIN, yPosition);
       doc.setFont(FONTS.DEFAULT, 'bold'); doc.setFontSize(16); doc.setTextColor(COLORS.PRIMARY);
       doc.text(formatCurrency(totalGeral), doc.internal.pageSize.getWidth() - PAGE_MARGIN, yPosition, {align: 'right'});
+      yPosition += 10;
   }
+
+  // Observação sobre os valores
+  const observationText = "Observação: Os valores apresentados são sugestões do coordenador com base em pesquisas realizadas e estão sujeitos a alterações.";
+  const splitObservation = doc.splitTextToSize(observationText, doc.internal.pageSize.getWidth() - (GRADIENT_WIDTH + PAGE_MARGIN) * 2);
+  const observationHeight = splitObservation.length * 4 + 4; // Add some padding
+  
+  if (checkAndAddPage(observationHeight)) {
+    yPosition = pageHeight - contentMarginBottomForPageBreak - observationHeight;
+  }
+
+  if (!checkAndAddPage(observationHeight)) {
+     yPosition = pageHeight - contentMarginBottomForPageBreak - observationHeight;
+  }
+  
+  doc.setFont(FONTS.DEFAULT, 'italic');
+  doc.setFontSize(8);
+  doc.setTextColor(COLORS.MEDIUM_TEXT);
+  doc.text(splitObservation, GRADIENT_WIDTH + PAGE_MARGIN, yPosition);
+
 
   const attachmentPromises = [];
   if (passageiros) {
