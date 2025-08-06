@@ -37,7 +37,7 @@ const drawSideGradient = (doc, pageHeight) => {
     const ratio = i / (steps - 1);
     const r = Math.round(initialColor.r + (finalColor.r - initialColor.r) * ratio);
     const g = Math.round(initialColor.g + (finalColor.g - initialColor.g) * ratio);
-    const b = Math.round(initialColor.b + (finalColor.b - initialColor.b) * ratio);
+    const b = Math.round(initialColor.b + (finalColor.b - finalColor.b) * ratio);
     doc.setFillColor(r, g, b);
     doc.rect(0, (pageHeight / steps) * i, GRADIENT_WIDTH, pageHeight / steps + 0.5, 'F');
   }
@@ -82,8 +82,6 @@ const addHeaderFooter = (doc, pageNumber, totalPages, logoImgData, isFirstPage) 
 
   // Footer
   const footerStartY = pageHeight - FOOTER_HEIGHT - 5;
-  doc.setFillColor(COLORS.WHITE); // White background for footer text area
-  doc.rect(GRADIENT_WIDTH, footerStartY, pageWidth - GRADIENT_WIDTH, FOOTER_HEIGHT + 5, 'F');
   
   doc.setDrawColor(COLORS.LIGHT_GRAY_BORDER);
   doc.setLineWidth(0.3);
@@ -357,8 +355,8 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
 
   // Total Geral
   if (totalGeral > 0) {
-      if(checkAndAddPage(20)) yPosition = pageHeight - contentMarginBottomForPageBreak - 20;
-      yPosition += 5;
+      if(checkAndAddPage(20)) yPosition += 5;
+      
       doc.setDrawColor(COLORS.DARK_TEXT); doc.setLineWidth(0.5);
       doc.line(GRADIENT_WIDTH + PAGE_MARGIN, yPosition, doc.internal.pageSize.getWidth() - PAGE_MARGIN, yPosition);
       yPosition += 7;
@@ -366,7 +364,24 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
       doc.text(`Total Geral da Requisição:`, GRADIENT_WIDTH + PAGE_MARGIN, yPosition);
       doc.setFont(FONTS.DEFAULT, 'bold'); doc.setFontSize(16); doc.setTextColor(COLORS.PRIMARY);
       doc.text(formatCurrency(totalGeral), doc.internal.pageSize.getWidth() - PAGE_MARGIN, yPosition, {align: 'right'});
+      yPosition += 10;
   }
+
+  // Observação sobre os valores
+  const observationText = "Observação: Os valores apresentados são sugestões do coordenador com base em pesquisas realizadas e estão sujeitos a alterações.";
+  const splitObservation = doc.splitTextToSize(observationText, doc.internal.pageSize.getWidth() - (GRADIENT_WIDTH + PAGE_MARGIN) * 2);
+  const observationHeight = splitObservation.length * 4 + 4; // Add some padding
+  
+  if (checkAndAddPage(observationHeight)) {
+    yPosition += 5; // Add some space at the top of the new page.
+  }
+  
+  doc.setFont(FONTS.DEFAULT, 'italic');
+  doc.setFontSize(8);
+  doc.setTextColor(COLORS.MEDIUM_TEXT);
+  doc.text(splitObservation, GRADIENT_WIDTH + PAGE_MARGIN, yPosition);
+  yPosition += observationHeight;
+
 
   const attachmentPromises = [];
   if (passageiros) {
