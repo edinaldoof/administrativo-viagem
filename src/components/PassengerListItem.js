@@ -1,50 +1,96 @@
 // src/components/PassengerListItem.js
 import React from 'react';
-import { Edit3, Copy, Trash2, Users } from 'lucide-react'; // Adicionado Users para o caso de 0 trechos
+import {
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "./ui/accordion";
+import { formatCPF, formatCurrency } from '../utils/utils';
 
 const PassengerListItem = ({ passageiro, onEdit, onDuplicate, onRemove }) => {
   if (!passageiro) {
-    return null; // Ou alguma representação de item vazio/carregando
+    return null;
   }
 
+  const totalCustoPassageiro = (passageiro.itinerarios || []).reduce((acc, it) => {
+    const quantidade = parseFloat(it.quantidade) || 0;
+    const valorUnitario = parseFloat(it.valorUnitario) || 0;
+    return acc + (quantidade * valorUnitario);
+  }, 0);
+
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-md border border-gray-100">
-      <div className="flex items-start justify-between mb-2">
-        <div>
-          <h4 className="font-semibold text-gray-800">{passageiro.nome}</h4>
-          <p className="text-sm text-gray-500">CPF: {passageiro.cpf}</p>
-          <p className="text-sm text-gray-500">Nascimento: {passageiro.dataNascimento}</p>
+    <AccordionItem value={passageiro.id} className="bg-white dark:bg-slate-700 rounded-2xl border border-gray-200 dark:border-slate-600 px-4 shadow-md transition-all hover:border-blue-300 dark:hover:border-blue-500">
+      <AccordionTrigger className="text-left no-underline hover:no-underline py-3">
+        <div className="flex-1">
+          <h4 className="font-semibold text-gray-800 dark:text-gray-100">{passageiro.nome}</h4>
+          <p className="text-sm text-gray-500 dark:text-gray-400">CPF: {formatCPF(passageiro.cpf)}</p>
         </div>
-        <div className="flex space-x-1 flex-shrink-0">
-          <button
-            onClick={() => onEdit(passageiro)}
-            className="p-2 hover:bg-blue-100 rounded-lg transition-colors"
-            title="Editar"
-          >
-            <Edit3 className="w-4 h-4 text-blue-500" />
-          </button>
-          <button
-            onClick={() => onDuplicate(passageiro)}
-            className="p-2 hover:bg-green-100 rounded-lg transition-colors"
-            title="Duplicar"
-          >
-            <Copy className="w-4 h-4 text-green-500" />
-          </button>
-          <button
-            onClick={() => onRemove(passageiro.id)}
-            className="p-2 hover:bg-red-100 rounded-lg transition-colors"
-            title="Remover"
-          >
-            <Trash2 className="w-4 h-4 text-red-500" />
-          </button>
+        <div className="text-right">
+          <span className="font-semibold text-gray-700 dark:text-gray-200">{formatCurrency(totalCustoPassageiro)}</span>
         </div>
-      </div>
-      <div className="text-xs text-gray-400">
-        {passageiro.itinerarios && passageiro.itinerarios.length > 0
-          ? `${passageiro.itinerarios.length} trecho(s)`
-          : "Nenhum trecho adicionado"}
-      </div>
-    </div>
+      </AccordionTrigger>
+      <AccordionContent className="pt-2 pb-4">
+        <div className="space-y-3">
+          {/* Dados Pessoais */}
+          <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+            <p><strong>Nascimento:</strong> {passageiro.dataNascimento}</p>
+            {passageiro.email && <p><strong>Email:</strong> {passageiro.email}</p>}
+            {passageiro.phone && <p><strong>Telefone:</strong> {passageiro.phone}</p>}
+          </div>
+
+          {/* Itinerários */}
+          <div>
+            <h5 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2 border-t dark:border-slate-600 pt-3">
+              Itinerários ({passageiro.itinerarios?.length || 0})
+            </h5>
+            <div className="space-y-2 text-sm">
+              {passageiro.itinerarios && passageiro.itinerarios.length > 0 ? (
+                passageiro.itinerarios.map((it, index) => (
+                  <div key={it.id || index} className="p-2 bg-gray-50 dark:bg-slate-600 rounded-lg flex justify-between">
+                    <div>
+                      <span className="dark:text-gray-200">{it.origem} → {it.destino}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 block">
+                        {it.dataSaida ? new Date(it.dataSaida + 'T03:00:00Z').toLocaleDateString('pt-BR') : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="font-medium text-gray-700 dark:text-gray-200">
+                        {formatCurrency((it.quantidade || 1) * (it.valorUnitario || 0))}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-gray-400 italic">Nenhum itinerário cadastrado.</p>
+              )}
+            </div>
+          </div>
+
+          {/* Botões de Ação */}
+          <div className="flex space-x-2 pt-3 border-t dark:border-slate-600">
+            <button
+              onClick={() => onEdit(passageiro)}
+              className="px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 dark:bg-blue-900/50 dark:text-blue-300 dark:hover:bg-blue-900/80 transition-colors"
+              title="Editar"
+            >
+              Editar
+            </button>
+            <button
+              onClick={() => onDuplicate(passageiro)}
+              className="px-3 py-1 text-sm bg-green-100 text-green-800 rounded-lg hover:bg-green-200 dark:bg-green-900/50 dark:text-green-300 dark:hover:bg-green-900/80 transition-colors"
+              title="Duplicar"
+            >
+              Duplicar
+            </button>
+            <button
+              onClick={() => onRemove(passageiro.id)}
+              className="px-3 py-1 text-sm bg-red-100 text-red-800 rounded-lg hover:bg-red-200 dark:bg-red-900/50 dark:text-red-300 dark:hover:bg-red-900/80 transition-colors"
+              title="Remover"
+            >
+              Remover
+            </button>
+          </div>
+        </div>
+      </AccordionContent>
+    </AccordionItem>
   );
 };
 

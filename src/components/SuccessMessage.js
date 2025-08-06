@@ -1,6 +1,5 @@
 // src/components/SuccessMessage.js
 import React, { useEffect, useState } from 'react';
-import { Check } from 'lucide-react';
 
 const SuccessMessage = ({ message, show, duration = 3000, onClose }) => {
   const [isVisible, setIsVisible] = useState(false);
@@ -26,7 +25,6 @@ const SuccessMessage = ({ message, show, duration = 3000, onClose }) => {
 
   return (
     <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg flex items-center space-x-2 animate-bounce">
-      <Check className="w-5 h-5" />
       <span>{message}</span>
     </div>
   );
