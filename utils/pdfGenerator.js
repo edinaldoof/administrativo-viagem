@@ -3,19 +3,19 @@ import { jsPDF } from 'jspdf';
 import { formatCPF, formatCurrency } from './utils';
 
 const COLORS = {
-  PRIMARY: '#bbe546ff', // Indigo-600 from Tailwind
-  SECONDARY: '#10B981', // Emerald-500 from Tailwind
-  DARK_TEXT: '#1F2937', // Gray-800
-  MEDIUM_TEXT: '#6B7280', // Gray-500
-  LIGHT_GRAY_BORDER: '#E5E7EB', // Gray-200
-  BACKGROUND_SECTION: '#F9FAFB', // Gray-50
+  PRIMARY: '#0cd73bff', // Removido 'ff' extra para compatibilidade
+  SECONDARY: '#10B981',
+  DARK_TEXT: '#1F2937',
+  MEDIUM_TEXT: '#6B7280',
+  LIGHT_GRAY_BORDER: '#E5E7EB',
+  BACKGROUND_SECTION: '#F9FAFB',
   WHITE: '#FFFFFF',
   BLACK: '#000000',
-  GREEN: '#10B981', // Emerald-500
+  GREEN: '#10B981',
 };
 
 const FONTS = {
-  DEFAULT: 'Helvetica',
+  DEFAULT: 'helvetica', // Usar minúsculo para melhor compatibilidade
 };
 
 const PAGE_MARGIN = 15;
@@ -26,84 +26,127 @@ const HEADER_HEIGHT_OTHER_PAGES = 25;
 
 const FOOTER_TEXT_CONTENT = "FUNDAÇÃO CULTURAL E DE FOMENTO À PESQUISA, ENSINO, EXTENSÃO E INOVAÇÃO\nRua Hugo Napoleão, 2891 - Ininga - Teresina/PI - CEP 64048-440 - CNPJ: 07.501.328/0001-30";
 const LOGO_URL = '/logo.png';
-const AIRPLANE_ICON_URL = '/aviao.png';
+const AIRPLANE_IDA_ICON_URL = '/aviao_ida.png';
+const AIRPLANE_VOLTA_ICON_URL = '/aviao_volta.png';
 
+
+// Função auxiliar para converter cor hex para RGB
+const hexToRgb = (hex) => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : { r: 0, g: 0, b: 0 };
+};
 
 const drawSideGradient = (doc, pageHeight) => {
-  const steps = 50;
-  const initialColor = { r: 79, g: 70, b: 229 }; // Indigo-600
-  const finalColor = { r: 16, g: 185, b: 129 }; // Emerald-500
+  const steps = 20; // Reduzido para melhor performance e compatibilidade
+  const initialColor = hexToRgb('#4F46E5'); // Indigo-600
+  const finalColor = hexToRgb('#10B981'); // Emerald-500
 
   for (let i = 0; i < steps; i++) {
     const ratio = i / (steps - 1);
     const r = Math.round(initialColor.r + (finalColor.r - initialColor.r) * ratio);
     const g = Math.round(initialColor.g + (finalColor.g - initialColor.g) * ratio);
-    const b = Math.round(initialColor.b + (finalColor.b - finalColor.b) * ratio);
+    const b = Math.round(initialColor.b + (finalColor.b - initialColor.b) * ratio);
+    
     doc.setFillColor(r, g, b);
-    doc.rect(0, (pageHeight / steps) * i, GRADIENT_WIDTH, pageHeight / steps + 0.5, 'F');
+    const stepHeight = pageHeight / steps;
+    doc.rect(0, stepHeight * i, GRADIENT_WIDTH, stepHeight + 0.1, 'F'); // Pequena sobreposição para evitar gaps
   }
 };
 
 const addHeaderFooter = (doc, pageNumber, totalPages, logoImgData, isFirstPage) => {
   const pageHeight = doc.internal.pageSize.getHeight();
   const pageWidth = doc.internal.pageSize.getWidth();
+  
+  // Desenhar gradiente lateral
   drawSideGradient(doc, pageHeight);
 
-  if (isFirstPage) {
-    if (logoImgData) {
-      try {
-        const imgProps = doc.getImageProperties(logoImgData);
-        const aspectRatio = imgProps.width / imgProps.height;
-        const logoDisplayHeight = 13;
-        const logoDisplayWidth = logoDisplayHeight * aspectRatio;
-        const logoX = (pageWidth - logoDisplayWidth) / 1.95;
-        const logoY = 12;
-        doc.addImage(logoImgData, imgProps.fileType || 'PNG', logoX, logoY, logoDisplayWidth, logoDisplayHeight);
-        const lineY = logoY + logoDisplayHeight + 5;
-        doc.setDrawColor(COLORS.LIGHT_GRAY_BORDER);
-        doc.setLineWidth(0.5);
-        const lineLength = pageWidth * 0.8;
-        const lineXStart = (pageWidth - lineLength) / 2;
-        doc.line(lineXStart, lineY, lineXStart + lineLength, lineY);
-      } catch (e) { console.error("Erro ao adicionar logo (primeira página):", e); }
+  // Header
+  if (isFirstPage && logoImgData) {
+    try {
+      const imgProps = doc.getImageProperties(logoImgData);
+      const aspectRatio = imgProps.width / imgProps.height;
+      const logoDisplayHeight = 13;
+      const logoDisplayWidth = logoDisplayHeight * aspectRatio; // Proporção real da imagem
+      const logoX = (pageWidth - logoDisplayWidth) / 2;
+      const logoY = 12;
+      
+      doc.addImage(logoImgData, imgProps.fileType || 'PNG', logoX, logoY, logoDisplayWidth, logoDisplayHeight);
+      
+      // Linha separadora
+      const lineY = logoY + logoDisplayHeight + 5;
+      const rgb = hexToRgb(COLORS.LIGHT_GRAY_BORDER);
+      doc.setDrawColor(rgb.r, rgb.g, rgb.b);
+      doc.setLineWidth(0.5);
+      const lineLength = pageWidth * 0.8;
+      const lineXStart = (pageWidth - lineLength) / 2;
+      doc.line(lineXStart, lineY, lineXStart + lineLength, lineY);
+    } catch (e) {
+      console.error("Erro ao adicionar logo (primeira página):", e);
     }
-  } else {
+  } else if (!isFirstPage) {
     if (logoImgData) {
       try {
         const imgProps = doc.getImageProperties(logoImgData);
         const aspectRatio = imgProps.width / imgProps.height;
         const logoDisplayHeight = 5;
-        const logoDisplayWidth = logoDisplayHeight * aspectRatio;
+        const logoDisplayWidth = logoDisplayHeight * aspectRatio; // Proporção real da imagem
         doc.addImage(logoImgData, imgProps.fileType || 'PNG', GRADIENT_WIDTH + PAGE_MARGIN, 10, logoDisplayWidth, logoDisplayHeight);
-      } catch (e) { console.error("Erro ao adicionar logo (outras páginas):", e); }
+      } catch (e) {
+        console.error("Erro ao adicionar logo (outras páginas):", e);
+      }
     }
-    doc.setFont(FONTS.DEFAULT, 'bold'); doc.setFontSize(10); doc.setTextColor(COLORS.DARK_TEXT);
+    
+    doc.setFont(FONTS.DEFAULT, 'bold');
+    doc.setFontSize(10);
+    const rgb = hexToRgb(COLORS.DARK_TEXT);
+    doc.setTextColor(rgb.r, rgb.g, rgb.b);
     doc.text('Solicitação de Passagens', pageWidth - PAGE_MARGIN, 13, { align: 'right' });
   }
 
   // Footer
   const footerStartY = pageHeight - FOOTER_HEIGHT - 5;
-  doc.setFillColor(COLORS.WHITE); // White background for footer text area
-  doc.rect(GRADIENT_WIDTH, footerStartY, pageWidth - GRADIENT_WIDTH, FOOTER_HEIGHT + 5, 'F');
   
-  doc.setDrawColor(COLORS.LIGHT_GRAY_BORDER);
+  // Linha do footer
+  const borderRgb = hexToRgb(COLORS.LIGHT_GRAY_BORDER);
+  doc.setDrawColor(borderRgb.r, borderRgb.g, borderRgb.b);
   doc.setLineWidth(0.3);
   doc.line(GRADIENT_WIDTH, footerStartY, pageWidth, footerStartY);
   
-  doc.setFont(FONTS.DEFAULT, 'normal'); doc.setFontSize(7); doc.setTextColor(COLORS.MEDIUM_TEXT);
-  const footerLines = doc.splitTextToSize(FOOTER_TEXT_CONTENT, pageWidth - (GRADIENT_WIDTH + PAGE_MARGIN * 2));
+  // Texto do footer
+  doc.setFont(FONTS.DEFAULT, 'normal');
+  doc.setFontSize(7);
+  const mediumRgb = hexToRgb(COLORS.MEDIUM_TEXT);
+  doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
+  
+  const footerLines = FOOTER_TEXT_CONTENT.split('\n');
   let footerTextY = footerStartY + 6;
-  footerLines.forEach(line => { doc.text(line, (pageWidth + GRADIENT_WIDTH) / 2, footerTextY, { align: 'center' }); footerTextY += 3.5; });
-  doc.setFontSize(8); doc.setTextColor(COLORS.MEDIUM_TEXT);
+  footerLines.forEach(line => {
+    doc.text(line, pageWidth / 2, footerTextY, { align: 'center' });
+    footerTextY += 3.5;
+  });
+  
+  // Número da página
+  doc.setFontSize(8);
   doc.text(`Página ${pageNumber} de ${totalPages}`, pageWidth - PAGE_MARGIN, footerStartY + 8, { align: 'right' });
 };
 
 const addSectionTitle = (doc, title, yPos) => {
-  doc.setFont(FONTS.DEFAULT, 'bold'); doc.setFontSize(14); doc.setTextColor(COLORS.DARK_TEXT);
+  doc.setFont(FONTS.DEFAULT, 'bold');
+  doc.setFontSize(14);
+  const darkRgb = hexToRgb(COLORS.DARK_TEXT);
+  doc.setTextColor(darkRgb.r, darkRgb.g, darkRgb.b);
   doc.text(title, GRADIENT_WIDTH + PAGE_MARGIN, yPos);
+  
   yPos += 2;
-  doc.setDrawColor(COLORS.PRIMARY); doc.setLineWidth(0.7);
-  doc.line(GRADIENT_WIDTH + PAGE_MARGIN, yPos, GRADIENT_WIDTH + PAGE_MARGIN + 15, yPos); // Shorter accent line
+  const primaryRgb = hexToRgb(COLORS.PRIMARY);
+  doc.setDrawColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+  doc.setLineWidth(0.7);
+  doc.line(GRADIENT_WIDTH + PAGE_MARGIN, yPos, GRADIENT_WIDTH + PAGE_MARGIN + 15, yPos);
+  
   return yPos + 8;
 };
 
@@ -113,10 +156,20 @@ const addAttachmentPage = async (doc, passageiro, anexo, logoImgData) => {
   const pageWidth = doc.internal.pageSize.getWidth();
   let yPos = HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN;
 
-  doc.setFont(FONTS.DEFAULT, 'bold'); doc.setFontSize(16); doc.setTextColor(COLORS.DARK_TEXT);
-  doc.text('ANEXO', (pageWidth + GRADIENT_WIDTH) / 2, yPos, { align: 'center' });
+  // Título do anexo
+  doc.setFont(FONTS.DEFAULT, 'bold');
+  doc.setFontSize(16);
+  const darkRgb = hexToRgb(COLORS.DARK_TEXT);
+  doc.setTextColor(darkRgb.r, darkRgb.g, darkRgb.b);
+  doc.text('ANEXO', pageWidth / 2, yPos, { align: 'center' });
+  
   yPos += 10;
-  doc.setFont(FONTS.DEFAULT, 'normal'); doc.setFontSize(10); doc.setTextColor(COLORS.MEDIUM_TEXT);
+  
+  // Informações do anexo
+  doc.setFont(FONTS.DEFAULT, 'normal');
+  doc.setFontSize(10);
+  const mediumRgb = hexToRgb(COLORS.MEDIUM_TEXT);
+  doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
   doc.text(`Passageiro: ${passageiro.nome}`, GRADIENT_WIDTH + PAGE_MARGIN, yPos);
   yPos += 6;
   doc.text(`Arquivo: ${anexo.name}`, GRADIENT_WIDTH + PAGE_MARGIN, yPos);
@@ -124,287 +177,454 @@ const addAttachmentPage = async (doc, passageiro, anexo, logoImgData) => {
   doc.text(`Tipo: ${anexo.type} | Tamanho: ${(anexo.size / 1024).toFixed(2)} KB`, GRADIENT_WIDTH + PAGE_MARGIN, yPos);
   yPos += 15;
 
+  // Área do anexo
   const attachmentAreaX = GRADIENT_WIDTH + PAGE_MARGIN;
   const attachmentAreaY = yPos;
   const attachmentAreaWidth = pageWidth - (GRADIENT_WIDTH + PAGE_MARGIN * 2);
   const attachmentAreaHeight = pageHeight - yPos - FOOTER_HEIGHT - PAGE_MARGIN - 10;
   
-  doc.setDrawColor(COLORS.LIGHT_GRAY_BORDER);
+  const borderRgb = hexToRgb(COLORS.LIGHT_GRAY_BORDER);
+  doc.setDrawColor(borderRgb.r, borderRgb.g, borderRgb.b);
   doc.setLineWidth(0.3);
   doc.rect(attachmentAreaX, attachmentAreaY, attachmentAreaWidth, attachmentAreaHeight, 'S');
 
-  if (anexo.type.startsWith('image/')) {
+  if (anexo.type && anexo.type.startsWith('image/')) {
     try {
-      const imageDataUrl = await new Promise((res, rej) => {
+      const imageDataUrl = await new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = (e) => res(e.target.result);
-        reader.onerror = (err) => rej(err);
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = reject;
         reader.readAsDataURL(anexo);
       });
+      
+      // Obter propriedades da imagem para manter proporção
       const imgProps = doc.getImageProperties(imageDataUrl);
-      let imgWidth = imgProps.width; let imgHeight = imgProps.height;
-      const aspectRatio = imgWidth / imgHeight;
-      if (imgWidth > attachmentAreaWidth) { imgWidth = attachmentAreaWidth; imgHeight = imgWidth / aspectRatio; }
-      if (imgHeight > attachmentAreaHeight) { imgHeight = attachmentAreaHeight; imgWidth = imgHeight * aspectRatio; }
+      const originalWidth = imgProps.width;
+      const originalHeight = imgProps.height;
+      const aspectRatio = originalWidth / originalHeight;
+      
+      // Calcular dimensões mantendo a proporção
+      const maxWidth = attachmentAreaWidth - 10;
+      const maxHeight = attachmentAreaHeight - 10;
+      
+      let imgWidth = originalWidth;
+      let imgHeight = originalHeight;
+      
+      // Ajustar ao tamanho máximo mantendo proporção
+      if (imgWidth > maxWidth) {
+        imgWidth = maxWidth;
+        imgHeight = imgWidth / aspectRatio;
+      }
+      
+      if (imgHeight > maxHeight) {
+        imgHeight = maxHeight;
+        imgWidth = imgHeight * aspectRatio;
+      }
+      
+      // Centralizar imagem
       const imgX = attachmentAreaX + (attachmentAreaWidth - imgWidth) / 2;
       const imgY = attachmentAreaY + (attachmentAreaHeight - imgHeight) / 2;
-      doc.addImage(imageDataUrl, imgProps.fileType, imgX, imgY, imgWidth, imgHeight);
+      
+      // Detectar tipo de imagem correto
+      const imageType = imgProps.fileType || 'JPEG';
+      doc.addImage(imageDataUrl, imageType, imgX, imgY, imgWidth, imgHeight);
     } catch (error) {
       console.error("Erro ao adicionar imagem anexa:", error);
-      doc.setTextColor(COLORS.MEDIUM_TEXT); doc.setFontSize(12);
+      doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
+      doc.setFontSize(12);
       doc.text('Erro ao carregar imagem.', attachmentAreaX + 10, attachmentAreaY + 20);
     }
   } else {
-    doc.setFont(FONTS.DEFAULT, 'bold'); doc.setFontSize(40); doc.setTextColor(COLORS.LIGHT_GRAY_BORDER);
-    let fileTypeLabel = "ARQUIVO";
-    if (anexo.name) { const extension = anexo.name.split('.').pop().toUpperCase(); if (extension.length <= 4 && extension.length > 0) { fileTypeLabel = extension; }}
-    doc.text(fileTypeLabel, attachmentAreaX + (attachmentAreaWidth / 2), attachmentAreaY + (attachmentAreaHeight / 2), { align: 'center', baseline: 'middle' });
+    // Placeholder para outros tipos de arquivo
+    doc.setFont(FONTS.DEFAULT, 'bold');
+    doc.setFontSize(40);
+    const lightRgb = hexToRgb(COLORS.LIGHT_GRAY_BORDER);
+    doc.setTextColor(lightRgb.r, lightRgb.g, lightRgb.b);
     
-    doc.setFont(FONTS.DEFAULT, 'normal'); doc.setFontSize(10); doc.setTextColor(COLORS.MEDIUM_TEXT);
-    doc.text('Documento Anexado', attachmentAreaX + (attachmentAreaWidth / 2), attachmentAreaY + (attachmentAreaHeight / 2) + 20, { align: 'center' });
-    doc.text('(Conteúdo em arquivo separado)', attachmentAreaX + (attachmentAreaWidth / 2), attachmentAreaY + (attachmentAreaHeight / 2) + 30, { align: 'center' });
+    let fileTypeLabel = "ARQUIVO";
+    if (anexo.name) {
+      const parts = anexo.name.split('.');
+      if (parts.length > 1) {
+        const extension = parts[parts.length - 1].toUpperCase();
+        if (extension.length <= 4) {
+          fileTypeLabel = extension;
+        }
+      }
+    }
+    
+    const centerX = attachmentAreaX + (attachmentAreaWidth / 2);
+    const centerY = attachmentAreaY + (attachmentAreaHeight / 2);
+    
+    doc.text(fileTypeLabel, centerX, centerY, { align: 'center' });
+    
+    doc.setFont(FONTS.DEFAULT, 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
+    doc.text('Documento Anexado', centerX, centerY + 20, { align: 'center' });
+    doc.text('(Conteúdo em arquivo separado)', centerX, centerY + 30, { align: 'center' });
   }
 };
 
 async function loadImageData(url) {
-    try {
-        const response = await fetch(url);
-        if (response.ok) {
-            const blob = await response.blob();
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.onerror = (err) => { console.error(`Erro ao ler blob da imagem ${url}:`, err); reject(err); };
-                reader.readAsDataURL(blob);
-            });
-        }
-        return null;
-    } catch (error) { console.error('Erro de rede ao carregar imagem:', url, error); return null; }
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = () => {
+        console.error(`Erro ao ler imagem ${url}`);
+        resolve(null);
+      };
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error('Erro ao carregar imagem:', url, error);
+    return null;
+  }
 }
 
-
 export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
-  const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
-  const [logoImgData, airplaneIconData] = await Promise.all([
+  // Configuração inicial do PDF
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4',
+    compress: true // Ativar compressão para melhor compatibilidade
+  });
+  
+  // Configurar metadata do PDF
+  doc.setProperties({
+    title: 'Solicitação de Passagens FADEX',
+    subject: 'Requisição de Passagens',
+    author: 'Sistema FADEX',
+    keywords: 'passagens, requisição, fadex',
+    creator: 'FADEX System'
+  });
+
+  const [logoImgData, airplaneIdaIconData, airplaneVoltaIconData] = await Promise.all([
     loadImageData(LOGO_URL),
-    loadImageData(AIRPLANE_ICON_URL)
+    loadImageData(AIRPLANE_IDA_ICON_URL),
+    loadImageData(AIRPLANE_VOLTA_ICON_URL)
   ]).catch(err => {
     console.error("Falha ao carregar uma das imagens para o PDF:", err);
-    return [null, null];
+    return [null, null, null];
   });
 
 
   let yPosition = HEADER_HEIGHT_FIRST_PAGE + 10;
   const pageHeight = doc.internal.pageSize.getHeight();
-  const contentMarginBottomForPageBreak = FOOTER_HEIGHT + PAGE_MARGIN + 10;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const contentMarginBottomForPageBreak = FOOTER_HEIGHT + PAGE_MARGIN;
 
   const checkAndAddPage = (neededHeight = 20) => {
     if (yPosition + neededHeight > pageHeight - contentMarginBottomForPageBreak) {
-      doc.addPage(); yPosition = HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN; return true;
+      doc.addPage();
+      yPosition = HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN;
+      return true;
     }
     return false;
   };
 
-  doc.setFont(FONTS.DEFAULT, 'bold'); doc.setFontSize(18); doc.setTextColor(COLORS.DARK_TEXT);
-  doc.text('Solicitação de Passagens', (doc.internal.pageSize.getWidth() + GRADIENT_WIDTH) / 2 , yPosition, { align: 'center'});
-  yPosition += doc.internal.getLineHeight() * 0.8;
-  doc.setFont(FONTS.DEFAULT, 'normal'); doc.setFontSize(10); doc.setTextColor(COLORS.MEDIUM_TEXT);
-  doc.text(`Data da Emissão: ${new Date().toLocaleDateString('pt-BR')}`, (doc.internal.pageSize.getWidth() + GRADIENT_WIDTH) / 2, yPosition, { align: 'center' });
-  yPosition += doc.internal.getLineHeight() * 1.5;
+  // Título principal
+  doc.setFont(FONTS.DEFAULT, 'bold');
+  doc.setFontSize(18);
+  const darkRgb = hexToRgb(COLORS.DARK_TEXT);
+  doc.setTextColor(darkRgb.r, darkRgb.g, darkRgb.b);
+  doc.text('Solicitação de Passagens', pageWidth / 2, yPosition, { align: 'center' });
+  
+  yPosition += 8;
+  
+  // Data de emissão
+  doc.setFont(FONTS.DEFAULT, 'normal');
+  doc.setFontSize(10);
+  const mediumRgb = hexToRgb(COLORS.MEDIUM_TEXT);
+  doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
+  const dataEmissao = new Date().toLocaleDateString('pt-BR');
+  doc.text(`Data da Emissão: ${dataEmissao}`, pageWidth / 2, yPosition, { align: 'center' });
+  
+  yPosition += 12;
 
+  // Calcular total geral
   const totalGeral = passageiros.reduce((totalReq, passageiro) => {
     const totalPassageiro = (passageiro.itinerarios || []).reduce((totalIt, it) => {
-        return totalIt + ((parseFloat(it.quantidade) || 0) * (parseFloat(it.valorUnitario) || 0));
+      const quantidade = parseFloat(it.quantidade) || 0;
+      const valorUnitario = parseFloat(it.valorUnitario) || 0;
+      return totalIt + (quantidade * valorUnitario);
     }, 0);
     return totalReq + totalPassageiro;
   }, 0);
   
-  // Faturamento
+  // Seção de Faturamento
   if (faturamento && (faturamento.contaProjeto || faturamento.descricao || faturamento.costCenter || faturamento.webId)) {
-    if(checkAndAddPage(30)) yPosition += 10;
+    if (checkAndAddPage(30)) yPosition += 10;
     yPosition = addSectionTitle(doc, 'Informações de Faturamento', yPosition);
-    doc.setFillColor(COLORS.BACKGROUND_SECTION);
+    
+    const bgRgb = hexToRgb(COLORS.BACKGROUND_SECTION);
+    doc.setFillColor(bgRgb.r, bgRgb.g, bgRgb.b);
+    
     const faturamentoStartX = GRADIENT_WIDTH + PAGE_MARGIN;
     const faturamentoStartY = yPosition;
+    const faturamentoWidth = pageWidth - (GRADIENT_WIDTH + PAGE_MARGIN) * 2;
     
-    doc.setFont(FONTS.DEFAULT, 'normal'); doc.setFontSize(9); doc.setTextColor(COLORS.MEDIUM_TEXT);
-    
+    // Preparar campos
     const fields = [];
-    if(faturamento.contaProjeto) fields.push({label: 'Projeto', value: faturamento.contaProjeto, fullWidth: true});
-    if(faturamento.descricao) fields.push({label: 'Descrição', value: faturamento.descricao, fullWidth: true});
-    if(faturamento.costCenter) fields.push({label: 'Conta corrente do projeto', value: faturamento.costCenter});
-    if(faturamento.webId) fields.push({label: 'WEB ID', value: faturamento.webId});
+    if (faturamento.contaProjeto) fields.push({ label: 'Número da Conta:', value: faturamento.contaProjeto });
+    if (faturamento.descricao) fields.push({ label: 'Descrição:', value: faturamento.descricao });
+    if (faturamento.costCenter) fields.push({ label: 'Conta corrente do projeto:', value: faturamento.costCenter });
+    if (faturamento.webId) fields.push({ label: 'WEB ID:', value: faturamento.webId });
+    if (faturamento.observacoes) fields.push({ label: 'Observações:', value: faturamento.observacoes });
     
-    let faturamentoHeight = 10;
+    // Calcular altura necessária e renderizar
+    let totalHeight = 5; // Start with padding
     fields.forEach(field => {
-        if(field.fullWidth) {
-           const splitText = doc.splitTextToSize(field.value, doc.internal.pageSize.getWidth() - faturamentoStartX * 2 - 10);
-           faturamentoHeight += 4 + splitText.length * 4;
-        } else {
-           faturamentoHeight += 4;
-        }
+        const textLines = doc.splitTextToSize(field.value || '', faturamentoWidth - 10);
+        totalHeight += 4 + (textLines.length * 4); // Label height + text height
     });
-    faturamentoHeight = Math.max(faturamentoHeight, 20);
+    totalHeight += 5; // Bottom padding
 
-    doc.rect(faturamentoStartX, faturamentoStartY, doc.internal.pageSize.getWidth() - faturamentoStartX * 2, faturamentoHeight, 'F');
-    yPosition += 5;
+    // Desenhar background
+    doc.rect(faturamentoStartX, faturamentoStartY, faturamentoWidth, totalHeight, 'F');
+    
+    let currentY = faturamentoStartY + 5; // Start inside the box with padding
 
-    let col1Y = yPosition, col2Y = yPosition;
-    fields.forEach((field, i) => {
-        if(checkAndAddPage(10)) yPosition = HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN;
-        
-        let currentY = field.fullWidth || i % 2 === 0 ? col1Y : col2Y;
-        let currentX = field.fullWidth || i % 2 === 0 ? faturamentoStartX + 5 : doc.internal.pageSize.getWidth() / 2 + 5;
-        
-        doc.setFont(FONTS.DEFAULT, 'bold');
-        doc.text(field.label, currentX, currentY);
-        
-        doc.setFont(FONTS.DEFAULT, 'normal');
-        const textMaxWidth = field.fullWidth ? doc.internal.pageSize.getWidth() - faturamentoStartX * 2 - 10 : doc.internal.pageSize.getWidth() / 2 - faturamentoStartX;
-        const splitText = doc.splitTextToSize(field.value, textMaxWidth);
-        doc.text(splitText, currentX, currentY + 4);
-        const textHeight = splitText.length * 4;
-        
-        if(field.fullWidth || i % 2 === 0) { col1Y += textHeight + 6; } else { col2Y += textHeight + 6; }
+    fields.forEach(field => {
+      if (checkAndAddPage(15)) {
+        currentY = HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN;
+      }
+      
+      const xPos = faturamentoStartX + 5;
+      
+      doc.setFont(FONTS.DEFAULT, 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(darkRgb.r, darkRgb.g, darkRgb.b);
+      doc.text(field.label, xPos, currentY);
+      
+      currentY += 4; // Move down for the value
+
+      doc.setFont(FONTS.DEFAULT, 'normal');
+      doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
+      const textLines = doc.splitTextToSize(field.value || '', faturamentoWidth - 10);
+      doc.text(textLines, xPos, currentY);
+      
+      currentY += (textLines.length * 4) + 4; // Add space for next field
     });
 
-    yPosition = Math.max(col1Y, col2Y) + 5;
+    yPosition = faturamentoStartY + totalHeight + 5;
   }
 
+  // Seção de Passageiros e Itinerários
   if (passageiros && passageiros.length > 0) {
-    if(checkAndAddPage(30)) yPosition += 10;
+    if (checkAndAddPage(30)) yPosition += 10;
     yPosition = addSectionTitle(doc, 'Passageiros e Itinerários', yPosition);
 
     passageiros.forEach((passageiro, index) => {
-      const totalPassageiro = (passageiro.itinerarios || []).reduce((acc, it) => acc + ((parseFloat(it.quantidade) || 0) * (parseFloat(it.valorUnitario) || 0)), 0);
+      const totalPassageiro = (passageiro.itinerarios || []).reduce((acc, it) => {
+        const quantidade = parseFloat(it.quantidade) || 0;
+        const valorUnitario = parseFloat(it.valorUnitario) || 0;
+        return acc + (quantidade * valorUnitario);
+      }, 0);
 
-      const passengerCardHeight = 20 + (passageiro.itinerarios || []).length * 20; // Increased height per itinerary
-      if(checkAndAddPage(passengerCardHeight)) {
-         yPosition = addSectionTitle(doc, 'Passageiros e Itinerários (Continuação)', HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN);
+      const passengerCardHeight = 25 + (passageiro.itinerarios || []).length * 20;
+      if (checkAndAddPage(passengerCardHeight)) {
+        yPosition = addSectionTitle(doc, 'Passageiros e Itinerários (Continuação)', HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN);
       }
 
       const passengerCardStartX = GRADIENT_WIDTH + PAGE_MARGIN;
       const passengerCardStartY = yPosition;
+      const cardWidth = pageWidth - (GRADIENT_WIDTH + PAGE_MARGIN) * 2;
       
-      // Header do Card do Passageiro
-      doc.setFillColor(COLORS.BACKGROUND_SECTION);
-      doc.rect(passengerCardStartX, passengerCardStartY, doc.internal.pageSize.getWidth() - passengerCardStartX * 2, 15, 'F');
+      // Header do Card
+      const headerHeight = passageiro.email ? 20 : 15;
+      const bgRgb = hexToRgb(COLORS.BACKGROUND_SECTION);
+      doc.setFillColor(bgRgb.r, bgRgb.g, bgRgb.b);
+      doc.rect(passengerCardStartX, passengerCardStartY, cardWidth, headerHeight, 'F');
       
-      doc.setFont(FONTS.DEFAULT, 'bold'); doc.setFontSize(11); doc.setTextColor(COLORS.DARK_TEXT);
+      // Nome do passageiro
+      doc.setFont(FONTS.DEFAULT, 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(darkRgb.r, darkRgb.g, darkRgb.b);
       doc.text(`${index + 1}. ${passageiro.nome}`, passengerCardStartX + 3, yPosition + 5);
-      doc.setFont(FONTS.DEFAULT, 'normal'); doc.setFontSize(9); doc.setTextColor(COLORS.MEDIUM_TEXT);
-      doc.text(`CPF: ${formatCPF(passageiro.cpf)} | Nasc: ${passageiro.dataNascimento}`, passengerCardStartX + 3, yPosition + 10);
       
-      doc.setFont(FONTS.DEFAULT, 'bold'); doc.setFontSize(10); doc.setTextColor(COLORS.GREEN);
-      doc.text(formatCurrency(totalPassageiro), doc.internal.pageSize.getWidth() - PAGE_MARGIN - 3, yPosition + 8, { align: 'right' });
+      // CPF e Data de Nascimento
+      let infoY = yPosition + 10;
+      doc.setFont(FONTS.DEFAULT, 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
+      doc.text(`CPF: ${formatCPF(passageiro.cpf)} | Nasc: ${passageiro.dataNascimento}`, passengerCardStartX + 3, infoY);
       
-      yPosition += 17; // Pula o header do card
+      // Email do Passageiro (se existir)
+      if (passageiro.email) {
+        infoY += 5;
+        doc.text(`Email: ${passageiro.email}`, passengerCardStartX + 3, infoY);
+      }
 
-      // Itinerarios
+      // Total do passageiro
+      doc.setFont(FONTS.DEFAULT, 'bold');
+      doc.setFontSize(10);
+      const greenRgb = hexToRgb(COLORS.GREEN);
+      doc.setTextColor(greenRgb.r, greenRgb.g, greenRgb.b);
+      doc.text(formatCurrency(totalPassageiro), pageWidth - PAGE_MARGIN - 3, yPosition + 8, { align: 'right' });
+      
+      yPosition += headerHeight + 2;
+
+      // Itinerários
       if (passageiro.itinerarios && passageiro.itinerarios.length > 0) {
+        const primeiroItinerario = passageiro.itinerarios[0];
+        
         passageiro.itinerarios.forEach((itinerario) => {
-            if(checkAndAddPage(25)) {
-                 yPosition = HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN;
-                 doc.setFont(FONTS.DEFAULT, 'italic', 'normal'); doc.setTextColor(COLORS.MEDIUM_TEXT); doc.setFontSize(9);
-                 doc.text(`Continuação Itinerários para: ${passageiro.nome}`, GRADIENT_WIDTH + PAGE_MARGIN, yPosition);
-                 yPosition += doc.internal.getLineHeight() * 1.2;
-            }
-            
-            const itinerarioStartX = passengerCardStartX + 3;
-            doc.setFont(FONTS.DEFAULT, 'normal'); doc.setFontSize(10); doc.setTextColor(COLORS.DARK_TEXT);
-            const textBaseY = yPosition + 4;
-            
-            const originText = itinerario.origem || 'N/I';
-            const destinationText = itinerario.destino || 'N/I';
-
-            // Draw origin
-            doc.text(originText, itinerarioStartX, textBaseY, {baseline: 'middle'});
-
-            // Draw icon
-            const originWidth = doc.getTextWidth(originText);
-            const iconX = itinerarioStartX + originWidth + 3;
-            const iconSize = 4;
-            if (airplaneIconData) {
-              try {
-                const imgProps = doc.getImageProperties(airplaneIconData);
-                doc.addImage(airplaneIconData, imgProps.fileType, iconX, textBaseY - (iconSize/2), iconSize, iconSize);
-              } catch(e) { console.error("Error adding airplane icon", e) }
-            } else {
-              const arrowSymbol = '\u2192'; // Fallback arrow
-              doc.text(arrowSymbol, iconX, textBaseY, {baseline: 'middle'});
-            }
-            
-            // Draw destination
-            const destinationX = iconX + iconSize + 3;
-            doc.text(destinationText, destinationX, textBaseY, {baseline: 'middle'});
-
-            const totalTrecho = (parseFloat(itinerario.quantidade) || 0) * (parseFloat(itinerario.valorUnitario) || 0);
-            doc.setFont(FONTS.DEFAULT, 'bold');
-            doc.text(formatCurrency(totalTrecho), doc.internal.pageSize.getWidth() - PAGE_MARGIN - 3, textBaseY, { align: 'right', baseline: 'middle'});
-            
-            yPosition += 6;
-            doc.setFontSize(8); doc.setTextColor(COLORS.MEDIUM_TEXT);
-            const dataSaidaFormatada = itinerario.dataSaida ? new Date(itinerario.dataSaida + 'T00:00:00-03:00').toLocaleDateString('pt-BR') : 'N/A';
-            doc.text(`Data: ${dataSaidaFormatada} | Cia: ${itinerario.ciaAerea || 'N/I'} | Voo: ${itinerario.voo || 'N/I'}`, itinerarioStartX, yPosition + 2, {baseline: 'middle'});
-
-            yPosition += 5;
-            doc.text(`Tipo: ${itinerario.tripType || 'N/A'} | Bagagem: ${itinerario.baggage || 'N/A'}`, itinerarioStartX, yPosition + 2, {baseline: 'middle'});
-
+          if (checkAndAddPage(25)) {
+            yPosition = HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN;
+            doc.setFont(FONTS.DEFAULT, 'italic');
+            doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
+            doc.setFontSize(9);
+            doc.text(`Continuação - Itinerários para: ${passageiro.nome}`, GRADIENT_WIDTH + PAGE_MARGIN, yPosition);
             yPosition += 8;
+          }
+          
+          const itinerarioStartX = passengerCardStartX + 3;
+          doc.setFont(FONTS.DEFAULT, 'normal');
+          doc.setFontSize(10);
+          doc.setTextColor(darkRgb.r, darkRgb.g, darkRgb.b);
+          const textBaseY = yPosition + 4;
+          
+          // Origem e Destino
+          const originText = itinerario.origem || 'N/I';
+          const destinationText = itinerario.destino || 'N/I';
+          const isReturn = itinerario.origem === primeiroItinerario.destino && 
+                          itinerario.destino === primeiroItinerario.origem;
+
+          doc.text(originText, itinerarioStartX, textBaseY, {baseline: 'middle'});
+          const originWidth = doc.getTextWidth(originText);
+          
+           // Draw icon
+           const iconX = itinerarioStartX + originWidth + 3;
+           const iconSize = 4;
+           const iconToUse = isReturn ? airplaneVoltaIconData : airplaneIdaIconData;
+           if (iconToUse) {
+             try {
+               const imgProps = doc.getImageProperties(iconToUse);
+               doc.addImage(iconToUse, imgProps.fileType, iconX, textBaseY - (iconSize/2), iconSize, iconSize);
+             } catch(e) { console.error("Error adding airplane icon", e) }
+           } else {
+             const arrowSymbol = isReturn ? '<' : '>'; // Fallback arrow
+             doc.text(arrowSymbol, iconX, textBaseY, {baseline: 'middle'});
+           }
+          
+          const destinationX = iconX + iconSize + 3;
+          doc.text(destinationText, destinationX, textBaseY, {baseline: 'middle'});
+
+          const tripTypeText = isReturn ? '(Volta)' : '(Ida)';
+          const destinationWidth = doc.getTextWidth(destinationText);
+          const tripTypeX = destinationX + destinationWidth + 2;
+          doc.setFontSize(8);
+          doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
+          doc.text(tripTypeText, tripTypeX, textBaseY, {baseline: 'middle'});
+          doc.setFontSize(10); // Reset font size
+          doc.setTextColor(darkRgb.r, darkRgb.g, darkRgb.b);
+          
+          // Valor do trecho
+          const totalTrecho = (parseFloat(itinerario.quantidade) || 0) * (parseFloat(itinerario.valorUnitario) || 0);
+          doc.setFont(FONTS.DEFAULT, 'bold');
+          doc.text(formatCurrency(totalTrecho), pageWidth - PAGE_MARGIN - 3, textBaseY, { align: 'right', baseline: 'middle'});
+          
+          yPosition += 6;
+          
+          // Detalhes do voo
+          doc.setFont(FONTS.DEFAULT, 'normal');
+          doc.setFontSize(8);
+          doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
+          
+          let dataSaidaFormatada = 'N/A';
+          if (itinerario.dataSaida) {
+            try {
+              const data = new Date(itinerario.dataSaida + 'T00:00:00');
+              dataSaidaFormatada = data.toLocaleDateString('pt-BR');
+            } catch (e) {
+              dataSaidaFormatada = itinerario.dataSaida;
+            }
+          }
+          
+          doc.text(`Data: ${dataSaidaFormatada} | Cia: ${itinerario.ciaAerea || 'N/I'} | Voo: ${itinerario.voo || 'N/I'}`, 
+                   itinerarioStartX, yPosition + 2);
+          
+          yPosition += 5;
+          doc.text(`Tipo: ${itinerario.tripType || 'N/A'} | Bagagem: ${itinerario.baggage || 'N/A'}`, 
+                   itinerarioStartX, yPosition + 2);
+          
+          yPosition += 8;
         });
       }
-      yPosition += 5; // Espaço após cada passageiro
+      
+      yPosition += 5;
     });
   }
 
   // Total Geral
   if (totalGeral > 0) {
-      if(checkAndAddPage(20)) yPosition = pageHeight - contentMarginBottomForPageBreak - 20;
-      yPosition += 5;
-      doc.setDrawColor(COLORS.DARK_TEXT); doc.setLineWidth(0.5);
-      doc.line(GRADIENT_WIDTH + PAGE_MARGIN, yPosition, doc.internal.pageSize.getWidth() - PAGE_MARGIN, yPosition);
-      yPosition += 7;
-      doc.setFont(FONTS.DEFAULT, 'bold'); doc.setFontSize(14); doc.setTextColor(COLORS.DARK_TEXT);
-      doc.text(`Total Geral da Requisição:`, GRADIENT_WIDTH + PAGE_MARGIN, yPosition);
-      doc.setFont(FONTS.DEFAULT, 'bold'); doc.setFontSize(16); doc.setTextColor(COLORS.PRIMARY);
-      doc.text(formatCurrency(totalGeral), doc.internal.pageSize.getWidth() - PAGE_MARGIN, yPosition, {align: 'right'});
-      yPosition += 10;
+    if (checkAndAddPage(20)) yPosition += 5;
+    
+    // Linha separadora
+    doc.setDrawColor(darkRgb.r, darkRgb.g, darkRgb.b);
+    doc.setLineWidth(0.5);
+    doc.line(GRADIENT_WIDTH + PAGE_MARGIN, yPosition, pageWidth - PAGE_MARGIN, yPosition);
+    
+    yPosition += 7;
+    
+    // Texto do total
+    doc.setFont(FONTS.DEFAULT, 'bold');
+    doc.setFontSize(14);
+    doc.setTextColor(darkRgb.r, darkRgb.g, darkRgb.b);
+    doc.text('Total Geral da Requisição:', GRADIENT_WIDTH + PAGE_MARGIN, yPosition);
+    
+    // Valor total
+    doc.setFont(FONTS.DEFAULT, 'bold');
+    doc.setFontSize(16);
+    const primaryRgb = hexToRgb(COLORS.PRIMARY);
+    doc.setTextColor(primaryRgb.r, primaryRgb.g, primaryRgb.b);
+    doc.text(formatCurrency(totalGeral), pageWidth - PAGE_MARGIN, yPosition, { align: 'right' });
+    
+    yPosition += 10;
   }
 
-  // Observação sobre os valores
+  // Observação sobre valores
   const observationText = "Observação: Os valores apresentados são sugestões do coordenador com base em pesquisas realizadas e estão sujeitos a alterações.";
-  const splitObservation = doc.splitTextToSize(observationText, doc.internal.pageSize.getWidth() - (GRADIENT_WIDTH + PAGE_MARGIN) * 2);
-  const observationHeight = splitObservation.length * 4 + 4; // Add some padding
+  const maxTextWidth = pageWidth - (GRADIENT_WIDTH + PAGE_MARGIN) * 2;
+  const observationLines = doc.splitTextToSize(observationText, maxTextWidth);
+  const observationHeight = observationLines.length * 4 + 4;
   
   if (checkAndAddPage(observationHeight)) {
+    yPosition += 5;
+  } else if (yPosition + observationHeight > pageHeight - contentMarginBottomForPageBreak) {
     yPosition = pageHeight - contentMarginBottomForPageBreak - observationHeight;
-  }
-
-  if (!checkAndAddPage(observationHeight)) {
-     yPosition = pageHeight - contentMarginBottomForPageBreak - observationHeight;
   }
   
   doc.setFont(FONTS.DEFAULT, 'italic');
   doc.setFontSize(8);
-  doc.setTextColor(COLORS.MEDIUM_TEXT);
-  doc.text(splitObservation, GRADIENT_WIDTH + PAGE_MARGIN, yPosition);
+  doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
+  doc.text(observationLines, GRADIENT_WIDTH + PAGE_MARGIN, yPosition);
+  yPosition += observationHeight;
 
-
-  const attachmentPromises = [];
+  // Processar anexos
   if (passageiros) {
-      for (const passageiro of passageiros) {
-          const anexosDoPassageiro = passageiro.anexos || [];
-          for (const anexo of anexosDoPassageiro) {
-              attachmentPromises.push(() => addAttachmentPage(doc, passageiro, anexo, logoImgData));
-          }
+    for (const passageiro of passageiros) {
+      const anexos = passageiro.anexos || [];
+      for (const anexo of anexos) {
+        await addAttachmentPage(doc, passageiro, anexo, logoImgData);
       }
+    }
   }
-  for (const promiseFn of attachmentPromises) { await promiseFn(); }
 
+  // Adicionar header e footer em todas as páginas
   const totalPages = doc.internal.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
     addHeaderFooter(doc, i, totalPages, logoImgData, i === 1);
   }
-  doc.save(`solicitacao-fadex-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`);
+
+  // Salvar o PDF
+  const fileName = `solicitacao-fadex-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
+  doc.save(fileName);
 };

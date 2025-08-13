@@ -1,6 +1,6 @@
 // src/components/Header.js
 import React from 'react';
-import { Moon, Sun, Download, FileImage, FileText, FileSpreadsheet, UploadCloud, Plane, List, Users, PlusCircle, BarChart2 } from 'lucide-react';
+import { Moon, Sun, Download, FileImage, FileText, FileSpreadsheet, UploadCloud, Plane, List, Users, PlusCircle, BarChart2, Eraser } from 'lucide-react';
 import { Button } from './ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 
@@ -64,14 +64,45 @@ const Header = ({
             {currentView === 'creating' && (
               <>
                 {showImport && (
-                  <Button
-                    variant="outline"
+                  <button
                     onClick={onImportPDF}
-                    className="flex items-center gap-2"
+                    className="
+                      group relative px-4 py-2.5 
+                      bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30
+                      hover:from-emerald-100 hover:to-teal-100 dark:hover:from-emerald-900/40 dark:hover:to-teal-900/40
+                      border border-emerald-200/50 dark:border-emerald-800/50
+                      hover:border-emerald-300 dark:hover:border-emerald-700
+                      rounded-xl font-medium text-sm
+                      text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300
+                      transition-all duration-300 ease-out
+                      hover:scale-105 active:scale-95
+                      hover:shadow-lg hover:shadow-emerald-200/30 dark:hover:shadow-emerald-900/20
+                      flex items-center gap-2 overflow-hidden
+                    "
+                    title="Importar arquivo PDF"
                   >
-                    <UploadCloud size={16} />
-                    Importar PDF
-                  </Button>
+                    {/* Efeito de onda ao hover */}
+                    <div className="
+                      absolute inset-0 -translate-x-full group-hover:translate-x-0 
+                      bg-gradient-to-r from-transparent via-emerald-200/20 dark:via-emerald-700/20 to-transparent
+                      transition-transform duration-500 ease-out
+                    "></div>
+                    
+                    {/* Ícone com animação */}
+                    <UploadCloud 
+                      size={16} 
+                      className="
+                        relative z-10 transition-all duration-300 
+                        group-hover:-translate-y-0.5 group-hover:scale-110
+                        group-active:-translate-y-1
+                      " 
+                    />
+                    
+                    {/* Texto */}
+                    <span className="relative z-10 font-semibold">
+                      Importar PDF
+                    </span>
+                  </button>
                 )}
                 
                 <DropdownMenu>
@@ -96,6 +127,26 @@ const Header = ({
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+
+                <button
+                  onClick={resetRequest}
+                  className="
+                    group px-4 py-2.5 
+                    bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30
+                    hover:from-red-100 hover:to-orange-100 dark:hover:from-red-900/40 dark:hover:to-orange-900/40
+                    border border-red-200/50 dark:border-red-800/50 
+                    rounded-xl font-medium text-sm
+                    text-red-600 dark:text-red-400
+                    transition-all duration-300 
+                    hover:scale-105 active:scale-95
+                    hover:shadow-lg hover:shadow-red-200/30
+                    flex items-center gap-2
+                  "
+                  title="Limpar todos os campos"
+                >
+                  <Eraser size={16} className="group-hover:rotate-12 transition-transform duration-300" />
+                  <span className="font-semibold">Limpar</span>
+                </button>
               </>
             )}
 

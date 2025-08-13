@@ -26,6 +26,9 @@ const HEADER_HEIGHT_OTHER_PAGES = 25;
 
 const FOOTER_TEXT_CONTENT = "FUNDAÇÃO CULTURAL E DE FOMENTO À PESQUISA, ENSINO, EXTENSÃO E INOVAÇÃO\nRua Hugo Napoleão, 2891 - Ininga - Teresina/PI - CEP 64048-440 - CNPJ: 07.501.328/0001-30";
 const LOGO_URL = '/logo.png';
+const AIRPLANE_IDA_ICON_URL = '/aviao_ida.png';
+const AIRPLANE_VOLTA_ICON_URL = '/aviao_volta.png';
+
 
 // Função auxiliar para converter cor hex para RGB
 const hexToRgb = (hex) => {
@@ -283,17 +286,6 @@ async function loadImageData(url) {
   }
 }
 
-function drawDirectionalIcon(doc, x, y, size, color, isReturn = false) {
-  const rgb = hexToRgb(color);
-  doc.setTextColor(rgb.r, rgb.g, rgb.b);
-  doc.setFont(FONTS.DEFAULT, 'normal');
-  doc.setFontSize(size);
-  
-  // Usar seta Unicode compatível
-  const arrow = isReturn ? '←' : '→';
-  doc.text(arrow, x, y);
-}
-
 export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   // Configuração inicial do PDF
   const doc = new jsPDF({
@@ -312,17 +304,20 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
     creator: 'FADEX System'
   });
 
-  let logoImgData = null;
-  try {
-    logoImgData = await loadImageData(LOGO_URL);
-  } catch(e) {
-    console.error("Falha ao carregar logo:", e);
-  }
+  const [logoImgData, airplaneIdaIconData, airplaneVoltaIconData] = await Promise.all([
+    loadImageData(LOGO_URL),
+    loadImageData(AIRPLANE_IDA_ICON_URL),
+    loadImageData(AIRPLANE_VOLTA_ICON_URL)
+  ]).catch(err => {
+    console.error("Falha ao carregar uma das imagens para o PDF:", err);
+    return [null, null, null];
+  });
+
 
   let yPosition = HEADER_HEIGHT_FIRST_PAGE + 10;
   const pageHeight = doc.internal.pageSize.getHeight();
   const pageWidth = doc.internal.pageSize.getWidth();
-  const contentMarginBottomForPageBreak = FOOTER_HEIGHT + PAGE_MARGIN + 10;
+  const contentMarginBottomForPageBreak = FOOTER_HEIGHT + PAGE_MARGIN;
 
   const checkAndAddPage = (neededHeight = 20) => {
     if (yPosition + neededHeight > pageHeight - contentMarginBottomForPageBreak) {
@@ -376,33 +371,27 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
     
     // Preparar campos
     const fields = [];
-    if (faturamento.contaProjeto) fields.push({ label: 'Número da Conta:', value: faturamento.contaProjeto, fullWidth: true });
-    if (faturamento.descricao) fields.push({ label: 'Descrição:', value: faturamento.descricao, fullWidth: true });
+    if (faturamento.contaProjeto) fields.push({ label: 'Titulo do Projeto:', value: faturamento.contaProjeto });
+    if (faturamento.descricao) fields.push({ label: 'Descrição:', value: faturamento.descricao });
     if (faturamento.costCenter) fields.push({ label: 'Conta corrente do projeto:', value: faturamento.costCenter });
     if (faturamento.webId) fields.push({ label: 'WEB ID:', value: faturamento.webId });
-    if (faturamento.observacoes) fields.push({ label: 'Observações:', value: faturamento.observacoes, fullWidth: true });
+    if (faturamento.observacoes) fields.push({ label: 'Observações:', value: faturamento.observacoes });
     
-    // Calcular altura necessária
-    let faturamentoHeight = 10;
+    // Calcular altura necessária e renderizar
+    let totalHeight = 5; // Start with padding
     fields.forEach(field => {
-      if (field.fullWidth) {
-        const lines = Math.ceil(doc.getTextWidth(field.value || '') / (faturamentoWidth - 10));
-        faturamentoHeight += 4 + (lines * 4);
-      } else {
-        faturamentoHeight += 8;
-      }
+        const textLines = doc.splitTextToSize(field.value || '', faturamentoWidth - 10);
+        totalHeight += 4 + (textLines.length * 4); // Label height + text height
     });
-    faturamentoHeight = Math.max(faturamentoHeight, 20);
+    totalHeight += 5; // Bottom padding
 
     // Desenhar background
-    doc.rect(faturamentoStartX, faturamentoStartY, faturamentoWidth, faturamentoHeight, 'F');
+    doc.rect(faturamentoStartX, faturamentoStartY, faturamentoWidth, totalHeight, 'F');
     
-    yPosition += 5;
+    let currentY = faturamentoStartY + 5; // Start inside the box with padding
 
-    // Renderizar campos
-    let currentY = yPosition;
     fields.forEach(field => {
-      if (checkAndAddPage(10)) {
+      if (checkAndAddPage(15)) {
         currentY = HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN;
       }
       
@@ -413,15 +402,17 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
       doc.setTextColor(darkRgb.r, darkRgb.g, darkRgb.b);
       doc.text(field.label, xPos, currentY);
       
+      currentY += 4; // Move down for the value
+
       doc.setFont(FONTS.DEFAULT, 'normal');
       doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
-      const valueX = xPos + doc.getTextWidth(field.label) + 2;
-      doc.text(field.value || '', valueX, currentY);
+      const textLines = doc.splitTextToSize(field.value || '', faturamentoWidth - 10);
+      doc.text(textLines, xPos, currentY);
       
-      currentY += 6;
+      currentY += (textLines.length * 4) + 4; // Add space for next field
     });
 
-    yPosition = currentY + 5;
+    yPosition = faturamentoStartY + totalHeight + 5;
   }
 
   // Seção de Passageiros e Itinerários
@@ -436,7 +427,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
         return acc + (quantidade * valorUnitario);
       }, 0);
 
-      const passengerCardHeight = 20 + (passageiro.itinerarios || []).length * 20;
+      const passengerCardHeight = 25 + (passageiro.itinerarios || []).length * 20;
       if (checkAndAddPage(passengerCardHeight)) {
         yPosition = addSectionTitle(doc, 'Passageiros e Itinerários (Continuação)', HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN);
       }
@@ -446,9 +437,10 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
       const cardWidth = pageWidth - (GRADIENT_WIDTH + PAGE_MARGIN) * 2;
       
       // Header do Card
+      const headerHeight = passageiro.email ? 20 : 15;
       const bgRgb = hexToRgb(COLORS.BACKGROUND_SECTION);
       doc.setFillColor(bgRgb.r, bgRgb.g, bgRgb.b);
-      doc.rect(passengerCardStartX, passengerCardStartY, cardWidth, 15, 'F');
+      doc.rect(passengerCardStartX, passengerCardStartY, cardWidth, headerHeight, 'F');
       
       // Nome do passageiro
       doc.setFont(FONTS.DEFAULT, 'bold');
@@ -457,11 +449,18 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
       doc.text(`${index + 1}. ${passageiro.nome}`, passengerCardStartX + 3, yPosition + 5);
       
       // CPF e Data de Nascimento
+      let infoY = yPosition + 10;
       doc.setFont(FONTS.DEFAULT, 'normal');
       doc.setFontSize(9);
       doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
-      doc.text(`CPF: ${formatCPF(passageiro.cpf)} | Nasc: ${passageiro.dataNascimento}`, passengerCardStartX + 3, yPosition + 10);
+      doc.text(`CPF: ${formatCPF(passageiro.cpf)} | Nasc: ${passageiro.dataNascimento}`, passengerCardStartX + 3, infoY);
       
+      // Email do Passageiro (se existir)
+      if (passageiro.email) {
+        infoY += 5;
+        doc.text(`Email: ${passageiro.email}`, passengerCardStartX + 3, infoY);
+      }
+
       // Total do passageiro
       doc.setFont(FONTS.DEFAULT, 'bold');
       doc.setFontSize(10);
@@ -469,7 +468,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
       doc.setTextColor(greenRgb.r, greenRgb.g, greenRgb.b);
       doc.text(formatCurrency(totalPassageiro), pageWidth - PAGE_MARGIN - 3, yPosition + 8, { align: 'right' });
       
-      yPosition += 17;
+      yPosition += headerHeight + 2;
 
       // Itinerários
       if (passageiro.itinerarios && passageiro.itinerarios.length > 0) {
@@ -489,6 +488,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
           doc.setFont(FONTS.DEFAULT, 'normal');
           doc.setFontSize(10);
           doc.setTextColor(darkRgb.r, darkRgb.g, darkRgb.b);
+          const textBaseY = yPosition + 4;
           
           // Origem e Destino
           const originText = itinerario.origem || 'N/I';
@@ -496,20 +496,39 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
           const isReturn = itinerario.origem === primeiroItinerario.destino && 
                           itinerario.destino === primeiroItinerario.origem;
 
-          doc.text(originText, itinerarioStartX, yPosition + 4);
+          doc.text(originText, itinerarioStartX, textBaseY, {baseline: 'middle'});
           const originWidth = doc.getTextWidth(originText);
           
-          // Seta direcional
-          const arrowX = itinerarioStartX + originWidth + 3;
-          drawDirectionalIcon(doc, arrowX, yPosition + 4, 10, COLORS.PRIMARY, isReturn);
+           // Draw icon
+           const iconX = itinerarioStartX + originWidth + 3;
+           const iconSize = 4;
+           const iconToUse = isReturn ? airplaneVoltaIconData : airplaneIdaIconData;
+           if (iconToUse) {
+             try {
+               const imgProps = doc.getImageProperties(iconToUse);
+               doc.addImage(iconToUse, imgProps.fileType, iconX, textBaseY - (iconSize/2), iconSize, iconSize);
+             } catch(e) { console.error("Error adding airplane icon", e) }
+           } else {
+             const arrowSymbol = isReturn ? '<' : '>'; // Fallback arrow
+             doc.text(arrowSymbol, iconX, textBaseY, {baseline: 'middle'});
+           }
           
-          const destinationX = arrowX + 8;
-          doc.text(destinationText, destinationX, yPosition + 4);
+          const destinationX = iconX + iconSize + 3;
+          doc.text(destinationText, destinationX, textBaseY, {baseline: 'middle'});
+
+          const tripTypeText = isReturn ? '(Volta)' : '(Ida)';
+          const destinationWidth = doc.getTextWidth(destinationText);
+          const tripTypeX = destinationX + destinationWidth + 2;
+          doc.setFontSize(8);
+          doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
+          doc.text(tripTypeText, tripTypeX, textBaseY, {baseline: 'middle'});
+          doc.setFontSize(10); // Reset font size
+          doc.setTextColor(darkRgb.r, darkRgb.g, darkRgb.b);
           
           // Valor do trecho
           const totalTrecho = (parseFloat(itinerario.quantidade) || 0) * (parseFloat(itinerario.valorUnitario) || 0);
           doc.setFont(FONTS.DEFAULT, 'bold');
-          doc.text(formatCurrency(totalTrecho), pageWidth - PAGE_MARGIN - 3, yPosition + 4, { align: 'right' });
+          doc.text(formatCurrency(totalTrecho), pageWidth - PAGE_MARGIN - 3, textBaseY, { align: 'right', baseline: 'middle'});
           
           yPosition += 6;
           
@@ -578,14 +597,14 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   
   if (checkAndAddPage(observationHeight)) {
     yPosition += 5;
+  } else if (yPosition + observationHeight > pageHeight - contentMarginBottomForPageBreak) {
+    yPosition = pageHeight - contentMarginBottomForPageBreak - observationHeight;
   }
   
   doc.setFont(FONTS.DEFAULT, 'italic');
   doc.setFontSize(8);
   doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
-  observationLines.forEach((line, i) => {
-    doc.text(line, GRADIENT_WIDTH + PAGE_MARGIN, yPosition + (i * 4));
-  });
+  doc.text(observationLines, GRADIENT_WIDTH + PAGE_MARGIN, yPosition);
   yPosition += observationHeight;
 
   // Processar anexos

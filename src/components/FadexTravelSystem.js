@@ -121,7 +121,7 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
       if (!textContent) throw new Error('Falha ao extrair texto.');
       
       setProcessingMessage('Analisando com a Fadex IA...');
-      const result = await extractDataFromPdfWithGemini(textContent); 
+      const result = await extractDataFromPdfWithGemini(textContent, { onProgress: setProcessingMessage }); 
       setExtractedData(result);
       setProcessingState('success');
       setProcessingMessage('Dados extraídos! Revise, edite se necessário e confirme.');
@@ -355,7 +355,7 @@ const FadexTravelSystem = () => {
 
     setFaturamento(prevFaturamento => ({
       ...prevFaturamento,
-      contaProjeto: dataFromAI.billing?.account || prevFaturamento.contaProjeto,
+      contaProjeto: dataFromAI.title || prevFaturamento.contaProjeto,
       costCenter: dataFromAI.billing?.costCenter || prevFaturamento.costCenter,
       descricao: dataFromAI.billing?.description || prevFaturamento.descricao,
       webId: dataFromAI.billing?.webId || prevFaturamento.webId,
