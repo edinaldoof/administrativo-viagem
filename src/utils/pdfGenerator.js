@@ -493,6 +493,8 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
           // Origem e Destino
           const originText = itinerario.origem || 'N/I';
           const destinationText = itinerario.destino || 'N/I';
+          const isReturn = itinerario.origem === primeiroItinerario.destino && 
+                          itinerario.destino === primeiroItinerario.origem;
 
           doc.text(originText, itinerarioStartX, textBaseY, {baseline: 'middle'});
           const originWidth = doc.getTextWidth(originText);
@@ -500,15 +502,11 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
            // Draw icon
            const iconX = itinerarioStartX + originWidth + 3;
            const iconSize = 4;
-           const isReturn = itinerario.origem === primeiroItinerario.destino && 
-                           itinerario.destino === primeiroItinerario.origem;
-           
-           const iconData = isReturn ? airplaneVoltaIconData : airplaneIdaIconData;
-
-           if (iconData) {
+           const iconToUse = isReturn ? airplaneVoltaIconData : airplaneIdaIconData;
+           if (iconToUse) {
              try {
-               const imgProps = doc.getImageProperties(iconData);
-               doc.addImage(iconData, imgProps.fileType, iconX, textBaseY - (iconSize/2), iconSize, iconSize);
+               const imgProps = doc.getImageProperties(iconToUse);
+               doc.addImage(iconToUse, imgProps.fileType, iconX, textBaseY - (iconSize/2), iconSize, iconSize);
              } catch(e) { console.error("Error adding airplane icon", e) }
            } else {
              const arrowSymbol = isReturn ? '<' : '>'; // Fallback arrow
@@ -517,6 +515,15 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
           
           const destinationX = iconX + iconSize + 3;
           doc.text(destinationText, destinationX, textBaseY, {baseline: 'middle'});
+
+          const tripTypeText = isReturn ? '(Volta)' : '(Ida)';
+          const destinationWidth = doc.getTextWidth(destinationText);
+          const tripTypeX = destinationX + destinationWidth + 2;
+          doc.setFontSize(8);
+          doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
+          doc.text(tripTypeText, tripTypeX, textBaseY, {baseline: 'middle'});
+          doc.setFontSize(10); // Reset font size
+          doc.setTextColor(darkRgb.r, darkRgb.g, darkRgb.b);
           
           // Valor do trecho
           const totalTrecho = (parseFloat(itinerario.quantidade) || 0) * (parseFloat(itinerario.valorUnitario) || 0);
@@ -586,16 +593,19 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   const observationText = "Observação: Os valores apresentados são sugestões do coordenador com base em pesquisas realizadas e estão sujeitos a alterações.";
   const maxTextWidth = pageWidth - (GRADIENT_WIDTH + PAGE_MARGIN) * 2;
   const observationLines = doc.splitTextToSize(observationText, maxTextWidth);
-  const observationHeight = observationLines.length * 4;
+  const observationHeight = observationLines.length * 4 + 4;
   
   if (checkAndAddPage(observationHeight)) {
-      yPosition = pageHeight - contentMarginBottomForPageBreak - observationHeight - 5;
+    yPosition += 5;
+  } else if (yPosition + observationHeight > pageHeight - contentMarginBottomForPageBreak) {
+    yPosition = pageHeight - contentMarginBottomForPageBreak - observationHeight;
   }
   
   doc.setFont(FONTS.DEFAULT, 'italic');
   doc.setFontSize(8);
   doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
   doc.text(observationLines, GRADIENT_WIDTH + PAGE_MARGIN, yPosition);
+  yPosition += observationHeight;
 
   // Processar anexos
   if (passageiros) {
