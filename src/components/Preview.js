@@ -48,7 +48,7 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
       </div>
 
       {/* Seção de Faturamento */}
-      {faturamento && (faturamento.contaProjeto || faturamento.descricao || faturamento.cc || faturamento.webId) && (
+      {faturamento && (faturamento.contaProjeto || faturamento.descricao || faturamento.costCenter || faturamento.webId) && (
         <div className="mb-8">
           <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4 flex items-center">
             Informações de Faturamento
@@ -56,7 +56,7 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
           <div className="bg-gray-50 dark:bg-slate-700 rounded-2xl p-6 text-sm grid grid-cols-2 gap-x-8 gap-y-4">
             {faturamento.contaProjeto && (
               <div className="col-span-2">
-                <p className="font-medium text-gray-500 dark:text-gray-400">Número da Conta</p>
+                <p className="font-medium text-gray-500 dark:text-gray-400">Título do Projeto</p>
                 <p className="text-gray-800 dark:text-gray-100">{faturamento.contaProjeto}</p>
               </div>
             )}
@@ -66,10 +66,10 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
                 <p className="text-gray-800 dark:text-gray-100">{faturamento.descricao}</p>
               </div>
             )}
-            {faturamento.cc && (
+            {faturamento.costCenter && (
               <div>
                 <p className="font-medium text-gray-500 dark:text-gray-400">Conta corrente do projeto</p>
-                <p className="text-gray-800 dark:text-gray-100">{faturamento.cc}</p>
+                <p className="text-gray-800 dark:text-gray-100">{faturamento.costCenter}</p>
               </div>
             )}
             {faturamento.webId && (
@@ -172,7 +172,7 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
 
       {/* Fallback para quando não há dados */}
       {(!passageiros || passageiros.length === 0) &&
-       (!faturamento || (!faturamento.contaProjeto && !faturamento.descricao && !faturamento.cc && !faturamento.webId)) && (
+       (!faturamento || (!faturamento.contaProjeto && !faturamento.descricao && !faturamento.costCenter && !faturamento.webId)) && (
         <div className="text-center py-16 text-gray-500 dark:text-gray-400">
           <p>Adicione passageiros e informações de faturamento para visualizar a solicitação.</p>
         </div>
@@ -182,3 +182,5 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
 });
 
 export default Preview;
+
+    

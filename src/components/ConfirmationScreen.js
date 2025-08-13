@@ -286,6 +286,7 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
       (p.itinerary || []).forEach((it, itIndex) => {
         friendlyLabels[`passengers[${i}].itinerary[${itIndex}].ciaAerea`] = `Cia Aérea Trecho ${itIndex+1} P.${i+1}`;
         friendlyLabels[`passengers[${i}].itinerary[${itIndex}].voo`] = `Voo Trecho ${itIndex+1} P.${i+1}`;
+        friendlyLabels[`passengers[${i}].itinerary[${itIndex}].horarios`] = `Horários Trecho ${itIndex+1} P.${i+1}`;
         friendlyLabels[`passengers[${i}].itinerary[${itIndex}].quantity`] = `Qtd Trecho ${itIndex+1} P.${i+1}`;
         friendlyLabels[`passengers[${i}].itinerary[${itIndex}].unitPrice`] = `Valor Trecho ${itIndex+1} P.${i+1}`;
       });
@@ -435,7 +436,7 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
       editedData.passengers.forEach(p => {
         count += 5; // campos do passageiro
         if (p.itinerary) {
-          count += p.itinerary.length * 4; // campos do itinerário
+          count += p.itinerary.length * 5; // campos do itinerário
         }
       });
     }
@@ -591,6 +592,7 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
                                   {renderField(`Cia Aérea`, `passengers[${pIndex}].itinerary[${itIndex}].ciaAerea`, "text", Plane)}
                                   {renderField(`Voo`, `passengers[${pIndex}].itinerary[${itIndex}].voo`, "text", Tag)}
+                                  {renderField(`Horários`, `passengers[${pIndex}].itinerary[${itIndex}].horarios`, "text", Clock)}
                                   {renderField(`Quantidade`, `passengers[${pIndex}].itinerary[${itIndex}].quantity`, "number", Hash)}
                                   {renderField(`Valor Unitário`, `passengers[${pIndex}].itinerary[${itIndex}].unitPrice`, "number", DollarSign)}
                                 </div>
@@ -693,3 +695,5 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
 };
 
 export default ConfirmationScreen;
+
+    

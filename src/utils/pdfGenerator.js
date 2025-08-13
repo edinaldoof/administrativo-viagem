@@ -371,7 +371,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
     
     // Preparar campos
     const fields = [];
-    if (faturamento.contaProjeto) fields.push({ label: 'Titulo do Projeto:', value: faturamento.contaProjeto });
+    if (faturamento.contaProjeto) fields.push({ label: 'Título do Projeto:', value: faturamento.contaProjeto });
     if (faturamento.descricao) fields.push({ label: 'Descrição:', value: faturamento.descricao });
     if (faturamento.costCenter) fields.push({ label: 'Conta corrente do projeto:', value: faturamento.costCenter });
     if (faturamento.webId) fields.push({ label: 'WEB ID:', value: faturamento.webId });
@@ -547,7 +547,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
             }
           }
           
-          doc.text(`Data: ${dataSaidaFormatada} | Cia: ${itinerario.ciaAerea || 'N/I'} | Voo: ${itinerario.voo || 'N/I'}`, 
+          doc.text(`Data: ${dataSaidaFormatada} | Cia: ${itinerario.ciaAerea || 'N/I'} | Voo: ${itinerario.voo || 'N/I'} | Horários: ${itinerario.horarios || 'N/I'}`, 
                    itinerarioStartX, yPosition + 2);
           
           yPosition += 5;
@@ -593,14 +593,12 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   const observationText = "Observação: Os valores apresentados são sugestões do coordenador com base em pesquisas realizadas e estão sujeitos a alterações.";
   const maxTextWidth = pageWidth - (GRADIENT_WIDTH + PAGE_MARGIN) * 2;
   const observationLines = doc.splitTextToSize(observationText, maxTextWidth);
-  const observationHeight = observationLines.length * 4 + 4;
-  
-  if (checkAndAddPage(observationHeight)) {
+  const observationHeight = observationLines.length * 4;
+
+  if (checkAndAddPage(observationHeight + 4)) {
     yPosition += 5;
-  } else if (yPosition + observationHeight > pageHeight - contentMarginBottomForPageBreak) {
-    yPosition = pageHeight - contentMarginBottomForPageBreak - observationHeight;
   }
-  
+
   doc.setFont(FONTS.DEFAULT, 'italic');
   doc.setFontSize(8);
   doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
@@ -628,3 +626,5 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   const fileName = `solicitacao-fadex-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
   doc.save(fileName);
 };
+
+    

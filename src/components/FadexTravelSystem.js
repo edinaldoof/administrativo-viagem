@@ -383,7 +383,6 @@ const FadexTravelSystem = () => {
             ciaAerea: it.ciaAerea || '',
             voo: it.voo || '',
             horarios: it.horarios || '',
-            // Correção: Usar a quantidade da IA, com fallback para 1.
             quantidade: it.quantity !== undefined ? it.quantity : 1, 
             valorUnitario: it.unitPrice || 0,
             tripType: it.tripType || 'Aéreo',
@@ -552,3 +551,5 @@ const FadexTravelSystem = () => {
 };
 
 export default FadexTravelSystem;
+
+    

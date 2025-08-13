@@ -170,7 +170,6 @@ export const extractDataFromPdfWithGemini = async (text, options = {}) => {
     1.  **Informações Globais (Faturamento e Título):**
         -   **title**: Identifique o título principal do documento. Geralmente está no topo e pode incluir "Requisição de Compra", "Solicitação de Viagem" e um nome ou número de projeto.
         -   **billing.costCenter**: Encontre o centro de custo. Procure por termos como "CENTRO DE CUSTO", "Cost Center", "CC". Se não encontrar, pode estar associado ao número do projeto.
-        -   **billing.cc**: Extraia a conta corrente do projeto, que pode vir como "CC", "Conta Corrente", "C/C".
         -   **billing.webId**: Extraia o número de identificação da solicitação, frequentemente associado a termos como "Número da Solicitação", "WEB ID", "Request ID", "WEB".
         -   **billing.description**: Obtenha a justificativa ou finalidade da viagem. Procure por campos como "JUSTIFICATIVA", "FINALIDADE", "OBJETIVO", "DESCRIÇÃO".
         -   **observations**: Extraia qualquer texto de observação geral, que possa estar em campos como "OBSERVAÇÕES GERAIS", "OBSERVAÇÃO", ou texto livre que pareça relevante para toda a requisição.
@@ -190,7 +189,7 @@ export const extractDataFromPdfWithGemini = async (text, options = {}) => {
             -   **tripType**: Determine se é "Aéreo" ou "Terrestre" com base no contexto (ex: menção a "Voo", "Cia Aérea", "Avião" = Aéreo; "Ônibus", "Van", "Carro" = Terrestre). Padrão: "Aéreo".
             -   **ciaAerea**: Nome da companhia aérea ou empresa de transporte. **Busque também em seções de texto livre como "OBSERVAÇÃO" ou "DADOS GERAIS DO ITEM" por linhas contendo "Companhia:".**
             -   **voo**: O número do voo ou identificador do transporte. **Busque também em seções de texto livre como "OBSERVAÇÃO" ou "DADOS GERAIS DO ITEM" por linhas contendo "N° Voo:", "Nº Voo:" ou "Voo:".**
-            -   **horarios**: Os horários de partida e chegada (formato livre).
+            -   **horarios**: Os horários de partida e chegada (formato livre). Procure por termos como "Horário Sugerido", "Horários", ou padrões de hora como XX:XX.
             -   **baggage**: Verifique se há menção a bagagens. Pode ser "Com Bagagem", "Sem Bagagem", "Bagagem incluída", "1PC", "2PC", etc. Se não houver menção, defina como "Não especificado".
             -   **quantity**: A quantidade de passagens para este trecho. Se não for especificado, o padrão é 1.
             -   **unitPrice**: O valor unitário do trecho. Deve ser um número. Se não for especificado, o padrão é 0.
@@ -207,7 +206,6 @@ export const extractDataFromPdfWithGemini = async (text, options = {}) => {
       "observations": "string or null",
       "billing": {
         "costCenter": "string or null",
-        "cc": "string or null",
         "webId": "string or null",
         "description": "string or null"
       },
@@ -352,3 +350,5 @@ export const getCacheStatus = () => {
     entries: Array.from(requestCache.keys())
   };
 };
+
+    
