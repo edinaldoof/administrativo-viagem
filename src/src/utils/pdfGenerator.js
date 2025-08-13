@@ -290,7 +290,7 @@ function drawDirectionalIcon(doc, x, y, size, color, isReturn = false) {
   doc.setFontSize(size);
   
   // Usar seta Unicode compatível
-  const arrow = isReturn ? '<' : '>';
+  const arrow = isReturn ? '←' : '→';
   doc.text(arrow, x, y);
 }
 
@@ -322,7 +322,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   let yPosition = HEADER_HEIGHT_FIRST_PAGE + 10;
   const pageHeight = doc.internal.pageSize.getHeight();
   const pageWidth = doc.internal.pageSize.getWidth();
-  const contentMarginBottomForPageBreak = FOOTER_HEIGHT + PAGE_MARGIN;
+  const contentMarginBottomForPageBreak = FOOTER_HEIGHT + PAGE_MARGIN + 10;
 
   const checkAndAddPage = (neededHeight = 20) => {
     if (yPosition + neededHeight > pageHeight - contentMarginBottomForPageBreak) {
@@ -436,7 +436,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
         return acc + (quantidade * valorUnitario);
       }, 0);
 
-      const passengerCardHeight = 25 + (passageiro.itinerarios || []).length * 20;
+      const passengerCardHeight = 20 + (passageiro.itinerarios || []).length * 20;
       if (checkAndAddPage(passengerCardHeight)) {
         yPosition = addSectionTitle(doc, 'Passageiros e Itinerários (Continuação)', HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN);
       }
@@ -446,10 +446,9 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
       const cardWidth = pageWidth - (GRADIENT_WIDTH + PAGE_MARGIN) * 2;
       
       // Header do Card
-      const headerHeight = passageiro.email ? 20 : 15;
       const bgRgb = hexToRgb(COLORS.BACKGROUND_SECTION);
       doc.setFillColor(bgRgb.r, bgRgb.g, bgRgb.b);
-      doc.rect(passengerCardStartX, passengerCardStartY, cardWidth, headerHeight, 'F');
+      doc.rect(passengerCardStartX, passengerCardStartY, cardWidth, 15, 'F');
       
       // Nome do passageiro
       doc.setFont(FONTS.DEFAULT, 'bold');
@@ -458,18 +457,11 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
       doc.text(`${index + 1}. ${passageiro.nome}`, passengerCardStartX + 3, yPosition + 5);
       
       // CPF e Data de Nascimento
-      let infoY = yPosition + 10;
       doc.setFont(FONTS.DEFAULT, 'normal');
       doc.setFontSize(9);
       doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
-      doc.text(`CPF: ${formatCPF(passageiro.cpf)} | Nasc: ${passageiro.dataNascimento}`, passengerCardStartX + 3, infoY);
+      doc.text(`CPF: ${formatCPF(passageiro.cpf)} | Nasc: ${passageiro.dataNascimento}`, passengerCardStartX + 3, yPosition + 10);
       
-      // Email do Passageiro (se existir)
-      if (passageiro.email) {
-        infoY += 5;
-        doc.text(`Email: ${passageiro.email}`, passengerCardStartX + 3, infoY);
-      }
-
       // Total do passageiro
       doc.setFont(FONTS.DEFAULT, 'bold');
       doc.setFontSize(10);
@@ -477,7 +469,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
       doc.setTextColor(greenRgb.r, greenRgb.g, greenRgb.b);
       doc.text(formatCurrency(totalPassageiro), pageWidth - PAGE_MARGIN - 3, yPosition + 8, { align: 'right' });
       
-      yPosition += headerHeight + 2;
+      yPosition += 17;
 
       // Itinerários
       if (passageiro.itinerarios && passageiro.itinerarios.length > 0) {
@@ -509,9 +501,9 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
           
           // Seta direcional
           const arrowX = itinerarioStartX + originWidth + 3;
-          drawDirectionalIcon(doc, arrowX, yPosition + 4, 12, COLORS.PRIMARY, isReturn);
+          drawDirectionalIcon(doc, arrowX, yPosition + 4, 10, COLORS.PRIMARY, isReturn);
           
-          const destinationX = arrowX + 6; // Ajustado para dar espaço ao caracter
+          const destinationX = arrowX + 8;
           doc.text(destinationText, destinationX, yPosition + 4);
           
           // Valor do trecho
@@ -591,7 +583,9 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   doc.setFont(FONTS.DEFAULT, 'italic');
   doc.setFontSize(8);
   doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
-  doc.text(observationLines, GRADIENT_WIDTH + PAGE_MARGIN, yPosition);
+  observationLines.forEach((line, i) => {
+    doc.text(line, GRADIENT_WIDTH + PAGE_MARGIN, yPosition + (i * 4));
+  });
   yPosition += observationHeight;
 
   // Processar anexos
