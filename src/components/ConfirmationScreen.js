@@ -114,7 +114,7 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
   
   // Mapeamento de caminhos para rótulos amigáveis (usado apenas para o dialog de feedback)
   const friendlyLabels = {
-    'title': 'Título', 'billing.account': 'Conta do Projeto', 'billing.costCenter': 'Conta corrente do projeto',
+    'title': 'Título', 'billing.costCenter': 'Conta corrente do projeto',
     'billing.webId': 'Web ID', 'billing.description': 'Justificativa',
   };
   if (originalData.passengers) {
@@ -236,7 +236,6 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
         <h3 className="text-xl font-semibold text-gray-700 mb-3">Informações Globais</h3>
         <div className="space-y-2">
           {renderField("Título", "title")}
-          {renderField("Conta do Projeto", "billing.account")}
           {renderField("Conta corrente do projeto", "billing.costCenter")}
           {renderField("Web ID", "billing.webId")}
           {renderField("Justificativa", "billing.description")}
