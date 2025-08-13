@@ -1,6 +1,6 @@
 // src/components/Header.js
 import React from 'react';
-import { Moon, Sun, Download, FileImage, FileText, FileSpreadsheet, UploadCloud, Plane, List, Users, PlusCircle, BarChart2 } from 'lucide-react';
+import { Moon, Sun, Download, FileImage, FileText, FileSpreadsheet, UploadCloud, Plane, List, Users, PlusCircle, BarChart2, Eraser } from 'lucide-react';
 import { Button } from './ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 
@@ -96,6 +96,16 @@ const Header = ({
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+
+                <Button
+                  variant="outline"
+                  onClick={resetRequest}
+                  className="flex items-center gap-2"
+                  title="Limpar tela"
+                >
+                  <Eraser size={16} />
+                  Limpar
+                </Button>
               </>
             )}
 
