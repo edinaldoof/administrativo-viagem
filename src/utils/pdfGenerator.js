@@ -26,6 +26,7 @@ const HEADER_HEIGHT_OTHER_PAGES = 25;
 
 const FOOTER_TEXT_CONTENT = "FUNDAÇÃO CULTURAL E DE FOMENTO À PESQUISA, ENSINO, EXTENSÃO E INOVAÇÃO\nRua Hugo Napoleão, 2891 - Ininga - Teresina/PI - CEP 64048-440 - CNPJ: 07.501.328/0001-30";
 const LOGO_URL = '/logo.png';
+const AIRPLANE_ICON_URL = '/aviao.png';
 
 // Função auxiliar para converter cor hex para RGB
 const hexToRgb = (hex) => {
@@ -283,17 +284,6 @@ async function loadImageData(url) {
   }
 }
 
-function drawDirectionalIcon(doc, x, y, size, color, isReturn = false) {
-  const rgb = hexToRgb(color);
-  doc.setTextColor(rgb.r, rgb.g, rgb.b);
-  doc.setFont(FONTS.DEFAULT, 'normal');
-  doc.setFontSize(size);
-  
-  // Usar seta Unicode compatível
-  const arrow = isReturn ? '<' : '>';
-  doc.text(arrow, x, y);
-}
-
 export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   // Configuração inicial do PDF
   const doc = new jsPDF({
@@ -312,17 +302,19 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
     creator: 'FADEX System'
   });
 
-  let logoImgData = null;
-  try {
-    logoImgData = await loadImageData(LOGO_URL);
-  } catch(e) {
-    console.error("Falha ao carregar logo:", e);
-  }
+  const [logoImgData, airplaneIconData] = await Promise.all([
+    loadImageData(LOGO_URL),
+    loadImageData(AIRPLANE_ICON_URL)
+  ]).catch(err => {
+    console.error("Falha ao carregar uma das imagens para o PDF:", err);
+    return [null, null];
+  });
+
 
   let yPosition = HEADER_HEIGHT_FIRST_PAGE + 10;
   const pageHeight = doc.internal.pageSize.getHeight();
   const pageWidth = doc.internal.pageSize.getWidth();
-  const contentMarginBottomForPageBreak = FOOTER_HEIGHT + PAGE_MARGIN + 10;
+  const contentMarginBottomForPageBreak = FOOTER_HEIGHT + PAGE_MARGIN;
 
   const checkAndAddPage = (neededHeight = 20) => {
     if (yPosition + neededHeight > pageHeight - contentMarginBottomForPageBreak) {
@@ -477,7 +469,6 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
 
       // Itinerários
       if (passageiro.itinerarios && passageiro.itinerarios.length > 0) {
-        const primeiroItinerario = passageiro.itinerarios[0];
         
         passageiro.itinerarios.forEach((itinerario) => {
           if (checkAndAddPage(25)) {
@@ -493,27 +484,35 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
           doc.setFont(FONTS.DEFAULT, 'normal');
           doc.setFontSize(10);
           doc.setTextColor(darkRgb.r, darkRgb.g, darkRgb.b);
+          const textBaseY = yPosition + 4;
           
           // Origem e Destino
           const originText = itinerario.origem || 'N/I';
           const destinationText = itinerario.destino || 'N/I';
-          const isReturn = itinerario.origem === primeiroItinerario.destino && 
-                          itinerario.destino === primeiroItinerario.origem;
 
-          doc.text(originText, itinerarioStartX, yPosition + 4);
+          doc.text(originText, itinerarioStartX, textBaseY, {baseline: 'middle'});
           const originWidth = doc.getTextWidth(originText);
           
-          // Seta direcional
-          const arrowX = itinerarioStartX + originWidth + 3;
-          drawDirectionalIcon(doc, arrowX, yPosition + 4, 12, COLORS.PRIMARY, isReturn);
+           // Draw icon
+           const iconX = itinerarioStartX + originWidth + 3;
+           const iconSize = 4;
+           if (airplaneIconData) {
+             try {
+               const imgProps = doc.getImageProperties(airplaneIconData);
+               doc.addImage(airplaneIconData, imgProps.fileType, iconX, textBaseY - (iconSize/2), iconSize, iconSize);
+             } catch(e) { console.error("Error adding airplane icon", e) }
+           } else {
+             const arrowSymbol = '\u2192'; // Fallback arrow
+             doc.text(arrowSymbol, iconX, textBaseY, {baseline: 'middle'});
+           }
           
-          const destinationX = arrowX + 6; // Ajustado para dar espaço ao caracter
-          doc.text(destinationText, destinationX, yPosition + 4);
+          const destinationX = iconX + iconSize + 3;
+          doc.text(destinationText, destinationX, textBaseY, {baseline: 'middle'});
           
           // Valor do trecho
           const totalTrecho = (parseFloat(itinerario.quantidade) || 0) * (parseFloat(itinerario.valorUnitario) || 0);
           doc.setFont(FONTS.DEFAULT, 'bold');
-          doc.text(formatCurrency(totalTrecho), pageWidth - PAGE_MARGIN - 3, yPosition + 4, { align: 'right' });
+          doc.text(formatCurrency(totalTrecho), pageWidth - PAGE_MARGIN - 3, textBaseY, { align: 'right', baseline: 'middle'});
           
           yPosition += 6;
           
@@ -580,8 +579,8 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   const observationLines = doc.splitTextToSize(observationText, maxTextWidth);
   const observationHeight = observationLines.length * 4 + 4;
   
-  if (checkAndAddPage(observationHeight)) {
-    yPosition += 5;
+  if(checkAndAddPage(observationHeight)) {
+     yPosition += 5;
   }
   
   doc.setFont(FONTS.DEFAULT, 'italic');
