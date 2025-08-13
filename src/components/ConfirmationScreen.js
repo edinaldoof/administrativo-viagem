@@ -4,8 +4,8 @@ import {
   Trash2, Edit, Plane, Bus, Briefcase, RefreshCw, 
   CheckCircle, AlertCircle, Info, ChevronDown, ChevronUp,
   Sparkles, User, Calendar, Mail, Phone, Hash,
-  MapPin, DollarSign, Tag, FileText, Clock, Check,
-  LightbulbIcon, X, Users
+  MapPin, DollarSign, Tag, FileText, Clock, Check, Users,
+  LightbulbIcon, X
 } from 'lucide-react';
 
 // Componente para a caixa de diálogo de feedback manual - Redesenhado

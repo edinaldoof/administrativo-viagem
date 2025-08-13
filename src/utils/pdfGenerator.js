@@ -317,7 +317,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   let yPosition = HEADER_HEIGHT_FIRST_PAGE + 10;
   const pageHeight = doc.internal.pageSize.getHeight();
   const pageWidth = doc.internal.pageSize.getWidth();
-  const contentMarginBottomForPageBreak = FOOTER_HEIGHT + PAGE_MARGIN + 10;
+  const contentMarginBottomForPageBreak = FOOTER_HEIGHT + PAGE_MARGIN;
 
   const checkAndAddPage = (neededHeight = 20) => {
     if (yPosition + neededHeight > pageHeight - contentMarginBottomForPageBreak) {
@@ -371,7 +371,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
     
     // Preparar campos
     const fields = [];
-    if (faturamento.contaProjeto) fields.push({ label: 'Número da Conta:', value: faturamento.contaProjeto });
+    if (faturamento.contaProjeto) fields.push({ label: 'Titulo do Projeto:', value: faturamento.contaProjeto });
     if (faturamento.descricao) fields.push({ label: 'Descrição:', value: faturamento.descricao });
     if (faturamento.costCenter) fields.push({ label: 'Conta corrente do projeto:', value: faturamento.costCenter });
     if (faturamento.webId) fields.push({ label: 'WEB ID:', value: faturamento.webId });
@@ -596,7 +596,9 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   const observationHeight = observationLines.length * 4 + 4;
   
   if (checkAndAddPage(observationHeight)) {
-    yPosition = HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN;
+    yPosition += 5;
+  } else if (yPosition + observationHeight > pageHeight - contentMarginBottomForPageBreak) {
+    yPosition = pageHeight - contentMarginBottomForPageBreak - observationHeight;
   }
   
   doc.setFont(FONTS.DEFAULT, 'italic');

@@ -348,18 +348,18 @@ const FadexTravelSystem = () => {
 
   const handleConfirmImport = (dataFromAI) => {
     if (!dataFromAI) {
-      showSuccessMessageHandler('Nenhuma informação útil pôde ser extraída.');
-      setCurrentView('creating');
-      return;
+        showSuccessMessageHandler('Nenhuma informação útil pôde ser extraída.');
+        setCurrentView('creating');
+        return;
     }
 
     setFaturamento(prevFaturamento => ({
-      ...prevFaturamento,
-      contaProjeto: dataFromAI.title || prevFaturamento.contaProjeto,
-      costCenter: dataFromAI.billing?.costCenter || prevFaturamento.costCenter,
-      descricao: dataFromAI.billing?.description || prevFaturamento.descricao,
-      webId: dataFromAI.billing?.webId || prevFaturamento.webId,
-      observacoes: dataFromAI.observations || prevFaturamento.observacoes,
+        ...prevFaturamento,
+        contaProjeto: dataFromAI.title || prevFaturamento.contaProjeto,
+        costCenter: dataFromAI.billing?.costCenter || prevFaturamento.costCenter,
+        descricao: dataFromAI.billing?.description || prevFaturamento.descricao,
+        webId: dataFromAI.billing?.webId || prevFaturamento.webId,
+        observacoes: dataFromAI.observations || prevFaturamento.observacoes,
     }));
 
     const passageirosParaAdicionar = dataFromAI.passengers || [];
@@ -383,37 +383,19 @@ const FadexTravelSystem = () => {
             ciaAerea: it.ciaAerea || '',
             voo: it.voo || '',
             horarios: it.horarios || '',
-            quantidade: it.quantity || 1,
+            // Correção: Usar a quantidade da IA, com fallback para 1.
+            quantidade: it.quantity !== undefined ? it.quantity : 1, 
             valorUnitario: it.unitPrice || 0,
             tripType: it.tripType || 'Aéreo',
             baggage: it.baggage || 'Não especificado',
             isRoundTrip: it.isRoundTrip || false,
         }));
-
-        // Handle round trip logic if present
-        const primeiroItinerario = pIA.itinerary?.[0];
-        if (primeiroItinerario?.isRoundTrip && primeiroItinerario?.returnDate) {
-            itinerariosFormatados.push({
-                ...initialItinerarioState,
-                id: generateId(),
-                origem: primeiroItinerario.destination || '',
-                destino: primeiroItinerario.origin || '',
-                dataSaida: formatDateToYYYYMMDD(primeiroItinerario.returnDate),
-                ciaAerea: primeiroItinerario.ciaAerea || '',
-                voo: primeiroItinerario.voo || '',
-                horarios: primeiroItinerario.horarios || '',
-                quantidade: primeiroItinerario.quantity || 1,
-                valorUnitario: primeiroItinerario.unitPrice || 0,
-                tripType: primeiroItinerario.tripType || 'Aéreo',
-                baggage: primeiroItinerario.baggage || 'Não especificado',
-                isRoundTrip: false, // O trecho de volta em si não é "ida e volta"
-            });
-        }
         
         const formattedCPF = formatCPF(pIA.cpf || '');
         const existingPassengerIndex = updatedPassageiros.findIndex(p => p.cpf === formattedCPF && formattedCPF);
 
         if (existingPassengerIndex > -1) {
+            // Atualiza passageiro existente
             const passageiroExistente = updatedPassageiros[existingPassengerIndex];
             passageiroExistente.itinerarios.push(...itinerariosFormatados);
             if (pIA.email && !passageiroExistente.email) passageiroExistente.email = pIA.email;
@@ -421,6 +403,7 @@ const FadexTravelSystem = () => {
             if (pIA.birthDate && !passageiroExistente.dataNascimento) passageiroExistente.dataNascimento = formatDateToDDMMYYYY(pIA.birthDate);
             updatedCount++;
         } else {
+            // Adiciona novo passageiro
             updatedPassageiros.push({
                 id: generateId(),
                 nome: pIA.name || 'Nome não extraído',
@@ -440,7 +423,7 @@ const FadexTravelSystem = () => {
     let message = `${addedCount} passageiro(s) adicionado(s) e ${updatedCount} atualizado(s) com sucesso.`;
     showSuccessMessageHandler(message);
     setCurrentView('creating');
-  };
+};
 
   const handleViewRequestDetails = (request) => {
     // Carrega o estado da requisição selecionada para a tela principal
