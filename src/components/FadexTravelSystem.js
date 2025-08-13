@@ -2,18 +2,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 // Componentes
-import Header from './Header';
-import SuccessMessage from './SuccessMessage';
-import AddPassengerButton from './AddPassengerButton';
-import PassengerForm from './PassengerForm';
-import BillingForm from './BillingForm';
-import PassengerList from './PassengerList';
-import Preview from './Preview';
-import ConfirmationScreen from './ConfirmationScreen';
-import HelpChatbot from './HelpChatbot';
-import RequestList from './RequestList'; // Novo
-import PassengerRegistry from './PassengerRegistry'; // Novo
-import Reports from './Reports'; // Novo
+import Header from './Header.js';
+import SuccessMessage from './SuccessMessage.js';
+import AddPassengerButton from './AddPassengerButton.js';
+import PassengerForm from './PassengerForm.js';
+import BillingForm from './BillingForm.js';
+import PassengerList from './PassengerList.js';
+import Preview from './Preview.js';
+import ConfirmationScreen from './ConfirmationScreen.js';
+import HelpChatbot from './HelpChatbot.js';
+import RequestList from './RequestList.js'; // Novo
+import PassengerRegistry from './PassengerRegistry.js'; // Novo
+import Reports from './Reports.js'; // Novo
 
 // Utilitários e Serviços
 import {
@@ -32,9 +32,9 @@ import { saveRequest } from '../services/requestService.js'; // Novo
 import { getOrSavePassenger } from '../services/passengerService.js'; // Novo
 
 // Utilitários de IA e PDF
-import { extractDataFromPdfWithGemini } from '../ai/geminiService';
+import { extractDataFromPdfWithGemini } from '../ai/geminiService.js';
 import { UploadCloud, FileText, CheckCircle, XCircle, Loader, Info } from 'lucide-react';
-import * as pdfjsLib from 'pdfjs-dist/build/pdf';
+import * as pdfjsLib from 'pdfjs-dist';
 import { Button } from './ui/button.jsx';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -208,7 +208,7 @@ const ImportScreen = ({ onImportConfirmed, onBack, showSuccessMessage }) => {
 // Componente principal
 const FadexTravelSystem = () => {
   const [passageiros, setPassageiros] = useState([]);
-  const [faturamento, setFaturamento] = useState({ contaProjeto: '', descricao: '', costCenter: '', webId: '' });
+  const [faturamento, setFaturamento] = useState({ contaProjeto: '', descricao: '', costCenter: '', webId: '', observacoes: '' });
   const [activeForm, setActiveForm] = useState(null);
   const [editingPassageiro, setEditingPassageiro] = useState(null);
   const initialPassageiroState = { id: '', nome: '', cpf: '', dataNascimento: '', email: '', phone: '', itinerarios: [], anexos: [] };
@@ -302,7 +302,7 @@ const FadexTravelSystem = () => {
   
   const resetRequestState = () => {
     setPassageiros([]);
-    setFaturamento({ contaProjeto: '', descricao: '', costCenter: '', webId: '' });
+    setFaturamento({ contaProjeto: '', descricao: '', costCenter: '', webId: '', observacoes: '' });
     resetCurrentPassageiro();
     setActiveForm(null);
     setErrors({});
@@ -359,6 +359,7 @@ const FadexTravelSystem = () => {
       costCenter: dataFromAI.billing?.costCenter || prevFaturamento.costCenter,
       descricao: dataFromAI.billing?.description || prevFaturamento.descricao,
       webId: dataFromAI.billing?.webId || prevFaturamento.webId,
+      observacoes: dataFromAI.observations || prevFaturamento.observacoes,
     }));
 
     const passageirosParaAdicionar = dataFromAI.passengers || [];
@@ -448,6 +449,7 @@ const FadexTravelSystem = () => {
       descricao: request.descricao || '',
       costCenter: request.costCenter || '',
       webId: request.webId || '',
+      observacoes: request.observacoes || '',
     });
     setPassageiros(request.passengersData || []);
     // Volta para a tela de criação/edição

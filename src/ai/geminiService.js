@@ -174,6 +174,7 @@ export const extractDataFromPdfWithGemini = async (text, options = {}) => {
         -   **billing.cc**: Extraia a conta corrente do projeto, que pode vir como "CC", "Conta Corrente", "C/C".
         -   **billing.webId**: Extraia o número de identificação da solicitação, frequentemente associado a termos como "Número da Solicitação", "WEB ID", "Request ID", "WEB".
         -   **billing.description**: Obtenha a justificativa ou finalidade da viagem. Procure por campos como "JUSTIFICATIVA", "FINALIDADE", "OBJETIVO", "DESCRIÇÃO".
+        -   **observations**: Extraia qualquer texto de observação geral, que possa estar em campos como "OBSERVAÇÕES GERAIS", "OBSERVAÇÃO", ou texto livre que pareça relevante para toda a requisição.
 
     2.  **Passageiros (Array de objetos):** O documento pode conter um ou mais passageiros. Identifique cada um. Eles podem ser chamados de "Passageiro", "Beneficiário", "Viajante", "Servidor" ou estarem em seções como "DADOS DO ITEM", "DADOS DO PASSAGEIRO".
         -   **name**: O nome completo do passageiro. Geralmente está próximo ao CPF. **Padronize o nome para MAIÚSCULAS.**
@@ -188,8 +189,8 @@ export const extractDataFromPdfWithGemini = async (text, options = {}) => {
             -   **returnDate**: A data de retorno do trecho, no formato DD/MM/AAAA. Se o trecho for apenas de ida, este campo deve ser nulo.
             -   **isRoundTrip**: Se houver menção explícita a "ida e volta" para o trecho, marque como true.
             -   **tripType**: Determine se é "Aéreo" ou "Terrestre" com base no contexto (ex: menção a "Voo", "Cia Aérea", "Avião" = Aéreo; "Ônibus", "Van", "Carro" = Terrestre). Padrão: "Aéreo".
-            -   **ciaAerea**: Nome da companhia aérea ou empresa de transporte.
-            -   **voo**: O número do voo ou identificador do transporte.
+            -   **ciaAerea**: Nome da companhia aérea ou empresa de transporte. **Busque também em seções de texto livre como "OBSERVAÇÃO" ou "DADOS GERAIS DO ITEM" por linhas contendo "Companhia:".**
+            -   **voo**: O número do voo ou identificador do transporte. **Busque também em seções de texto livre como "OBSERVAÇÃO" ou "DADOS GERAIS DO ITEM" por linhas contendo "N° Voo:", "Nº Voo:" ou "Voo:".**
             -   **horarios**: Os horários de partida e chegada (formato livre).
             -   **baggage**: Verifique se há menção a bagagens. Pode ser "Com Bagagem", "Sem Bagagem", "Bagagem incluída", "1PC", "2PC", etc. Se não houver menção, defina como "Não especificado".
             -   **quantity**: A quantidade de passagens para este trecho. Se não for especificado, o padrão é 1.
@@ -204,6 +205,7 @@ export const extractDataFromPdfWithGemini = async (text, options = {}) => {
     **Formato de Saída JSON Esperado:**
     {
       "title": "string or null",
+      "observations": "string or null",
       "billing": {
         "costCenter": "string or null",
         "account": "string or null",

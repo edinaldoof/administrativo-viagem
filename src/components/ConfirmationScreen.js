@@ -112,7 +112,7 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
     setJustifications(prev => prev.filter(j => j.id !== hintId));
   };
   
-  // Mapeamento de caminhos para rótulos amigáveis
+  // Mapeamento de caminhos para rótulos amigáveis (usado apenas para o dialog de feedback)
   const friendlyLabels = {
     'title': 'Título', 'billing.account': 'Conta do Projeto', 'billing.costCenter': 'Conta corrente do projeto',
     'billing.webId': 'Web ID', 'billing.description': 'Justificativa',
@@ -171,6 +171,7 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
     } catch (e) { value = ''; originalValue = ''; }
 
     const isEdited = JSON.stringify(value) !== JSON.stringify(originalValue);
+    const feedbackKey = friendlyLabels[path] || label;
 
     return (
      <div className={`p-3 border-b border-gray-100 hover:bg-gray-50 rounded-md ${isEdited ? 'bg-yellow-50 border-l-4 border-yellow-400' : ''}`}>
@@ -184,7 +185,7 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
             className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
          />
          <button
-            onClick={() => handleOpenFeedbackDialog(label)}
+            onClick={() => handleOpenFeedbackDialog(feedbackKey)}
             className="px-3 py-1 text-xs font-semibold text-blue-600 bg-blue-100 rounded-full hover:bg-blue-200"
             title="Adicionar dica para a IA sobre este campo"
           >
@@ -249,11 +250,11 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
             <div key={pIndex} className="p-4 border rounded-lg bg-white shadow-sm">
               <h4 className="font-bold text-lg text-blue-700 mb-3">Passageiro #{pIndex + 1}</h4>
               <div className="space-y-2">
-                 {renderField(`Nome P.${pIndex + 1}`, `passengers.${pIndex}.name`)}
-                 {renderField(`CPF P.${pIndex + 1}`, `passengers.${pIndex}.cpf`)}
-                 {renderField(`Nascimento P.${pIndex + 1}`, `passengers.${pIndex}.birthDate`)}
-                 {renderField(`Email P.${pIndex + 1}`, `passengers.${pIndex}.email`)}
-                 {renderField(`Telefone P.${pIndex + 1}`, `passengers.${pIndex}.phone`)}
+                 {renderField(`Nome P.${pIndex + 1}`, `passengers[${pIndex}].name`)}
+                 {renderField(`CPF P.${pIndex + 1}`, `passengers[${pIndex}].cpf`)}
+                 {renderField(`Nascimento P.${pIndex + 1}`, `passengers[${pIndex}].birthDate`)}
+                 {renderField(`Email P.${pIndex + 1}`, `passengers[${pIndex}].email`)}
+                 {renderField(`Telefone P.${pIndex + 1}`, `passengers[${pIndex}].phone`)}
               </div>
               
               <div className="mt-4 pt-3 border-t">
@@ -264,6 +265,8 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
                       <p className="text-sm">Partida: {it.departureDate || 'N/A'} {it.returnDate && ` | Retorno: ${it.returnDate}`}</p>
                       {renderItineraryDetails(it)}
                       <div className="grid grid-cols-2 gap-x-4 mt-3 pt-3 border-t">
+                        {renderField(`Cia Aérea Trecho ${itIndex+1} P.${pIndex+1}`, `passengers[${pIndex}].itinerary[${itIndex}].ciaAerea`)}
+                        {renderField(`Voo Trecho ${itIndex+1} P.${pIndex+1}`, `passengers[${pIndex}].itinerary[${itIndex}].voo`)}
                         {renderField(`Qtd Trecho ${itIndex+1} P.${pIndex+1}`, `passengers[${pIndex}].itinerary[${itIndex}].quantity`, "number")}
                         {renderField(`Valor Trecho ${itIndex+1} P.${pIndex+1}`, `passengers[${pIndex}].itinerary[${itIndex}].unitPrice`, "number")}
                       </div>

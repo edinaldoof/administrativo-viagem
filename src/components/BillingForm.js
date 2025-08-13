@@ -63,6 +63,18 @@ const BillingForm = ({ faturamento, onFaturamentoChange }) => {
             placeholder="Ex: WEB 7735/2025"
           />
         </div>
+        <div className="md:col-span-2">
+            <label htmlFor="observacoes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Observações (Opcional)</label>
+            <textarea
+                name="observacoes"
+                id="observacoes"
+                value={faturamento.observacoes || ''}
+                onChange={handleChange}
+                rows="3"
+                className="w-full p-4 border border-gray-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-200"
+                placeholder="Ex: Priorizar voo direto, detalhes sobre bagagem especial, etc."
+            />
+        </div>
       </div>
     </div>
   );
