@@ -26,7 +26,9 @@ const HEADER_HEIGHT_OTHER_PAGES = 25;
 
 const FOOTER_TEXT_CONTENT = "FUNDAÇÃO CULTURAL E DE FOMENTO À PESQUISA, ENSINO, EXTENSÃO E INOVAÇÃO\nRua Hugo Napoleão, 2891 - Ininga - Teresina/PI - CEP 64048-440 - CNPJ: 07.501.328/0001-30";
 const LOGO_URL = '/logo.png';
-const AIRPLANE_ICON_URL = '/aviao.png';
+const AIRPLANE_IDA_ICON_URL = '/aviao_ida.png';
+const AIRPLANE_VOLTA_ICON_URL = '/aviao_volta.png';
+
 
 // Função auxiliar para converter cor hex para RGB
 const hexToRgb = (hex) => {
@@ -302,12 +304,13 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
     creator: 'FADEX System'
   });
 
-  const [logoImgData, airplaneIconData] = await Promise.all([
+  const [logoImgData, airplaneIdaIconData, airplaneVoltaIconData] = await Promise.all([
     loadImageData(LOGO_URL),
-    loadImageData(AIRPLANE_ICON_URL)
+    loadImageData(AIRPLANE_IDA_ICON_URL),
+    loadImageData(AIRPLANE_VOLTA_ICON_URL)
   ]).catch(err => {
     console.error("Falha ao carregar uma das imagens para o PDF:", err);
-    return [null, null];
+    return [null, null, null];
   });
 
 
@@ -469,6 +472,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
 
       // Itinerários
       if (passageiro.itinerarios && passageiro.itinerarios.length > 0) {
+        const primeiroItinerario = passageiro.itinerarios[0];
         
         passageiro.itinerarios.forEach((itinerario) => {
           if (checkAndAddPage(25)) {
@@ -496,13 +500,18 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
            // Draw icon
            const iconX = itinerarioStartX + originWidth + 3;
            const iconSize = 4;
-           if (airplaneIconData) {
+           const isReturn = itinerario.origem === primeiroItinerario.destino && 
+                           itinerario.destino === primeiroItinerario.origem;
+           
+           const iconData = isReturn ? airplaneVoltaIconData : airplaneIdaIconData;
+
+           if (iconData) {
              try {
-               const imgProps = doc.getImageProperties(airplaneIconData);
-               doc.addImage(airplaneIconData, imgProps.fileType, iconX, textBaseY - (iconSize/2), iconSize, iconSize);
+               const imgProps = doc.getImageProperties(iconData);
+               doc.addImage(iconData, imgProps.fileType, iconX, textBaseY - (iconSize/2), iconSize, iconSize);
              } catch(e) { console.error("Error adding airplane icon", e) }
            } else {
-             const arrowSymbol = '\u2192'; // Fallback arrow
+             const arrowSymbol = isReturn ? '<' : '>'; // Fallback arrow
              doc.text(arrowSymbol, iconX, textBaseY, {baseline: 'middle'});
            }
           
@@ -577,17 +586,16 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   const observationText = "Observação: Os valores apresentados são sugestões do coordenador com base em pesquisas realizadas e estão sujeitos a alterações.";
   const maxTextWidth = pageWidth - (GRADIENT_WIDTH + PAGE_MARGIN) * 2;
   const observationLines = doc.splitTextToSize(observationText, maxTextWidth);
-  const observationHeight = observationLines.length * 4 + 4;
+  const observationHeight = observationLines.length * 4;
   
-  if(checkAndAddPage(observationHeight)) {
-     yPosition += 5;
+  if (checkAndAddPage(observationHeight)) {
+      yPosition = pageHeight - contentMarginBottomForPageBreak - observationHeight - 5;
   }
   
   doc.setFont(FONTS.DEFAULT, 'italic');
   doc.setFontSize(8);
   doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
   doc.text(observationLines, GRADIENT_WIDTH + PAGE_MARGIN, yPosition);
-  yPosition += observationHeight;
 
   // Processar anexos
   if (passageiros) {
