@@ -322,7 +322,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   let yPosition = HEADER_HEIGHT_FIRST_PAGE + 10;
   const pageHeight = doc.internal.pageSize.getHeight();
   const pageWidth = doc.internal.pageSize.getWidth();
-  const contentMarginBottomForPageBreak = FOOTER_HEIGHT + PAGE_MARGIN;
+  const contentMarginBottomForPageBreak = FOOTER_HEIGHT + PAGE_MARGIN + 10;
 
   const checkAndAddPage = (neededHeight = 20) => {
     if (yPosition + neededHeight > pageHeight - contentMarginBottomForPageBreak) {
@@ -376,33 +376,27 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
     
     // Preparar campos
     const fields = [];
-    if (faturamento.contaProjeto) fields.push({ label: 'Número da Conta:', value: faturamento.contaProjeto, fullWidth: true });
-    if (faturamento.descricao) fields.push({ label: 'Descrição:', value: faturamento.descricao, fullWidth: true });
+    if (faturamento.contaProjeto) fields.push({ label: 'Número da Conta:', value: faturamento.contaProjeto });
+    if (faturamento.descricao) fields.push({ label: 'Descrição:', value: faturamento.descricao });
     if (faturamento.costCenter) fields.push({ label: 'Conta corrente do projeto:', value: faturamento.costCenter });
     if (faturamento.webId) fields.push({ label: 'WEB ID:', value: faturamento.webId });
-    if (faturamento.observacoes) fields.push({ label: 'Observações:', value: faturamento.observacoes, fullWidth: true });
+    if (faturamento.observacoes) fields.push({ label: 'Observações:', value: faturamento.observacoes });
     
-    // Calcular altura necessária
-    let faturamentoHeight = 10;
+    // Calcular altura necessária e renderizar
+    let totalHeight = 5; // Start with padding
     fields.forEach(field => {
-      if (field.fullWidth) {
-        const lines = Math.ceil(doc.getTextWidth(field.value || '') / (faturamentoWidth - 10));
-        faturamentoHeight += 4 + (lines * 4);
-      } else {
-        faturamentoHeight += 8;
-      }
+        const textLines = doc.splitTextToSize(field.value || '', faturamentoWidth - 10);
+        totalHeight += 4 + (textLines.length * 4); // Label height + text height
     });
-    faturamentoHeight = Math.max(faturamentoHeight, 20);
+    totalHeight += 5; // Bottom padding
 
     // Desenhar background
-    doc.rect(faturamentoStartX, faturamentoStartY, faturamentoWidth, faturamentoHeight, 'F');
+    doc.rect(faturamentoStartX, faturamentoStartY, faturamentoWidth, totalHeight, 'F');
     
-    yPosition += 5;
+    let currentY = faturamentoStartY + 5; // Start inside the box with padding
 
-    // Renderizar campos
-    let currentY = yPosition;
     fields.forEach(field => {
-      if (checkAndAddPage(10)) {
+      if (checkAndAddPage(15)) {
         currentY = HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN;
       }
       
@@ -413,15 +407,17 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
       doc.setTextColor(darkRgb.r, darkRgb.g, darkRgb.b);
       doc.text(field.label, xPos, currentY);
       
+      currentY += 4; // Move down for the value
+
       doc.setFont(FONTS.DEFAULT, 'normal');
       doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
-      const valueX = xPos + doc.getTextWidth(field.label) + 2;
-      doc.text(field.value || '', valueX, currentY);
+      const textLines = doc.splitTextToSize(field.value || '', faturamentoWidth - 10);
+      doc.text(textLines, xPos, currentY);
       
-      currentY += 6;
+      currentY += (textLines.length * 4) + 4; // Add space for next field
     });
 
-    yPosition = currentY + 5;
+    yPosition = faturamentoStartY + totalHeight + 5;
   }
 
   // Seção de Passageiros e Itinerários
