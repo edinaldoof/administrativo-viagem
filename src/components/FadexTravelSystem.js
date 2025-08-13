@@ -355,7 +355,7 @@ const FadexTravelSystem = () => {
 
     setFaturamento(prevFaturamento => ({
       ...prevFaturamento,
-      contaProjeto: dataFromAI.billing?.account || prevFaturamento.contaProjeto,
+      contaProjeto: dataFromAI.title || prevFaturamento.contaProjeto,
       costCenter: dataFromAI.billing?.costCenter || prevFaturamento.costCenter,
       descricao: dataFromAI.billing?.description || prevFaturamento.descricao,
       webId: dataFromAI.billing?.webId || prevFaturamento.webId,

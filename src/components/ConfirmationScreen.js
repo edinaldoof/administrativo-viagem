@@ -119,14 +119,16 @@ const ConfirmationScreen = ({ originalData, onConfirm, onCancel, onSendFeedback 
   };
   if (originalData.passengers) {
       originalData.passengers.forEach((p, i) => {
-          friendlyLabels[`passengers.${i}.name`] = `Nome P.${i + 1}`;
-          friendlyLabels[`passengers.${i}.cpf`] = `CPF P.${i + 1}`;
-          friendlyLabels[`passengers.${i}.birthDate`] = `Nascimento P.${i + 1}`;
-          friendlyLabels[`passengers.${i}.email`] = `Email P.${i + 1}`;
-          friendlyLabels[`passengers.${i}.phone`] = `Telefone P.${i + 1}`;
+          friendlyLabels[`passengers[${i}].name`] = `Nome P.${i + 1}`;
+          friendlyLabels[`passengers[${i}].cpf`] = `CPF P.${i + 1}`;
+          friendlyLabels[`passengers[${i}].birthDate`] = `Nascimento P.${i + 1}`;
+          friendlyLabels[`passengers[${i}].email`] = `Email P.${i + 1}`;
+          friendlyLabels[`passengers[${i}].phone`] = `Telefone P.${i + 1}`;
           (p.itinerary || []).forEach((it, itIndex) => {
               friendlyLabels[`passengers[${i}].itinerary[${itIndex}].quantity`] = `Qtd Trecho ${itIndex+1} P.${i+1}`;
               friendlyLabels[`passengers[${i}].itinerary[${itIndex}].unitPrice`] = `Valor Trecho ${itIndex+1} P.${i+1}`;
+              friendlyLabels[`passengers[${i}].itinerary[${itIndex}].ciaAerea`] = `Cia Aérea Trecho ${itIndex+1} P.${i+1}`;
+              friendlyLabels[`passengers[${i}].itinerary[${itIndex}].voo`] = `Voo Trecho ${itIndex+1} P.${i+1}`;
           });
       });
   }

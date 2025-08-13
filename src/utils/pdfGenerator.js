@@ -317,7 +317,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   let yPosition = HEADER_HEIGHT_FIRST_PAGE + 10;
   const pageHeight = doc.internal.pageSize.getHeight();
   const pageWidth = doc.internal.pageSize.getWidth();
-  const contentMarginBottomForPageBreak = FOOTER_HEIGHT + PAGE_MARGIN;
+  const contentMarginBottomForPageBreak = FOOTER_HEIGHT + PAGE_MARGIN + 10;
 
   const checkAndAddPage = (neededHeight = 20) => {
     if (yPosition + neededHeight > pageHeight - contentMarginBottomForPageBreak) {
@@ -596,9 +596,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   const observationHeight = observationLines.length * 4 + 4;
   
   if (checkAndAddPage(observationHeight)) {
-    yPosition += 5;
-  } else if (yPosition + observationHeight > pageHeight - contentMarginBottomForPageBreak) {
-    yPosition = pageHeight - contentMarginBottomForPageBreak - observationHeight;
+    yPosition = HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN;
   }
   
   doc.setFont(FONTS.DEFAULT, 'italic');
