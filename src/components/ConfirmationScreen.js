@@ -5,7 +5,7 @@ import {
   CheckCircle, AlertCircle, Info, ChevronDown, ChevronUp,
   Sparkles, User, Calendar, Mail, Phone, Hash,
   MapPin, DollarSign, Tag, FileText, Clock, Check,
-  LightbulbIcon, X
+  LightbulbIcon, X, Users
 } from 'lucide-react';
 
 // Componente para a caixa de diálogo de feedback manual - Redesenhado
