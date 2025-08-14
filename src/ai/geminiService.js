@@ -174,7 +174,7 @@ export const extractDataFromPdfWithGemini = async (text, options = {}) => {
         -   **billing.description**: Obtenha a justificativa ou finalidade da viagem. Procure por campos como "JUSTIFICATIVA", "FINALIDADE", "OBJETIVO", "DESCRIÇÃO".
         -   **observations**: Extraia qualquer texto de observação geral, que possa estar em campos como "OBSERVAÇÕES GERAIS", "OBSERVAÇÃO", ou texto livre que pareça relevante para toda a requisição.
 
-    2.  **Passageiros (Array de objetos):** O documento pode conter um ou mais passageiros. Identifique cada um. Eles podem ser chamados de "Passageiro", "Beneficiário", "Viajante", "Servidor" ou estarem em seções como "DADOS DO ITEM", "DADOS DO PASSAGEIRO".
+    2.  **Passageiros (Array de objetos):** O documento pode conter um ou mais passageiros. Identifique cada um. Eles podem ser chamados de "Passageiro", "Beneficiário", "Viajante", "Servidor" ou estarem em seções como "DADOS DO ITEM", "DADOS DO PASSAGEIRO". Para cada passageiro, extraia:
         -   **name**: O nome completo do passageiro. Geralmente está próximo ao CPF. **Padronize o nome para MAIÚSCULAS.**
         -   **cpf**: O número do CPF (formato: 000.000.000-00 ou apenas números).
         -   **birthDate**: A data de nascimento, no formato DD/MM/AAAA.
@@ -185,11 +185,11 @@ export const extractDataFromPdfWithGemini = async (text, options = {}) => {
             -   **destination**: A cidade de destino do trecho. **Padronize para MAIÚSCULAS e sem acentos (ex: 'CUIABÁ' -> 'CUIABA').**
             -   **departureDate**: A data de partida do trecho, no formato DD/MM/AAAA.
             -   **returnDate**: A data de retorno do trecho, no formato DD/MM/AAAA. Se o trecho for apenas de ida, este campo deve ser nulo.
-            -   **isRoundTrip**: Se houver menção explícita a "ida e volta" para o trecho, marque como true.
+            -   **isRoundTrip**: Verifique se o trecho é de ida e volta. Não crie um trecho de volta duplicado, apenas marque este campo como 'true'.
             -   **tripType**: Determine se é "Aéreo" ou "Terrestre" com base no contexto (ex: menção a "Voo", "Cia Aérea", "Avião" = Aéreo; "Ônibus", "Van", "Carro" = Terrestre). Padrão: "Aéreo".
-            -   **ciaAerea**: Nome da companhia aérea ou empresa de transporte. **Busque também em seções de texto livre como "OBSERVAÇÃO" ou "DADOS GERAIS DO ITEM" por linhas contendo "Companhia:".**
-            -   **voo**: O número do voo ou identificador do transporte. **Busque também em seções de texto livre como "OBSERVAÇÃO" ou "DADOS GERAIS DO ITEM" por linhas contendo "N° Voo:", "Nº Voo:" ou "Voo:".**
-            -   **horarios**: Os horários de partida e chegada (formato livre). Procure por termos como "Horário Sugerido", "Horários", ou padrões de hora como XX:XX.
+            -   **ciaAerea**: Nome da companhia aérea. **Busque também em seções de texto livre como "OBSERVAÇÃO" ou "DADOS GERAIS DO ITEM" por linhas contendo "Companhia:". Associe ao passageiro correto.**
+            -   **voo**: O número do voo. **Busque também em seções de texto livre como "OBSERVAÇÃO" por linhas como "N° Voo:", "Nº Voo:" ou "Voo:". Associe ao passageiro correto.**
+            -   **horarios**: Os horários de partida e chegada (formato livre). Procure por termos como "Horário Sugerido", "Horários", ou padrões de hora como XX:XX. **Associe ao passageiro e trecho corretos.**
             -   **baggage**: Verifique se há menção a bagagens. Pode ser "Com Bagagem", "Sem Bagagem", "Bagagem incluída", "1PC", "2PC", etc. Se não houver menção, defina como "Não especificado".
             -   **quantity**: A quantidade de passagens para este trecho. Se não for especificado, o padrão é 1.
             -   **unitPrice**: O valor unitário do trecho. Deve ser um número. Se não for especificado, o padrão é 0.
@@ -198,7 +198,7 @@ export const extractDataFromPdfWithGemini = async (text, options = {}) => {
     - Seja extremamente cuidadoso ao identificar datas. Procure por padrões DD/MM/AAAA ou variações.
     - Para valores monetários, remova símbolos como R$, pontos de milhar e converta vírgulas em pontos.
     - Se encontrar múltiplos passageiros, certifique-se de associar corretamente os itinerários a cada um.
-    - Trechos de ida e volta devem ser identificados como itens separados no array de itinerários.
+    - **Não duplique trechos de ida e volta. Apenas preencha o campo 'isRoundTrip' como 'true'.**
 
     **Formato de Saída JSON Esperado:**
     {
@@ -350,5 +350,3 @@ export const getCacheStatus = () => {
     entries: Array.from(requestCache.keys())
   };
 };
-
-    
