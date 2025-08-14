@@ -1,4 +1,3 @@
-
 // src/components/Preview.js
 import React from 'react';
 import { formatCurrency } from '../utils/utils';
@@ -143,8 +142,10 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
                             <span>{itinerario.dataSaida ? new Date(itinerario.dataSaida + 'T03:00:00Z').toLocaleDateString('pt-BR') : 'N/A'}</span>
                             {itinerario.ciaAerea && <span className="mx-1">|</span>}
                             {itinerario.ciaAerea && <span>{itinerario.ciaAerea} {itinerario.voo}</span>}
-                            {itinerario.horarios && <span className="mx-1">|</span>}
-                            {itinerario.horarios && <span>({itinerario.horarios})</span>}
+                            {itinerario.departureTime && <span className="mx-1">|</span>}
+                            {itinerario.departureTime && <span>Ida: {itinerario.departureTime}</span>}
+                             {itinerario.returnTime && <span className="mx-1">|</span>}
+                            {itinerario.returnTime && <span>Volta: {itinerario.returnTime}</span>}
                           </div>
                           <div>
                             {itinerario.quantidade} x {formatCurrency(itinerario.valorUnitario)}
@@ -182,5 +183,3 @@ const Preview = React.forwardRef(({ passageiros, faturamento }, ref) => {
 });
 
 export default Preview;
-
-    

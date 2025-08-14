@@ -76,7 +76,8 @@ export const exportDataToExcel = (passageiros, faturamento, fileName = 'solicita
     try {
         const header = [
             'Nome Completo', 'CPF', 'Data de Nascimento', 'Email', 'Telefone',
-            'Origem', 'Destino', 'Data de Saída', 'Cia Aérea', 'Nº Voo', 'Horários',
+            'Origem', 'Destino', 'Data de Saída', 'Horário Ida', 'Data de Volta', 'Horário Volta',
+            'Cia Aérea', 'Nº Voo',
             'Tipo Viagem', 'Bagagem', 'Anexos',
             'Qtd', 'Valor Unit.', 'Valor Total'
         ];
@@ -92,10 +93,12 @@ export const exportDataToExcel = (passageiros, faturamento, fileName = 'solicita
                     const quantidade = parseInt(it.quantidade) || 1;
                     const totalValue = valorUnitario * quantidade;
                     const dataSaida = it.dataSaida ? new Date(it.dataSaida + 'T03:00:00Z') : null;
+                    const dataVolta = it.dataVolta ? new Date(it.dataVolta + 'T03:00:00Z') : null;
 
                     data.push([
                         p.nome, p.cpf, p.dataNascimento, p.email, p.phone || '',
-                        it.origem, it.destino, dataSaida, it.ciaAerea || '', it.voo || '', it.horarios || '',
+                        it.origem, it.destino, dataSaida, it.departureTime || '', dataVolta, it.returnTime || '',
+                        it.ciaAerea || '', it.voo || '',
                         it.tripType || 'Aéreo', it.baggage || 'Não especificado', anexosNomes,
                         quantidade, valorUnitario, totalValue
                     ]);
@@ -103,14 +106,14 @@ export const exportDataToExcel = (passageiros, faturamento, fileName = 'solicita
             } else {
                 data.push([
                     p.nome, p.cpf, p.dataNascimento, p.email, p.phone || '',
-                    '-', '-', null, '-', '-', '-', '-', '-', anexosNomes, 0, 0, 0
+                    '-', '-', null, '', null, '', '-', '-', '-', '-', anexosNomes, 0, 0, 0
                 ]);
             }
         });
 
-        const totalGeral = data.slice(1).reduce((acc, row) => acc + (row[16] || 0), 0);
+        const totalGeral = data.slice(1).reduce((acc, row) => acc + (row[18] || 0), 0);
         data.push([]); 
-        data.push(['TOTAL GERAL', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', totalGeral]);
+        data.push(['TOTAL GERAL', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', totalGeral]);
 
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.aoa_to_sheet(data, { cellDates: true });
@@ -125,21 +128,24 @@ export const exportDataToExcel = (passageiros, faturamento, fileName = 'solicita
         for (let R = 1; R < data.length - 2; ++R) {
             const dateCell = ws[XLSX.utils.encode_cell({ r: R, c: 7 })];
             if (dateCell && dateCell.v) dateCell.s = EXCEL_STYLES.date;
+
+            const dateReturnCell = ws[XLSX.utils.encode_cell({ r: R, c: 9 })];
+            if (dateReturnCell && dateReturnCell.v) dateReturnCell.s = EXCEL_STYLES.date;
             
             const cpfCell = ws[XLSX.utils.encode_cell({ r: R, c: 1 })];
             if (cpfCell && cpfCell.v) {
                 cpfCell.t = 's';
                 cpfCell.v = formatCPF(String(cpfCell.v));
             }
-            const unitCell = ws[XLSX.utils.encode_cell({ r: R, c: 15 })];
+            const unitCell = ws[XLSX.utils.encode_cell({ r: R, c: 17 })];
             if (unitCell) unitCell.s = EXCEL_STYLES.currency;
 
-            const totalCell = ws[XLSX.utils.encode_cell({ r: R, c: 16 })];
+            const totalCell = ws[XLSX.utils.encode_cell({ r: R, c: 18 })];
             if (totalCell) totalCell.s = EXCEL_STYLES.currency;
         }
         
         const totalRowIndex = data.length - 1;
-        const totalValueCell = ws[XLSX.utils.encode_cell({ r: totalRowIndex, c: 16 })];
+        const totalValueCell = ws[XLSX.utils.encode_cell({ r: totalRowIndex, c: 18 })];
         if(totalValueCell) totalValueCell.s = EXCEL_STYLES.total;
         
         const totalLabelCell = ws[XLSX.utils.encode_cell({ r: totalRowIndex, c: 0 })];
@@ -203,7 +209,8 @@ export const exportReportsToExcel = (stats, allRequests, fileName = 'relatorio-g
         // --- Aba de Dados Detalhados ---
         const headerDetailed = [
             'WEB ID', 'Data Requisição', 'Projeto', 'Descrição', 'Passageiro', 'CPF', 'Origem',
-            'Destino', 'Data Saída', 'Cia Aérea', 'Voo', 'Horários', 'Tipo Viagem', 'Bagagem',
+            'Destino', 'Data Saída', 'Horário Ida', 'Data Volta', 'Horário Volta', 'Cia Aérea', 'Voo',
+            'Tipo Viagem', 'Bagagem',
             'Quantidade', 'Valor Unitário', 'Valor Total'
         ];
         const detailedData = [headerDetailed];
@@ -216,7 +223,11 @@ export const exportReportsToExcel = (stats, allRequests, fileName = 'relatorio-g
                             req.webId || 'N/A', requestDate, req.contaProjeto || 'N/A', req.descricao || 'N/A',
                             p.nome || 'N/A', formatCPF(p.cpf) || 'N/A', it.origem || 'N/A', it.destino || 'N/A',
                             it.dataSaida ? new Date(it.dataSaida + 'T03:00:00Z') : null,
-                            it.ciaAerea || 'N/A', it.voo || 'N/A', it.horarios || 'N/A', it.tripType || 'Aéreo',
+                            it.departureTime || '',
+                            it.dataVolta ? new Date(it.dataVolta + 'T03:00:00Z') : null,
+                            it.returnTime || '',
+                            it.ciaAerea || 'N/A', it.voo || 'N/A', 
+                            it.tripType || 'Aéreo',
                             it.baggage || 'Não especificado', it.quantidade || 1,
                             parseFloat(it.valorUnitario) || 0,
                             (parseFloat(it.quantidade) || 1) * (parseFloat(it.valorUnitario) || 0)
@@ -233,9 +244,11 @@ export const exportReportsToExcel = (stats, allRequests, fileName = 'relatorio-g
             if(dateReqCell && dateReqCell.v) dateReqCell.s = EXCEL_STYLES.date;
             const dateSaiCell = wsDetailed[XLSX.utils.encode_cell({r:R, c:8})];
             if(dateSaiCell && dateSaiCell.v) dateSaiCell.s = EXCEL_STYLES.date;
-            const valUnitCell = wsDetailed[XLSX.utils.encode_cell({r:R, c:15})];
+            const dateVoltaCell = wsDetailed[XLSX.utils.encode_cell({r:R, c:10})];
+            if(dateVoltaCell && dateVoltaCell.v) dateVoltaCell.s = EXCEL_STYLES.date;
+            const valUnitCell = wsDetailed[XLSX.utils.encode_cell({r:R, c:17})];
             if(valUnitCell) valUnitCell.s = EXCEL_STYLES.currency;
-            const valTotCell = wsDetailed[XLSX.utils.encode_cell({r:R, c:16})];
+            const valTotCell = wsDetailed[XLSX.utils.encode_cell({r:R, c:18})];
             if(valTotCell) valTotCell.s = EXCEL_STYLES.currency;
         }
         XLSX.utils.book_append_sheet(wb, wsDetailed, 'Dados Detalhados');

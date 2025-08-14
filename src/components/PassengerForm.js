@@ -72,17 +72,13 @@ const PassengerForm = ({
   };
 
   const [incluirVolta, setIncluirVolta] = useState(false);
-  const [dataVolta, setDataVolta] = useState(''); // Novo estado para a data de volta
-
+  
   const handleIncluirVoltaChange = (e) => {
     const isChecked = e.target.checked;
     setIncluirVolta(isChecked);
     if (!isChecked) {
-      setDataVolta(''); // Limpa a data de volta se desmarcar
-      if (errors.dataVolta) {
-        // Idealmente, o componente pai (FadexTravelSystem) limparia esse erro específico.
-        // Por agora, a lógica de limpeza de erros no FadexTravelSystem ao submeter/validar cuidará disso.
-      }
+      onItinerarioFieldChange('dataVolta', '');
+      onItinerarioFieldChange('returnTime', '');
     }
   };
 
@@ -176,12 +172,12 @@ const PassengerForm = ({
                 {errors.destino && <span className="text-red-500 text-xs block mt-1">{errors.destino}</span>}
               </div>
               <div>
-                <input type="date" name="dataSaida" value={currentItinerario.dataSaida} onChange={handleItinerarioInputChange} className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.dataSaida ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-600'} text-gray-700 dark:text-gray-300`}/>
+                 <input type="date" name="dataSaida" value={currentItinerario.dataSaida} onChange={handleItinerarioInputChange} className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.dataSaida ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-600'} text-gray-700 dark:text-gray-300`}/>
                 {errors.dataSaida && <span className="text-red-500 text-xs block mt-1">{errors.dataSaida}</span>}
               </div>
               <input type="text" name="ciaAerea" value={currentItinerario.ciaAerea} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-slate-600 text-gray-900 dark:text-gray-200" placeholder="Cia Aérea"/>
               <input type="text" name="voo" value={currentItinerario.voo} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-slate-600 text-gray-900 dark:text-gray-200" placeholder="Número do Voo"/>
-              <input type="text" name="horarios" value={currentItinerario.horarios} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-slate-600 text-gray-900 dark:text-gray-200" placeholder="Horários (Ex: 08:00 - 10:00)"/>
+              <input type="text" name="departureTime" value={currentItinerario.departureTime} onChange={handleItinerarioInputChange} className="p-3 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-slate-600 text-gray-900 dark:text-gray-200" placeholder="Horário Ida (Ex: 08:00)"/>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -245,26 +241,38 @@ const PassengerForm = ({
 
             {/* Campo Data da Volta - Condicional */}
             {incluirVolta && (
-              <div className="mt-4 mb-4 md:w-1/3"> {/* Ajuste o md:w-1/3 para alinhar se necessário, ou use grid */}
-                <label htmlFor="dataVolta" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data da Volta *</label>
-                <input
-                  type="date"
-                  name="dataVolta"
-                  id="dataVolta"
-                  value={dataVolta}
-                  onChange={(e) => setDataVolta(e.target.value)}
-                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.dataVolta ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-600'} text-gray-700 dark:text-gray-300`}
-                />
-                {errors.dataVolta && <span className="text-red-500 text-xs block mt-1">{errors.dataVolta}</span>}
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 mb-4">
+                <div>
+                    <label htmlFor="dataVolta" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data da Volta *</label>
+                    <input
+                      type="date"
+                      name="dataVolta"
+                      id="dataVolta"
+                      value={currentItinerario.dataVolta}
+                      onChange={handleItinerarioInputChange}
+                      className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.dataVolta ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-600'} text-gray-700 dark:text-gray-300`}
+                    />
+                    {errors.dataVolta && <span className="text-red-500 text-xs block mt-1">{errors.dataVolta}</span>}
+                </div>
+                 <div>
+                    <label htmlFor="returnTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Horário Volta</label>
+                    <input
+                      type="text"
+                      name="returnTime"
+                      id="returnTime"
+                      value={currentItinerario.returnTime}
+                      onChange={handleItinerarioInputChange}
+                      className="w-full p-3 border border-gray-300 dark:border-slate-600 bg-gray-50 dark:bg-slate-600 rounded-lg text-gray-900 dark:text-gray-200"
+                      placeholder="Horário Volta (Ex: 18:30)"
+                    />
+                </div>
               </div>
             )}
             
             <button 
               onClick={() => {
-                onAddItinerario(incluirVolta, dataVolta); // Passa o estado de incluirVolta e a dataVolta
-                // Reseta os controles locais do formulário para a próxima adição de trecho
+                onAddItinerario(incluirVolta, currentItinerario.dataVolta);
                 setIncluirVolta(false);
-                setDataVolta('');
               }}
               className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
             >
@@ -283,7 +291,7 @@ const PassengerForm = ({
                    <span className="text-gray-500 dark:text-gray-300 font-semibold">{formatCurrency((itinerario.quantidade || 1) * (itinerario.valorUnitario || 0))}</span>
                   {itinerario.ciaAerea && <span className="text-gray-500 dark:text-gray-400">{itinerario.ciaAerea}</span>}
                   {itinerario.voo && <span className="text-gray-500 dark:text-gray-400">Voo {itinerario.voo}</span>}
-                  {itinerario.horarios && <span className="text-gray-500 dark:text-gray-400">{itinerario.horarios}</span>}
+                  {itinerario.departureTime && <span className="text-gray-500 dark:text-gray-400">Ida: {itinerario.departureTime}</span>}
                 </div>
               </div>
               <button onClick={() => onRemoveItinerario(itinerario.id)} className="p-2 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg transition-colors text-gray-800 dark:text-gray-200" title="Remover Trecho">
@@ -365,5 +373,3 @@ const PassengerForm = ({
 };
 
 export default PassengerForm;
-
-    

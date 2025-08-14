@@ -472,9 +472,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
 
       // Itinerários
       if (passageiro.itinerarios && passageiro.itinerarios.length > 0) {
-        const primeiroItinerario = passageiro.itinerarios[0];
-        
-        passageiro.itinerarios.forEach((itinerario) => {
+        passageiro.itinerarios.forEach((itinerario, itIndex) => {
           if (checkAndAddPage(25)) {
             yPosition = HEADER_HEIGHT_OTHER_PAGES + PAGE_MARGIN;
             doc.setFont(FONTS.DEFAULT, 'italic');
@@ -490,11 +488,11 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
           doc.setTextColor(darkRgb.r, darkRgb.g, darkRgb.b);
           const textBaseY = yPosition + 4;
           
+          const isReturnTrip = itIndex > 0 && passageiro.itinerarios[0].isRoundTrip && itinerario.origem === passageiro.itinerarios[0].destino;
+
           // Origem e Destino
           const originText = itinerario.origem || 'N/I';
           const destinationText = itinerario.destino || 'N/I';
-          const isReturn = itinerario.origem === primeiroItinerario.destino && 
-                          itinerario.destino === primeiroItinerario.origem;
 
           doc.text(originText, itinerarioStartX, textBaseY, {baseline: 'middle'});
           const originWidth = doc.getTextWidth(originText);
@@ -502,21 +500,21 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
            // Draw icon
            const iconX = itinerarioStartX + originWidth + 3;
            const iconSize = 4;
-           const iconToUse = isReturn ? airplaneVoltaIconData : airplaneIdaIconData;
+           const iconToUse = isReturnTrip ? airplaneVoltaIconData : airplaneIdaIconData;
            if (iconToUse) {
              try {
                const imgProps = doc.getImageProperties(iconToUse);
                doc.addImage(iconToUse, imgProps.fileType, iconX, textBaseY - (iconSize/2), iconSize, iconSize);
              } catch(e) { console.error("Error adding airplane icon", e) }
            } else {
-             const arrowSymbol = isReturn ? '<' : '>'; // Fallback arrow
+             const arrowSymbol = isReturnTrip ? '<' : '>'; // Fallback arrow
              doc.text(arrowSymbol, iconX, textBaseY, {baseline: 'middle'});
            }
           
           const destinationX = iconX + iconSize + 3;
           doc.text(destinationText, destinationX, textBaseY, {baseline: 'middle'});
 
-          const tripTypeText = isReturn ? '(Volta)' : '(Ida)';
+          const tripTypeText = isReturnTrip ? '(Volta)' : '(Ida)';
           const destinationWidth = doc.getTextWidth(destinationText);
           const tripTypeX = destinationX + destinationWidth + 2;
           doc.setFontSize(8);
@@ -547,7 +545,9 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
             }
           }
           
-          doc.text(`Data: ${dataSaidaFormatada} | Cia: ${itinerario.ciaAerea || 'N/I'} | Voo: ${itinerario.voo || 'N/I'} | Horários: ${itinerario.horarios || 'N/I'}`, 
+          const horario = isReturnTrip ? itinerario.returnTime : itinerario.departureTime;
+
+          doc.text(`Data: ${dataSaidaFormatada} | Cia: ${itinerario.ciaAerea || 'N/I'} | Voo: ${itinerario.voo || 'N/I'} | Horário: ${horario || 'N/I'}`, 
                    itinerarioStartX, yPosition + 2);
           
           yPosition += 5;
@@ -603,7 +603,7 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   doc.setFontSize(8);
   doc.setTextColor(mediumRgb.r, mediumRgb.g, mediumRgb.b);
   doc.text(observationLines, GRADIENT_WIDTH + PAGE_MARGIN, yPosition);
-  yPosition += observationHeight;
+  yPosition += observationHeight + 4;
 
   // Processar anexos
   if (passageiros) {
@@ -626,5 +626,3 @@ export const generateSolicitacaoPDF = async (passageiros, faturamento) => {
   const fileName = `solicitacao-fadex-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
   doc.save(fileName);
 };
-
-    

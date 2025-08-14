@@ -185,17 +185,18 @@ export const extractDataFromPdfWithGemini = async (text, options = {}) => {
             -   **destination**: A cidade de destino do trecho. **Padronize para MAIÚSCULAS e sem acentos (ex: 'CUIABÁ' -> 'CUIABA').**
             -   **departureDate**: A data de partida do trecho, no formato DD/MM/AAAA.
             -   **returnDate**: A data de retorno do trecho, no formato DD/MM/AAAA. Se o trecho for apenas de ida, este campo deve ser nulo.
+            -   **departureTime**: O horário de partida do trecho, no formato HH:mm. Se não encontrar, retorne null.
+            -   **returnTime**: O horário de retorno do trecho, no formato HH:mm. Só preencha se for uma viagem de ida e volta.
             -   **isRoundTrip**: Verifique se o trecho é de ida e volta. Não crie um trecho de volta duplicado, apenas marque este campo como 'true'.
             -   **tripType**: Determine se é "Aéreo" ou "Terrestre" com base no contexto (ex: menção a "Voo", "Cia Aérea", "Avião" = Aéreo; "Ônibus", "Van", "Carro" = Terrestre). Padrão: "Aéreo".
             -   **ciaAerea**: Nome da companhia aérea. **Busque também em seções de texto livre como "OBSERVAÇÃO" ou "DADOS GERAIS DO ITEM" por linhas contendo "Companhia:". Associe ao passageiro correto.**
             -   **voo**: O número do voo. **Busque também em seções de texto livre como "OBSERVAÇÃO" por linhas como "N° Voo:", "Nº Voo:" ou "Voo:". Associe ao passageiro correto.**
-            -   **horarios**: Os horários de partida e chegada (formato livre). Procure por termos como "Horário Sugerido", "Horários", ou padrões de hora como XX:XX. **Associe ao passageiro e trecho corretos.**
             -   **baggage**: Verifique se há menção a bagagens. Pode ser "Com Bagagem", "Sem Bagagem", "Bagagem incluída", "1PC", "2PC", etc. Se não houver menção, defina como "Não especificado".
             -   **quantity**: A quantidade de passagens para este trecho. Se não for especificado, o padrão é 1.
             -   **unitPrice**: O valor unitário do trecho. Deve ser um número. Se não for especificado, o padrão é 0.
 
     **IMPORTANTE**: 
-    - Seja extremamente cuidadoso ao identificar datas. Procure por padrões DD/MM/AAAA ou variações.
+    - Seja extremamente cuidadoso ao identificar datas e horários. Associe corretamente os horários de ida e volta aos seus respectivos trechos.
     - Para valores monetários, remova símbolos como R$, pontos de milhar e converta vírgulas em pontos.
     - Se encontrar múltiplos passageiros, certifique-se de associar corretamente os itinerários a cada um.
     - **Não duplique trechos de ida e volta. Apenas preencha o campo 'isRoundTrip' como 'true'.**
@@ -222,11 +223,12 @@ export const extractDataFromPdfWithGemini = async (text, options = {}) => {
               "destination": "string (TUDO MAIÚSCULO, SEM ACENTOS)",
               "departureDate": "string (DD/MM/AAAA)",
               "returnDate": "string (DD/MM/AAAA) or null",
+              "departureTime": "string (HH:mm) or null",
+              "returnTime": "string (HH:mm) or null",
               "isRoundTrip": boolean,
               "tripType": "Aéreo" | "Terrestre",
               "ciaAerea": "string or null",
               "voo": "string or null",
-              "horarios": "string or null",
               "baggage": "Com Bagagem" | "Sem Bagagem" | "Não especificado",
               "quantity": number,
               "unitPrice": number

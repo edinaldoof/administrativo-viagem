@@ -213,7 +213,7 @@ const FadexTravelSystem = () => {
   const [editingPassageiro, setEditingPassageiro] = useState(null);
   const initialPassageiroState = { id: '', nome: '', cpf: '', dataNascimento: '', email: '', phone: '', itinerarios: [], anexos: [] };
   const [currentPassageiro, setCurrentPassageiro] = useState(initialPassageiroState);
-  const initialItinerarioState = { id: '', origem: '', destino: '', dataSaida: '', ciaAerea: '', voo: '', horarios: '', quantidade: 1, valorUnitario: 0, tripType: 'Aéreo', baggage: 'Não especificado' };
+  const initialItinerarioState = { id: '', origem: '', destino: '', dataSaida: '', dataVolta: '', departureTime: '', returnTime: '', ciaAerea: '', voo: '', quantidade: 1, valorUnitario: 0, tripType: 'Aéreo', baggage: 'Não especificado' };
   const [currentItinerario, setCurrentItinerario] = useState(initialItinerarioState);
   const [errors, setErrors] = useState({});
   const [successInfo, setSuccessInfo] = useState({ show: false, message: '' });
@@ -270,7 +270,10 @@ const FadexTravelSystem = () => {
         id: generateId(),
         origem: currentItinerario.destino,
         destino: currentItinerario.origem,
-        dataSaida: dataVoltaParam
+        dataSaida: dataVoltaParam,
+        dataVolta: null, // Volta não tem uma data de volta para si
+        departureTime: currentItinerario.returnTime, // O horário de ida da volta é o de retorno da ida
+        returnTime: null,
       };
       newItinerarios.push(volta);
     }
@@ -380,9 +383,11 @@ const FadexTravelSystem = () => {
             origem: it.origin || '',
             destino: it.destination || '',
             dataSaida: formatDateToYYYYMMDD(it.departureDate),
+            dataVolta: formatDateToYYYYMMDD(it.returnDate),
+            departureTime: it.departureTime || '',
+            returnTime: it.returnTime || '',
             ciaAerea: it.ciaAerea || '',
             voo: it.voo || '',
-            horarios: it.horarios || '',
             quantidade: it.quantity !== undefined ? it.quantity : 1, 
             valorUnitario: it.unitPrice || 0,
             tripType: it.tripType || 'Aéreo',
@@ -551,5 +556,3 @@ const FadexTravelSystem = () => {
 };
 
 export default FadexTravelSystem;
-
-    
